@@ -44,56 +44,37 @@ class SmartUnifiedReleaseManager {
     }
   }
 
-  // 检查项目是否有变更（排除版本号变更）
+  // 检查项目是否有变更（检测新的commit，排除版本号变更）
   hasChanges(projectPath) {
     try {
-      const status = execSync('git status --porcelain', { 
-        cwd: projectPath, 
-        encoding: 'utf8' 
-      });
+      // 获取最后一个版本标签
+      const lastTag = this.getLastVersionTag(projectPath);
       
-      if (status.trim().length === 0) {
+      if (!lastTag) {
+        // 如果没有版本标签，检查是否有任何commit
+        const commits = this.getGitHistory(projectPath);
+        return commits.length > 0;
+      }
+      
+      // 检查自上次版本标签以来是否有新的commit
+      const commits = this.getGitHistory(projectPath, lastTag);
+      
+      if (commits.length === 0) {
         return false;
       }
       
-      // 检查是否有除了版本号变更之外的其他变更
-      const lines = status.trim().split('\n');
-      const versionFiles = ['package.json', 'app.json', 'pages/profile/profile.wxml'];
+      // 过滤掉版本发布相关的commit
+      const filteredCommits = commits.filter(commit => {
+        const message = commit.toLowerCase();
+        return !message.includes('chore: release') && 
+               !message.includes('version') &&
+               !message.includes('tag');
+      });
       
-      for (const line of lines) {
-        const fileName = line.substring(3).trim(); // 去掉状态标识符
-        const isVersionFile = versionFiles.some(vf => fileName.includes(vf));
-        
-        if (!isVersionFile) {
-          // 有非版本文件的变更，认为是真正的代码变更
-          return true;
-        }
-      }
-      
-      // 只有版本文件变更，检查是否是版本号变更
-      for (const line of lines) {
-        const fileName = line.substring(3).trim();
-        if (fileName.includes('package.json') || fileName.includes('app.json')) {
-          // 检查是否是版本号变更
-          const diff = execSync(`git diff ${fileName}`, { 
-            cwd: projectPath, 
-            encoding: 'utf8' 
-          });
-          
-          // 如果diff包含版本号变更，不认为是真正的代码变更
-          if (diff.includes('"version":') || diff.includes('versionName') || diff.includes('versionCode')) {
-            continue;
-          } else {
-            // 有其他变更，认为是真正的代码变更
-            return true;
-          }
-        }
-      }
-      
-      // 只有版本号变更，不认为是真正的代码变更
-      return false;
+      return filteredCommits.length > 0;
       
     } catch (error) {
+      console.error(`检查 ${projectPath} 变更失败:`, error.message);
       return false;
     }
   }
@@ -118,9 +99,25 @@ class SmartUnifiedReleaseManager {
       
       const versionTags = tags.split('\n')
         .filter(tag => tag.match(/^v?\d+\.\d+\.\d+$/))
-        .slice(0, 1);
+        .map(tag => {
+          // 提取版本号部分进行排序
+          const version = tag.replace(/^v/, '');
+          const parts = version.split('.').map(Number);
+          return { tag, version, parts };
+        })
+        .sort((a, b) => {
+          // 自定义版本号比较逻辑
+          for (let i = 0; i < Math.max(a.parts.length, b.parts.length); i++) {
+            const numA = a.parts[i] || 0;
+            const numB = b.parts[i] || 0;
+            if (numA !== numB) {
+              return numB - numA; // 降序排列
+            }
+          }
+          return 0;
+        });
       
-      return versionTags[0] || null;
+      return versionTags[0]?.tag || null;
     } catch (error) {
       return null;
     }
