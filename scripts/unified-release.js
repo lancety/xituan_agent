@@ -358,6 +358,38 @@ class SmartUnifiedReleaseManager {
     return projectStatus;
   }
 
+  // 更新所有项目的submodule引用到最新版本
+  updateAllSubmodules() {
+    console.log('\n=== 更新所有项目的submodule引用 ===');
+    
+    this.projects.forEach(project => {
+      if (project.name !== 'xituan_codebase') {
+        console.log(`更新 ${project.name} 的submodule引用...`);
+        try {
+          // 先进入submodule目录，拉取最新代码
+          const submodulePath = path.join(project.path, 'submodules/xituan_codebase');
+          this.exec('git fetch --tags', submodulePath);
+          this.exec('git checkout master', submodulePath);
+          this.exec('git pull origin master', submodulePath);
+          
+          // 获取最新的版本标签
+          const latestTag = this.getLastVersionTag(submodulePath);
+          if (latestTag) {
+            console.log(`合并最新版本标签到master: ${latestTag}`);
+            // 将标签合并到master分支，而不是checkout到标签
+            this.exec(`git merge ${latestTag} --no-edit`, submodulePath);
+          }
+          
+          // 回到主项目，添加submodule变更
+          this.exec('git add submodules/xituan_codebase', project.path);
+          console.log(`${project.name} submodule引用已更新到 ${latestTag || '最新版本'}`);
+        } catch (error) {
+          console.error(`更新 ${project.name} submodule失败:`, error.message);
+        }
+      }
+    });
+  }
+
   // 智能统一发布流程
   async smartUnifiedRelease(versionType = 'patch') {
     console.log(`开始智能统一版本发布流程 - 版本类型: ${versionType}\n`);
@@ -370,89 +402,138 @@ class SmartUnifiedReleaseManager {
       const codebaseProject = projectStatus.find(p => p.name === 'xituan_codebase');
       const otherProjects = projectStatus.filter(p => p.name !== 'xituan_codebase');
       
-      // 3. 先发布codebase（如果有变更）
+      // 3. 计算统一版本号（基于所有项目的最高版本）
+      const allProjects = projectStatus.filter(p => p.name !== 'xituan_codebase');
+      const highestVersion = this.findHighestVersion(allProjects);
+      console.log(`所有项目当前最高版本: ${highestVersion}`);
+      
+      const newVersion = this.calculateNewVersion(highestVersion, versionType);
+      console.log(`统一目标版本: ${newVersion}\n`);
+      
+      // 4. 先发布codebase（如果有变更）
       if (codebaseProject && codebaseProject.hasChanges) {
         console.log('\n=== 发布共享代码库 ===');
-        const codebaseVersion = this.calculateNewVersion(codebaseProject.currentVersion, versionType);
         
-        this.updateVersionTo(codebaseProject.path, codebaseVersion);
-        this.generateSmartChangelog(codebaseProject.path, codebaseVersion, true, codebaseProject.currentVersion);
+        this.updateVersionTo(codebaseProject.path, newVersion);
+        this.generateSmartChangelog(codebaseProject.path, newVersion, true, codebaseProject.currentVersion);
         
         const currentBranch = this.getCurrentBranch(codebaseProject.path);
         this.exec('git add .', codebaseProject.path);
-        this.exec(`git commit -m "chore: release v${codebaseVersion}"`, codebaseProject.path);
-        this.exec(`git tag v${codebaseVersion}`, codebaseProject.path);
+        this.exec(`git commit -m "chore: release v${newVersion}"`, codebaseProject.path);
+        this.exec(`git tag v${newVersion}`, codebaseProject.path);
         this.exec(`git push origin ${currentBranch} --tags`, codebaseProject.path);
         
-        console.log(`共享代码库 v${codebaseVersion} 发布完成`);
-      } else if (codebaseProject) {
-        console.log('\n=== 共享代码库无变更，跳过发布 ===');
-      }
-      
-      // 4. 检查其他项目是否有变更
-      const projectsWithChanges = otherProjects.filter(p => p.hasChanges);
-      const projectsWithoutChanges = otherProjects.filter(p => !p.hasChanges);
-      
-      if (projectsWithChanges.length === 0) {
-        console.log('\n=== 所有项目均无变更，跳过发布 ===');
-        return;
-      }
-      
-      // 5. 计算统一版本号（基于所有项目的最高版本）
-      const highestVersion = this.findHighestVersion(otherProjects);
-      console.log(`其他项目当前最高版本: ${highestVersion}`);
-      
-      const newVersion = this.calculateNewVersion(highestVersion, versionType);
-      console.log(`其他项目目标版本: ${newVersion}\n`);
-      
-      // 6. 只更新有变更的项目
-      for (const project of projectsWithChanges) {
-        console.log(`\n=== 更新 ${project.name} (有变更) ===`);
+        console.log(`共享代码库 v${newVersion} 发布完成`);
         
-        // 更新submodule引用
-        this.exec('git submodule update --remote', project.path);
-        this.exec('git add submodules/xituan_codebase', project.path);
+        // 5. 发布codebase后，立即更新所有项目的submodule引用
+        this.updateAllSubmodules();
         
-        // 更新版本号
-        this.updateVersionTo(project.path, newVersion);
+        // 6. 重新检查项目变更状态（因为submodule可能带来新的变更）
+        console.log('\n=== 重新检查项目变更状态（submodule更新后） ===');
+        const updatedProjectStatus = this.checkProjectChanges();
+        const updatedOtherProjects = updatedProjectStatus.filter(p => p.name !== 'xituan_codebase');
         
-        // 生成智能CHANGELOG（有实际变更）
-        this.generateSmartChangelog(project.path, newVersion, true, project.currentVersion);
+        // 7. 检查其他项目是否有变更
+        const projectsWithChanges = updatedOtherProjects.filter(p => p.hasChanges);
+        const projectsWithoutChanges = updatedOtherProjects.filter(p => !p.hasChanges);
         
-        // 特殊处理微信小程序
-        if (project.name === 'xituan_wechat_app') {
-          this.updateWechatVersion(project.path, newVersion);
+        if (projectsWithChanges.length === 0) {
+          console.log('\n=== 所有项目均无变更，跳过发布 ===');
+          return;
         }
         
-        // 获取当前分支名称
-        const currentBranch = this.getCurrentBranch(project.path);
-        console.log(`当前分支: ${currentBranch}`);
+        // 8. 只更新有变更的项目
+        for (const project of projectsWithChanges) {
+          console.log(`\n=== 更新 ${project.name} (有变更) ===`);
+          
+          // 更新版本号
+          this.updateVersionTo(project.path, newVersion);
+          
+          // 生成智能CHANGELOG（有实际变更）
+          this.generateSmartChangelog(project.path, newVersion, true, project.currentVersion);
+          
+          // 特殊处理微信小程序
+          if (project.name === 'xituan_wechat_app') {
+            this.updateWechatVersion(project.path, newVersion);
+          }
+          
+          // 获取当前分支名称
+          const currentBranch = this.getCurrentBranch(project.path);
+          console.log(`当前分支: ${currentBranch}`);
+          
+          // 提交更改
+          this.exec('git add .', project.path);
+          this.exec(`git commit -m "chore: release v${newVersion}"`, project.path);
+          this.exec(`git tag v${newVersion}`, project.path);
+          this.exec(`git push origin ${currentBranch} --tags`, project.path);
+          
+          console.log(`${project.name} v${newVersion} 发布完成`);
+        }
         
-        // 提交更改
-        this.exec('git add .', project.path);
-        this.exec(`git commit -m "chore: release v${newVersion}"`, project.path);
-        this.exec(`git tag v${newVersion}`, project.path);
-        this.exec(`git push origin ${currentBranch} --tags`, project.path);
+        // 9. 对于无变更的项目，只更新submodule引用但不发布新版本
+        for (const project of projectsWithoutChanges) {
+          console.log(`\n=== ${project.name} 无变更，跳过版本发布 ===`);
+          console.log(`当前版本: ${project.currentVersion} (保持不变)`);
+        }
         
-        console.log(`${project.name} v${newVersion} 发布完成`);
-      }
-      
-      // 7. 对于无变更的项目，只更新submodule引用但不发布新版本
-      for (const project of projectsWithoutChanges) {
-        console.log(`\n=== ${project.name} 无变更，跳过版本发布 ===`);
-        console.log(`当前版本: ${project.currentVersion} (保持不变)`);
+      } else if (codebaseProject) {
+        console.log('\n=== 共享代码库无变更，跳过发布 ===');
+        
+        // 5. 即使codebase无变更，也要更新submodule引用
+        this.updateAllSubmodules();
+        
+        // 6. 重新检查项目变更状态
+        console.log('\n=== 重新检查项目变更状态（submodule更新后） ===');
+        const updatedProjectStatus = this.checkProjectChanges();
+        const updatedOtherProjects = updatedProjectStatus.filter(p => p.name !== 'xituan_codebase');
+        
+        // 7. 检查其他项目是否有变更
+        const projectsWithChanges = updatedOtherProjects.filter(p => p.hasChanges);
+        const projectsWithoutChanges = updatedOtherProjects.filter(p => !p.hasChanges);
+        
+        if (projectsWithChanges.length === 0) {
+          console.log('\n=== 所有项目均无变更，跳过发布 ===');
+          return;
+        }
+        
+        // 8. 只更新有变更的项目
+        for (const project of projectsWithChanges) {
+          console.log(`\n=== 更新 ${project.name} (有变更) ===`);
+          
+          // 更新版本号
+          this.updateVersionTo(project.path, newVersion);
+          
+          // 生成智能CHANGELOG（有实际变更）
+          this.generateSmartChangelog(project.path, newVersion, true, project.currentVersion);
+          
+          // 特殊处理微信小程序
+          if (project.name === 'xituan_wechat_app') {
+            this.updateWechatVersion(project.path, newVersion);
+          }
+          
+          // 获取当前分支名称
+          const currentBranch = this.getCurrentBranch(project.path);
+          console.log(`当前分支: ${currentBranch}`);
+          
+          // 提交更改
+          this.exec('git add .', project.path);
+          this.exec(`git commit -m "chore: release v${newVersion}"`, project.path);
+          this.exec(`git tag v${newVersion}`, project.path);
+          this.exec(`git push origin ${currentBranch} --tags`, project.path);
+          
+          console.log(`${project.name} v${newVersion} 发布完成`);
+        }
+        
+        // 9. 对于无变更的项目，只更新submodule引用但不发布新版本
+        for (const project of projectsWithoutChanges) {
+          console.log(`\n=== ${project.name} 无变更，跳过版本发布 ===`);
+          console.log(`当前版本: ${project.currentVersion} (保持不变)`);
+        }
       }
       
       console.log('\n=== 智能统一版本发布完成 ===');
       if (codebaseProject && codebaseProject.hasChanges) {
         console.log(`共享代码库版本: ${this.getCurrentVersion(codebaseProject.path)}`);
-      }
-      if (projectsWithChanges.length > 0) {
-        console.log(`有变更的项目版本: ${newVersion}`);
-        console.log(`有变更的项目: ${projectsWithChanges.map(p => p.name).join(', ')}`);
-      }
-      if (projectsWithoutChanges.length > 0) {
-        console.log(`无变更的项目: ${projectsWithoutChanges.map(p => p.name).join(', ')} (跳过版本)`);
       }
       
     } catch (error) {
