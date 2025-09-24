@@ -73,6 +73,11 @@ class ChangelogGenerator {
     commits.forEach(commit => {
       const message = commit.toLowerCase();
       
+      // 过滤掉版本发布记录，避免重复显示
+      if (message.includes('chore: release v') || message.includes('chore: set version to')) {
+        return; // 跳过版本发布记录
+      }
+      
       if (message.includes('feat') || message.includes('feature') || message.includes('新增')) {
         categories.feat.push(commit);
       } else if (message.includes('fix') || message.includes('修复') || message.includes('bug')) {
