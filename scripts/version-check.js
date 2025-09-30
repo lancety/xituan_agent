@@ -34,16 +34,9 @@ class VersionChecker {
 
   // 获取微信小程序版本信息
   getWechatVersion(projectPath) {
-    const appJsonPath = path.join(projectPath, 'app.json');
     const profileWxmlPath = path.join(projectPath, 'pages/profile/profile.wxml');
     
-    let appVersion = null;
     let displayVersion = null;
-    
-    if (fs.existsSync(appJsonPath)) {
-      const appJson = JSON.parse(fs.readFileSync(appJsonPath, 'utf8'));
-      appVersion = appJson.version;
-    }
     
     if (fs.existsSync(profileWxmlPath)) {
       const content = fs.readFileSync(profileWxmlPath, 'utf8');
@@ -53,7 +46,7 @@ class VersionChecker {
       }
     }
     
-    return { appVersion, displayVersion };
+    return { displayVersion };
   }
 
   // 检查版本一致性
@@ -72,13 +65,8 @@ class VersionChecker {
         // 特殊处理微信小程序
         if (project.name === 'xituan_wechat_app') {
           const wechatVersion = this.getWechatVersion(project.path);
-          console.log(`  - app.json版本: ${wechatVersion.appVersion || '未设置'}`);
           console.log(`  - 显示版本: ${wechatVersion.displayVersion || '未找到'}`);
           
-          if (wechatVersion.appVersion && wechatVersion.appVersion !== versionInfo.version) {
-            console.log(`  ⚠️  app.json版本与package.json不一致`);
-            allConsistent = false;
-          }
           if (wechatVersion.displayVersion && wechatVersion.displayVersion !== versionInfo.version) {
             console.log(`  ⚠️  显示版本与package.json不一致`);
             allConsistent = false;
