@@ -1,0 +1,12 @@
+Legal entity name,Account name,Account ID,Currency,Time zone,From date,To date
+XITUAN PTY LTD,XITUAN PTY LTD,acct_DZPz-SzDPcm--I0j37i-mA,AUD,Australia/Melbourne,2025-08-30,2025-08-30
+
+Summary of net balance change
+Balance type,Net amount
+Account balance,-6.60
+Available balance,-6.60
+Reserved balance,0
+
+Transaction type,Count,Gross amount,Fees,Taxes on fees,Net amount
+Payment,12,0.00,-5.94,-0.66,-6.60
+Total,12,0.00,-5.94,-0.66,-6.60
