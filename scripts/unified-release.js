@@ -481,9 +481,16 @@ class SmartUnifiedReleaseManager {
           // 获取最新的版本标签
           const latestTag = this.getLastVersionTag(submodulePath);
           if (latestTag) {
-            console.log(`合并最新版本标签到master: ${latestTag}`);
-            // 将标签合并到master分支，而不是checkout到标签
-            this.exec(`git merge ${latestTag} --no-edit`, submodulePath);
+            console.log(`确保master分支包含最新版本标签: ${latestTag}`);
+            // 检查master是否已经包含这个标签的commit
+            try {
+              this.exec(`git merge-base --is-ancestor ${latestTag} HEAD`, submodulePath);
+              console.log(`master分支已包含 ${latestTag} 的变更`);
+            } catch (error) {
+              // 如果master不包含标签，则合并标签到master
+              console.log(`将 ${latestTag} 合并到master分支`);
+              this.exec(`git merge ${latestTag} --no-edit`, submodulePath);
+            }
           }
           
           // 回到主项目，添加submodule变更
@@ -524,10 +531,20 @@ class SmartUnifiedReleaseManager {
         this.generateSmartChangelog(codebaseProject.path, newVersion, true, oldCodebaseVersion);
         
         const currentBranch = this.getCurrentBranch(codebaseProject.path);
+        
+        // 确保在 master 分支上
+        this.exec('git checkout master', codebaseProject.path);
+        this.exec('git pull origin master', codebaseProject.path);
+        
+        // 在 master 分支上直接提交版本变更
         this.exec('git add .', codebaseProject.path);
         this.exec(`git commit -m "chore: release v${newVersion}"`, codebaseProject.path);
+        
+        // 创建 tag 指向当前 commit（不是独立分支）
         this.exec(`git tag v${newVersion}`, codebaseProject.path);
-        this.exec(`git push origin ${currentBranch} --tags`, codebaseProject.path);
+        
+        // 推送 master 分支和 tags
+        this.exec(`git push origin master --tags`, codebaseProject.path);
         
         console.log(`共享代码库 v${newVersion} 发布完成`);
         
@@ -562,11 +579,19 @@ class SmartUnifiedReleaseManager {
           const currentBranch = this.getCurrentBranch(project.path);
           console.log(`当前分支: ${currentBranch}`);
           
-          // 提交更改
+          // 确保在 master 分支上
+          this.exec('git checkout master', project.path);
+          this.exec('git pull origin master', project.path);
+          
+          // 在 master 分支上直接提交版本变更
           this.exec('git add .', project.path);
           this.exec(`git commit -m "chore: release v${newVersion}"`, project.path);
+          
+          // 创建 tag 指向当前 commit（不是独立分支）
           this.exec(`git tag v${newVersion}`, project.path);
-          this.exec(`git push origin ${currentBranch} --tags`, project.path);
+          
+          // 推送 master 分支和 tags
+          this.exec(`git push origin master --tags`, project.path);
           
           console.log(`${project.name} v${newVersion} 发布完成${hasChanges ? '' : ' (版本同步)'}`);
         }
@@ -605,11 +630,19 @@ class SmartUnifiedReleaseManager {
           const currentBranch = this.getCurrentBranch(project.path);
           console.log(`当前分支: ${currentBranch}`);
           
-          // 提交更改
+          // 确保在 master 分支上
+          this.exec('git checkout master', project.path);
+          this.exec('git pull origin master', project.path);
+          
+          // 在 master 分支上直接提交版本变更
           this.exec('git add .', project.path);
           this.exec(`git commit -m "chore: release v${newVersion}"`, project.path);
+          
+          // 创建 tag 指向当前 commit（不是独立分支）
           this.exec(`git tag v${newVersion}`, project.path);
-          this.exec(`git push origin ${currentBranch} --tags`, project.path);
+          
+          // 推送 master 分支和 tags
+          this.exec(`git push origin master --tags`, project.path);
           
           console.log(`${project.name} v${newVersion} 发布完成${hasChanges ? '' : ' (版本同步)'}`);
         }

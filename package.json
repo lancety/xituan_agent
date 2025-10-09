@@ -7,7 +7,9 @@
     "release:minor": "node scripts/unified-release.js minor",
     "release:patch": "node scripts/unified-release.js patch",
     "version:check": "node scripts/version-check.js",
-    "changelog:generate": "node scripts/changelog-generator.js"
+    "changelog:generate": "node scripts/changelog-generator.js",
+    "git:fix": "node scripts/fix-git-state.js fix",
+    "git:check": "node scripts/fix-git-state.js check"
   },
   "devDependencies": {
     "conventional-changelog": "^3.1.25",
