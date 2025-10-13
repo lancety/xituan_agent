@@ -7,7 +7,7 @@
 ## 核心设计原则
 
 ### 1. 统一的数据流
-- **前端**: 直接字段模式，FormData 直接匹配数据库字段
+- **前端**: 使用 `tempFields` 清理机制，FormData 直接匹配数据库字段
 - **后端**: 使用 `fieldProcessorUtil` 统一处理 FormData 字段类型转换
 - **图片**: 通过查询参数传递现有图片，通过 FormData 传递新图片
 
@@ -18,6 +18,7 @@
 
 ### 3. 多语言字段处理
 - 使用 `MultilingualInput` 组件处理多语言字段
+- 使用 `tempFields` 机制清理临时字段
 - 后端通过 `fieldProcessorUtil` 自动解析多语言对象
 
 ## 前端实现方案
@@ -35,7 +36,7 @@ const [tempFields] = useState<Set<string>>(new Set());
 #### 状态说明
 - `fileList`: Ant Design Upload 组件的文件列表状态，用于 UI 显示
 - `currentImages`: 当前保留的图片路径数组，用于后端处理
-- `tempFields`: 临时字段集合，用于清理不需要的数据
+- `tempFields`: 临时字段集合，用于清理不需要的数据（如多语言字段的临时字段）
 
 ### 2. 表单初始化
 
@@ -114,7 +115,8 @@ form.setFieldsValue({ metadata: {} });
 
 #### 多语言字段特点
 - 直接传递 `iMultilingualContent` 对象到表单
-- 后端自动解析多语言结构
+- `MultilingualInput` 自动将临时字段添加到 `tempFields` 中
+- 后端通过 `fieldProcessorUtil` 自动解析多语言结构
 - 支持验证规则和错误提示
 
 ### 4. 图片上传组件实现
@@ -176,34 +178,31 @@ const handleSubmit = async () => {
       delete cleanedValues[fieldName];
     });
     
-    // 创建 FormData 对象
-    const formData = new FormData();
-    
-    // 添加清理后的数据到 FormData
-    Object.entries(cleanedValues).forEach(([key, value]) => {
-      if (key !== 'images') {
-        if (key === 'metadata' || (typeof value === 'object' && value !== null && (value as iMultilingualContent).intl === true)) {
-          // JSON stringify for complex objects
-          formData.append(key, JSON.stringify(value));
-        } else {
-          // FormData only accepts string, Blob, or File
-          formData.append(key, value !== undefined && value !== null ? String(value) : '');
-        }
-      }
-    });
+    // 使用 fieldPreProcessorUtil 预处理对象数据，输出 FormData
+    const processedFormData = fieldPreProcessorUtil.preprocessFormDataFields(
+      cleanedValues,
+      productPropSets,
+      productSpecialFields
+    );
     
     // 处理图片：新上传的文件
     fileList.forEach((file) => {
       if (!file.url && file.originFileObj) {
-        formData.append('images', file.originFileObj);
+        // 新上传的文件
+        processedFormData.append('images', file.originFileObj);
       }
     });
     
+    // 处理特殊字段（如选项组）
+    if (isCustomizable && optionGroups.length > 0) {
+      processedFormData.append('optionGroups', JSON.stringify(optionGroups));
+    }
+    
     // API 调用
     if (isEdit && product) {
-      await productApi.updateProduct(product.id, formData, true, currentImages);
+      await productApi.updateProduct(product.id, processedFormData, currentImages);
     } else {
-      await productApi.createProduct(formData, true);
+      await productApi.createProduct(processedFormData);
     }
   } catch (error) {
     // 错误处理
@@ -212,7 +211,10 @@ const handleSubmit = async () => {
 ```
 
 #### 字段类型处理规则
-- **字符串字段**: 直接转换为字符串
+- **字符串字段**: 直接转换为字符串，包括空字符串
+- **数字字段**: 只发送有效数字，过滤无效值
+- **布尔字段**: 转换为字符串 "true" 或 "false"
+- **日期字段**: 转换为 ISO 字符串
 - **多语言字段**: JSON.stringify 序列化
 - **复杂对象**: JSON.stringify 序列化
 - **图片文件**: 直接添加到 FormData
@@ -221,7 +223,7 @@ const handleSubmit = async () => {
 
 #### 更新 API 调用
 ```typescript
-async updateProduct(id: string, data: iUpdateProductRequest | FormData, isFormData = false, currentImages?: string[]): Promise<iProduct> {
+async updateProduct(id: string, data: FormData, currentImages?: string[]): Promise<iProduct> {
   let url = `/admin/products/${id}`;
   if (currentImages && currentImages.length > 0) {
     const queryParams = new URLSearchParams();
@@ -230,19 +232,17 @@ async updateProduct(id: string, data: iUpdateProductRequest | FormData, isFormDa
   }
   return apiRequest<iProduct>(url, {
     method: 'PUT',
-    body: isFormData ? (data as FormData) : JSON.stringify(data),
-    headers: isFormData ? undefined : { 'Content-Type': 'application/json' },
+    body: data,
   });
 }
 ```
 
 #### 创建 API 调用
 ```typescript
-async createProduct(data: iCreateProductRequest | FormData, isFormData: boolean = false): Promise<iProduct> {
+async createProduct(data: FormData): Promise<iProduct> {
   return apiRequest<iProduct>('/admin/products', {
     method: 'POST',
-    body: isFormData ? (data as FormData) : JSON.stringify(data),
-    headers: isFormData ? undefined : { 'Content-Type': 'application/json' },
+    body: data,
   });
 }
 ```
@@ -278,12 +278,8 @@ const processProductFormData = (body: any) => {
   
   return fieldProcessorUtil.processFormDataFields(
     body,
-    undefined,         // stringSet - 字符串字段保持原样
-    productNum,        // numSet - 数字字段
-    productBool,       // boolSet - 布尔字段
-    undefined,         // dateSet - 产品没有需要特殊处理的日期字段
-    productObj,        // objSet - 对象字段（JSONB字段）
-    specialFields      // specialFields - 特殊字段（关联/动态绑定属性）
+    productPropSets,        // 使用统一的字段类型集合
+    specialFields           // specialFields - 特殊字段（关联/动态绑定属性）
   );
 };
 ```
@@ -412,11 +408,15 @@ updateProduct = async (req: Request, res: Response): Promise<void> => {
 
 #### 多语言字段处理
 - ❌ **错误**: 手动解析多语言字段
-- ✅ **正确**: 直接传递 `iMultilingualContent` 对象，让 `fieldProcessorUtil` 处理
+- ✅ **正确**: 使用 `MultilingualInput` 组件，让 `tempFields` 机制自动清理临时字段
 
 #### FormData 构建
-- ❌ **错误**: 使用打包对象模式（如 `productData`）
-- ✅ **正确**: 直接字段模式，FormData 直接匹配数据库字段
+- ❌ **错误**: 手动构建 FormData 对象
+- ✅ **正确**: 使用 `fieldPreProcessorUtil.preprocessFormDataFields` 统一处理
+
+#### 临时字段清理
+- ❌ **错误**: 不清理临时字段
+- ✅ **正确**: 使用 `tempFields` 机制清理 `MultilingualInput` 产生的临时字段
 
 ### 2. 后端避坑点
 
@@ -454,15 +454,17 @@ updateProduct = async (req: Request, res: Response): Promise<void> => {
 
 #### 前端步骤
 1. 创建对应的 Editor 组件
-2. 实现相同的状态管理逻辑
+2. 实现相同的状态管理逻辑（`tempFields`、`currentImages` 等）
 3. 配置对应的 API 调用
 4. 使用 `MultilingualInput` 处理多语言字段
+5. 使用 `fieldPreProcessorUtil.preprocessFormDataFields` 处理 FormData
 
 #### 后端步骤
 1. 配置路由和 Multer 中间件
-2. 实现 `fieldProcessorUtil` 字段类型配置
-3. 实现创建和更新逻辑
-4. 配置 S3 路径结构
+2. 定义实体的字段类型集合（`PropSets`）
+3. 实现 `fieldProcessorUtil.processFormDataFields` 字段类型配置
+4. 实现创建和更新逻辑
+5. 配置 S3 路径结构
 
 ### 2. 自定义字段类型
 
@@ -473,13 +475,8 @@ const newFieldType = new Set(['customField']);
 
 return fieldProcessorUtil.processFormDataFields(
   body,
-  stringSet,
-  numSet,
-  boolSet,
-  dateSet,
-  objSet,
-  specialFields,
-  newFieldType // 添加新的字段类型
+  entityPropSets,
+  specialFields
 );
 ```
 
@@ -509,10 +506,11 @@ const imageResult = await s3UploadManager.uploadFileToS3(
 
 本方案提供了一个完整的、可扩展的 FormData 图片管理系统，具有以下特点：
 
-1. **统一性**: 所有实体使用相同的处理逻辑
+1. **统一性**: 所有实体使用相同的处理逻辑和 `tempFields` 机制
 2. **可维护性**: 清晰的代码结构和错误处理
 3. **可扩展性**: 易于添加新的实体和字段类型
 4. **性能优化**: 合理的状态管理和图片处理
 5. **用户体验**: 直观的 UI 和错误提示
+6. **类型安全**: 使用 TypeScript 和统一的字段类型集合
 
 通过遵循本指南，可以快速实现任何需要图片管理的实体编辑功能，确保代码质量和用户体验的一致性。
