@@ -148,10 +148,15 @@ COMMENT ON COLUMN print_temp_elements.updated_at IS '更新时间';
 ALTER TABLE print_temp_elements ADD CONSTRAINT fk_print_temp_elements_template_id 
   FOREIGN KEY (template_id) REFERENCES print_temps(id) ON DELETE CASCADE;
 
+-- 唯一性约束
+ALTER TABLE print_temp_elements ADD CONSTRAINT uk_template_element_name 
+  UNIQUE (template_id, name);
+
 -- 创建索引
 CREATE INDEX idx_print_temp_elements_template_id ON print_temp_elements(template_id);
 CREATE INDEX idx_element_type ON print_temp_elements(element_type);
 CREATE INDEX idx_z_index ON print_temp_elements(z_index);
+CREATE INDEX idx_print_temp_elements_template_name ON print_temp_elements(template_id, name);
 ```
 
 ### 3. print_temp_usage_logs (打印模板使用日志表)
