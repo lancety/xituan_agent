@@ -25,6 +25,7 @@
 - ✅ 多支付方式支持（微信、现金、银行转账、网页支付）
 - ✅ 支付状态与订单状态分离
 - ✅ 过期订单自动回退机制
+- ✅ 承诺支付机制（现金、银行转账）
 
 ---
 
@@ -50,8 +51,9 @@ orders (订单表)
 ├── mode_instance_id (模式实例ID: offer_id/preorder_id等)
 ├── status (当前状态)
 ├── payment_method (用户选择的支付方式)
-├── payment_status (支付状态)
+├── payment_status (支付状态：pending/processing/success/failed/cancelled/refunded/committed)
 ├── payment_reference (6位数字参考号，银行转账用)
+├── committed_at (承诺支付时间，承诺支付时设置)
 ├── user_id, total_amount, delivery_fee, final_amount
 ├── delivery_address_snapshot, note
 ├── cancel_reason, refund_reason
@@ -706,15 +708,39 @@ interface iOrderExpiryCheck {
 ```
 
 ### 过期规则
-- **现金支付**: 不过期
-- **银行转账**: 固定48小时过期
+- **现金支付**: 承诺支付2周过期，其他不过期
+- **银行转账**: 承诺支付48小时过期，其他固定48小时过期
 - **实时支付**: 使用平台设置（常规12小时、特价30分钟、预约48小时）
 
 ### 过期处理
-1. 定时任务检测过期订单
+1. 定时任务检测过期订单（正常过期 + 承诺支付过期）
 2. 根据支付方式应用不同过期规则
 3. 自动设置订单状态为EXPIRED
 4. 释放预留库存
+5. 承诺支付过期时禁用用户对应支付方式权限
+
+---
+
+## 💳 承诺支付机制
+
+### 概述
+承诺支付机制允许用户选择现金支付或银行转账时，通过承诺方式获得更长的支付时间，同时简化库存锁定逻辑。
+
+### 核心特性
+- **承诺支付状态**: `payment_status = 'committed'`
+- **承诺时间**: 现金支付2周，银行转账48小时
+- **权限控制**: 承诺支付过期时禁用用户对应支付方式权限
+- **过渡状态**: 承诺支付最终被实际支付覆盖
+
+### 与现有系统的集成
+- **订单表**: 添加 `committed_at` 字段记录承诺时间
+- **定时任务**: 新增承诺支付过期处理逻辑
+- **权限管理**: 基于 `allowCash` 和 `allowBankTransfer` 字段
+- **监控系统**: 通过 `alert_orders_payments` 表记录异常
+
+### 详细设计
+详细的承诺支付机制设计、实现细节、数据库迁移、前端实现等，请参考：
+**[承诺支付机制设计方案](./commitment-payment-design.md)**
 
 ---
 

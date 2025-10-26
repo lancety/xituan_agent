@@ -16,6 +16,7 @@
 - ✅ 支付状态与订单状态分离
 - ✅ 银行转账智能匹配和人工处理
 - ✅ 现金支付权限控制
+- ✅ 承诺支付机制（现金、银行转账）
 - ✅ 完整的支付记录追踪
 - ✅ Webhook事件处理
 - ✅ 人工处理机制
@@ -64,14 +65,11 @@ ALTER TABLE payment_records ADD COLUMN manual_review_reason VARCHAR(500);
 ALTER TABLE payment_records ADD COLUMN webhook_event_data JSONB; -- 保存完整的webhook事件数据
 ```
 
-#### 用户现金支付权限表
+#### 用户支付权限表
 ```sql
-CREATE TABLE user_cash_payment_permissions (
-  user_id VARCHAR(255) PRIMARY KEY,
-  allow_cash BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+-- 添加用户权限字段
+ALTER TABLE users ADD COLUMN allow_cash BOOLEAN DEFAULT true;
+ALTER TABLE users ADD COLUMN allow_bank_transfer BOOLEAN DEFAULT true;
 ```
 
 ---
@@ -96,6 +94,11 @@ CREATE TABLE user_cash_payment_permissions (
 ### 4. 网页支付流程
 ```
 用户下单 → 选择网页支付 → 跳转支付页面 → 完成支付 → Webhook确认 → 支付状态更新
+```
+
+### 5. 承诺支付流程
+```
+用户下单 → 选择现金/银行转账 → 承诺支付确认Modal → 用户确认承诺 → 订单状态更新为COMMITTED → 定时任务检查过期 → 实际支付覆盖承诺状态
 ```
 
 ---
@@ -129,8 +132,8 @@ interface iOrderMatchResult {
 系统根据支付方式自动设置不同的过期时间，并在支付方式变更时同步更新库存锁定：
 
 **过期时间规则**：
-- **现金支付**：30天（1个月）- 受信任客户，给予充足时间
-- **银行转账**：48小时 - 固定时间，便于资金到账确认
+- **现金支付**：承诺支付2周过期，其他不过期
+- **银行转账**：承诺支付48小时过期，其他固定48小时过期
 - **微信支付**：根据订单模式确定（常规12小时，特价30分钟，预售48小时）
 
 **支付方式变更处理**：
@@ -142,33 +145,73 @@ interface iOrderMatchResult {
 
 ---
 
+## 💳 承诺支付机制
+
+### 概述
+承诺支付机制允许用户选择现金支付或银行转账时，通过承诺方式获得更长的支付时间，同时简化库存锁定逻辑。
+
+### 核心特性
+- **过渡状态**: 承诺支付是过渡状态，最终被实际支付覆盖
+- **权限控制**: 承诺支付过期时禁用用户对应支付方式权限
+- **时间管理**: 现金支付2周，银行转账48小时
+- **监控记录**: 完整的承诺支付监控和警报
+
+### 与现有支付系统的集成
+- **支付状态**: 新增 `COMMITTED` 状态到 `epPaymentStatus` 枚举
+- **订单表**: 添加 `committed_at` 字段记录承诺时间
+- **权限管理**: 基于 `allowCash` 和 `allowBankTransfer` 字段
+- **Webhook处理**: 实际支付到账时覆盖承诺支付状态
+- **定时任务**: 新增承诺支付过期处理逻辑
+
+### 详细设计
+详细的承诺支付机制设计、实现细节、数据库迁移、前端实现等，请参考：
+**[承诺支付机制设计方案](./commitment-payment-design.md)**
+
+---
+
 ## 🔐 现金支付权限控制
 
 ### 权限获取条件
 1. **后台手动授权**: 管理员直接授权用户
 2. **历史订单达标**: 累计订单数≥3单 或 累计金额≥150澳币
 
+### 权限禁用条件
+1. **承诺支付过期**: 承诺支付订单过期时自动禁用对应支付方式权限
+2. **多次支付失败**: 支付失败次数过多时禁用权限
+
 ### 权限检查逻辑
 ```typescript
-async function checkAndUpdateCashPaymentPermission(userId: string): Promise<boolean> {
-  // 1. 检查权限表
-  const permission = await getUserCashPermission(userId);
-  if (permission?.allow_cash) {
-    return true;
+async function checkAndUpdatePaymentPermission(userId: string, paymentMethod: epPaymentMethod): Promise<boolean> {
+  const user = await userRepository.findById(userId);
+  
+  switch (paymentMethod) {
+    case epPaymentMethod.CASH:
+      return user.permissions.allowCash;
+    case epPaymentMethod.BANK_TRANSFER:
+      return user.permissions.allowBankTransfer;
+    default:
+      return true;
+  }
+}
+
+// 权限禁用逻辑
+async function disableUserPaymentPermissions(userId: string, paymentMethod: epPaymentMethod): Promise<void> {
+  const updates: Partial<iUserPermissions> = {};
+  
+  if (paymentMethod === epPaymentMethod.CASH) {
+    updates.allowCash = false;
   }
   
-  // 2. 检查历史订单
-  const orderStats = await getOrderStats(userId);
-  const hasEnoughOrders = orderStats.totalOrders >= 3;
-  const hasEnoughAmount = orderStats.totalAmount >= 150;
-  
-  if (hasEnoughOrders || hasEnoughAmount) {
-    // 3. 自动授权
-    await grantCashPaymentPermission(userId);
-    return true;
+  if (paymentMethod === epPaymentMethod.BANK_TRANSFER) {
+    updates.allowBankTransfer = false;
   }
   
-  return false;
+  if (Object.keys(updates).length > 0) {
+    await userRepository.update(userId, {
+      permissions: { ...user.permissions, ...updates },
+      updatedAt: new Date()
+    });
+  }
 }
 ```
 
@@ -293,8 +336,10 @@ PaymentHandlerService.handlePayment(context, status)
 
 ### 阶段一：数据库和类型定义
 1. 更新支付记录表结构（添加人工处理字段）
-2. 创建用户权限表
-3. 统一支付方式枚举定义
+2. 添加用户权限字段（allow_cash, allow_bank_transfer）
+3. 添加承诺支付相关字段（committed_at, payment_status）
+4. 创建订单支付监控表（alert_orders_payments）
+5. 统一支付方式枚举定义
 
 ### 阶段二：后端核心功能 ✅ 已完成
 1. ✅ 实现银行转账智能匹配逻辑 (`WebhookAirwallexPaymentService`)
@@ -306,16 +351,27 @@ PaymentHandlerService.handlePayment(context, status)
 7. ✅ 改进错误处理和日志记录
 8. ✅ 支付锁定评估机制
 
+### 阶段二点五：承诺支付机制 🔄 待实施
+1. 实现承诺支付状态管理
+2. 添加承诺支付过期处理逻辑
+3. 实现用户权限禁用机制
+4. 创建订单支付监控服务
+5. 更新定时任务处理承诺支付过期
+
 ### 阶段三：前端界面
 1. 更新支付方式选择组件
 2. 创建支付信息页面
 3. 实现环境控制
+4. 添加承诺支付确认Modal
+5. 更新用户协议内容
 
 ### 阶段四：管理后台
 1. 创建人工处理界面
 2. 实现支付记录管理
 3. 添加权限管理功能
 4. 完善通知机制
+5. 创建订单支付监控界面
+6. 添加用户权限恢复功能
 
 ---
 
@@ -325,17 +381,23 @@ PaymentHandlerService.handlePayment(context, status)
 - 支付匹配算法测试
 - 权限控制逻辑测试
 - Webhook事件处理测试
+- 承诺支付过期处理测试
+- 用户权限禁用测试
 
 ### 集成测试
 - 完整支付流程测试
 - 银行转账匹配测试
 - 人工处理流程测试
+- 承诺支付完整流程测试
+- 承诺支付过期处理测试
 
 ### 用户验收测试
 - 各种支付方式流程测试
 - 异常情况处理测试
 - 界面交互测试
 - 权限控制测试
+- 承诺支付Modal测试
+- 用户协议更新测试
 
 ---
 
@@ -405,9 +467,9 @@ PaymentHandlerService.handlePayment(context, status)
 ---
 
 *最后更新: 2025-01-25*
-*版本: 2.0.0*
-*状态: 架构重构完成，所有测试通过，前端界面待实施*
-*架构: 统一支付处理 + 分层Webhook处理 + 支付状态分离 + 智能匹配 + 权限控制*
+*版本: 2.1.0*
+*状态: 架构重构完成，承诺支付机制设计完成，前端界面待实施*
+*架构: 统一支付处理 + 分层Webhook处理 + 支付状态分离 + 智能匹配 + 权限控制 + 承诺支付机制*
 
 ## 📚 相关文件
 
@@ -421,3 +483,5 @@ PaymentHandlerService.handlePayment(context, status)
 - `src/domains/payment/services/bank-transfer-matching.service.ts` - 银行转账匹配服务
 - `src/domains/payment/services/payment-lock.service.ts` - 支付锁定评估服务
 - `src/domains/order/services/order.service.ts` - 订单服务 (支付状态更新)
+- `src/domains/inventory/services/inventory-cron.service.ts` - 定时任务服务 (承诺支付过期处理)
+- `src/domains/order/services/alert-orders-payments.service.ts` - 订单支付监控服务 (待实现)
