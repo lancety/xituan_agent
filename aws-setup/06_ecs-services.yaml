@@ -1,0 +1,227 @@
+# ECS Services Configuration (with ALB)
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Xituan ECS Services with ALB Integration'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues: [development, staging, production]
+    Description: Environment name
+
+  ECSClusterName:
+    Type: String
+    Description: ECS Cluster Name
+
+  ECSSecurityGroupId:
+    Type: String
+    Description: ECS Security Group ID
+
+  PublicSubnetId:
+    Type: String
+    Description: Public Subnet ID
+
+  RDSInstanceEndpoint:
+    Type: String
+    Description: RDS Instance Endpoint
+
+  RDSInstancePort:
+    Type: String
+    Description: RDS Instance Port
+
+  # Required: ALB Target Group (to attach ECS service)
+  BackendTargetGroupArn:
+    Type: String
+    Description: ALB Target Group ARN for backend (port 3050). ALB must be deployed first.
+
+  DBUsername:
+    Type: String
+    Default: xituan_admin
+    Description: Database username
+
+  DBPassword:
+    Type: String
+    NoEcho: true
+    Description: Database password
+
+  # Optional: Additional environment variables
+  CORSOrigin:
+    Type: String
+    Default: 'https://www.xituan.com'
+    Description: CORS allowed origin
+
+  LogLevel:
+    Type: String
+    Default: 'warn'
+    AllowedValues: [debug, info, warn, error]
+    Description: Application log level
+
+  SentryEnabled:
+    Type: String
+    Default: 'true'
+    AllowedValues: ['true', 'false']
+    Description: Enable Sentry error tracking
+
+Resources:
+  # ECS Task Execution Role
+  ECSTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      Tags:
+        - Key: Name
+          Value: !Sub 'xituan-ecs-execution-role-${Environment}'
+
+  # ECS Task Role
+  ECSTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      Tags:
+        - Key: Name
+          Value: !Sub 'xituan-ecs-task-role-${Environment}'
+      Policies:
+        - PolicyName: ecs-exec-ssmmessages
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'ssmmessages:CreateControlChannel'
+                  - 'ssmmessages:CreateDataChannel'
+                  - 'ssmmessages:OpenControlChannel'
+                  - 'ssmmessages:OpenDataChannel'
+                Resource: '*'
+
+  # Backend Task Definition
+  BackendTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub 'xituan-backend-${Environment}'
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: 512
+      Memory: 1024
+      ExecutionRoleArn: !GetAtt ECSTaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt ECSTaskRole.Arn
+      ContainerDefinitions:
+        - Name: backend
+          Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/xituan-backend:latest'
+          PortMappings:
+            - ContainerPort: 3050
+              Protocol: tcp
+          Environment:
+            - Name: NODE_ENV
+              Value: !Ref Environment
+            - Name: PORT
+              Value: '3050'
+            - Name: DB_HOST
+              Value: !Ref RDSInstanceEndpoint
+            - Name: DB_PORT
+              Value: !Ref RDSInstancePort
+            - Name: DB_USER
+              Value: !Ref DBUsername
+            - Name: DB_PASSWORD
+              Value: !Ref DBPassword
+            - Name: DB_NAME
+              Value: xituan
+            - Name: CORS_ORIGIN
+              Value: !Ref CORSOrigin
+            - Name: LOG_LEVEL
+              Value: !Ref LogLevel
+            - Name: SWAGGER_ENABLED
+              Value: 'false'
+            - Name: SENTRY_ENABLED
+              Value: !Ref SentryEnabled
+            - Name: SENTRY_ENVIRONMENT
+              Value: !Ref Environment
+            - Name: SENTRY_SAMPLE_RATE
+              Value: '0.1'
+            - Name: S3_REGION
+              Value: !Ref AWS::Region
+            - Name: AIRWALLEX_BASE_URL
+              Value: 'https://api.airwallex.com'
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref BackendLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: backend
+          Essential: true
+
+  # CloudWatch Log Group
+  BackendLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/ecs/xituan-backend-${Environment}'
+      RetentionInDays: 7
+
+  # Backend Service
+  BackendService:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: !Sub 'xituan-backend-service-${Environment}'
+      Cluster: !Ref ECSClusterName
+      TaskDefinition: !Ref BackendTaskDefinition
+      DesiredCount: 1
+      LaunchType: FARGATE
+      EnableExecuteCommand: true
+      LoadBalancers:
+        - TargetGroupArn: !Ref BackendTargetGroupArn
+          ContainerName: backend
+          ContainerPort: 3050
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          SecurityGroups:
+            - !Ref ECSSecurityGroupId
+          Subnets:
+            - !Ref PublicSubnetId
+          AssignPublicIp: ENABLED
+      HealthCheckGracePeriodSeconds: 60
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 50
+        DeploymentCircuitBreaker:
+          Enable: true
+          Rollback: true
+      Tags:
+        - Key: Name
+          Value: !Sub 'xituan-backend-service-${Environment}'
+
+Outputs:
+  BackendServiceName:
+    Description: Backend Service Name
+    Value: !Ref BackendService
+    Export:
+      Name: !Sub '${AWS::StackName}-Backend-Service-Name'
+
+  BackendTaskDefinitionArn:
+    Description: Backend Task Definition ARN
+    Value: !Ref BackendTaskDefinition
+    Export:
+      Name: !Sub '${AWS::StackName}-Backend-Task-Definition-ARN'
+
+  PostDeploymentSteps:
+    Description: |
+      Next Steps:
+      1. Build and push Docker image to ECR: docker build, docker push
+      2. Update ECS service with new task definition (via GitHub Actions or manually)
+      3. Run database migrations: npm run migrate:prod (via ECS execute-command)
+      4. Verify service health: Check ALB health checks and CloudWatch Logs
+      5. Configure Route53 DNS to point to ALB DNS name
+    Value: 'See description for post-deployment steps'

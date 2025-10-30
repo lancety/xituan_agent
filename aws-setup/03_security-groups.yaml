@@ -1,0 +1,75 @@
+# Security Groups Configuration (ALB + ECS + RDS)
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Xituan Security Groups - Simplified'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues: [development, staging, production]
+    Description: Environment name
+
+  VPCId:
+    Type: String
+    Description: VPC ID
+
+  # Required: ALB Security Group ID to restrict ECS ingress
+  ALBSecurityGroupId:
+    Type: String
+    Description: ALB Security Group ID (only ALB can access ECS 3050). ALB must be deployed first.
+
+Resources:
+  # ECS Fargate Security Group (only accessible from ALB)
+  ECSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub 'xituan-ecs-sg-${Environment}'
+      GroupDescription: Security group for ECS Fargate tasks (only accessible from ALB)
+      VpcId: !Ref VPCId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3050
+          ToPort: 3050
+          SourceSecurityGroupId: !Ref ALBSecurityGroupId
+          Description: Allow HTTP 3050 from ALB only
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+          Description: All outbound traffic
+      Tags:
+        - Key: Name
+          Value: !Sub 'xituan-ecs-sg-${Environment}'
+
+  # RDS Security Group
+  RDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub 'xituan-rds-sg-${Environment}'
+      GroupDescription: Security group for RDS PostgreSQL database
+      VpcId: !Ref VPCId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref ECSSecurityGroup
+          Description: Allow PostgreSQL access from ECS tasks
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+          Description: All outbound traffic
+      Tags:
+        - Key: Name
+          Value: !Sub 'xituan-rds-sg-${Environment}'
+
+Outputs:
+  ECSSecurityGroupId:
+    Description: ECS Security Group ID
+    Value: !Ref ECSSecurityGroup
+    Export:
+      Name: !Sub '${AWS::StackName}-ECS-SG-ID'
+
+  RDSSecurityGroupId:
+    Description: RDS Security Group ID
+    Value: !Ref RDSSecurityGroup
+    Export:
+      Name: !Sub '${AWS::StackName}-RDS-SG-ID'

@@ -1,0 +1,126 @@
+# RDS PostgreSQL Database Configuration - Simplified Version (Single Region)
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Xituan RDS PostgreSQL Database - Simplified'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues: [development, staging, production]
+    Description: Environment name
+
+  VPCId:
+    Type: String
+    Description: VPC ID
+
+  PublicSubnetId:
+    Type: String
+    Description: Public Subnet ID
+
+  PublicSubnet2Id:
+    Type: String
+    Description: Public Subnet 2 ID
+
+  RDSSecurityGroupId:
+    Type: String
+    Description: RDS Security Group ID
+
+  DBInstanceClass:
+    Type: String
+    Default: db.t3.micro
+    AllowedValues: [db.t3.micro, db.t3.small, db.t3.medium]
+    Description: RDS instance class
+
+  DBAllocatedStorage:
+    Type: Number
+    Default: 20
+    MinValue: 20
+    MaxValue: 100
+    Description: Allocated storage in GB
+
+  DBUsername:
+    Type: String
+    Default: xituan_admin
+    NoEcho: true
+    Description: Database master username
+
+  DBPassword:
+    Type: String
+    NoEcho: true
+    MinLength: 8
+    MaxLength: 128
+    AllowedPattern: '^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$'
+    ConstraintDescription: 'Password must not contain spaces, quotes, or special characters: @, ", /'
+    Description: Database master password (must not contain @, ", /, or spaces)
+
+  EnablePublicAccess:
+    Type: String
+    Default: 'false'
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Description: Enable public access for RDS (set to true temporarily for initial data import, then set to false)
+
+Resources:
+  # DB Subnet Group (Single AZ)
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for Xituan RDS
+      SubnetIds:
+        - !Ref PublicSubnetId
+        - !Ref PublicSubnet2Id
+      Tags:
+        - Key: Name
+          Value: !Sub 'xituan-db-subnet-group-${Environment}'
+
+  # RDS PostgreSQL Instance (Single AZ)
+  RDSInstance:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    Properties:
+      DBInstanceIdentifier: !Sub 'xituan-postgres-${Environment}'
+      DBName: xituan
+      DBInstanceClass: !Ref DBInstanceClass
+      AllocatedStorage: !Ref DBAllocatedStorage
+      Engine: postgres
+      EngineVersion: '15.14'
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: !Ref DBPassword
+      VPCSecurityGroups:
+        - !Ref RDSSecurityGroupId
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      BackupRetentionPeriod: 3
+      PreferredBackupWindow: '03:00-04:00'
+      PreferredMaintenanceWindow: 'sun:04:00-sun:05:00'
+      MultiAZ: false
+      PubliclyAccessible: !Equals [!Ref EnablePublicAccess, 'true']
+      StorageEncrypted: true
+      DeletionProtection: true
+      EnablePerformanceInsights: false
+      Tags:
+        - Key: Name
+          Value: !Sub 'xituan-postgres-${Environment}'
+        - Key: Environment
+          Value: !Ref Environment
+
+Outputs:
+  RDSInstanceEndpoint:
+    Description: RDS Instance Endpoint
+    Value: !GetAtt RDSInstance.Endpoint.Address
+    Export:
+      Name: !Sub '${AWS::StackName}-RDS-Endpoint'
+
+  RDSInstancePort:
+    Description: RDS Instance Port
+    Value: !GetAtt RDSInstance.Endpoint.Port
+    Export:
+      Name: !Sub '${AWS::StackName}-RDS-Port'
+
+  PostDeploymentSteps:
+    Description: |
+      Next Steps After Initial Data Import:
+      1. Set EnablePublicAccess=false for security
+      2. Update stack: aws cloudformation deploy --template-file rds.yaml --stack-name xituan-rds-production --parameter-overrides EnablePublicAccess=false ...
+      3. Remove any temporary security group rules that allow external access
+    Value: 'See description for post-deployment security hardening steps'

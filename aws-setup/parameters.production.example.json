@@ -1,0 +1,83 @@
+[
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "production",
+    "Comment": "Environment name: production, staging, or development"
+  },
+  {
+    "ParameterKey": "AWSRegion",
+    "ParameterValue": "ap-southeast-2",
+    "Comment": "AWS region where resources will be deployed"
+  },
+  {
+    "ParameterKey": "AWSAccountId",
+    "ParameterValue": "YOUR_AWS_ACCOUNT_ID",
+    "Comment": "Your AWS account ID (12 digits)"
+  },
+  {
+    "ParameterKey": "ProjectName",
+    "ParameterValue": "xituan",
+    "Comment": "Project name used for resource naming"
+  },
+  {
+    "ParameterKey": "DBPassword",
+    "ParameterValue": "YOUR_SECURE_PASSWORD",
+    "Comment": "RDS PostgreSQL master password. Must not contain: @, \", /, spaces"
+  },
+  {
+    "ParameterKey": "DBUsername",
+    "ParameterValue": "xituan_admin",
+    "Comment": "RDS PostgreSQL master username"
+  },
+  {
+    "ParameterKey": "DBName",
+    "ParameterValue": "xituan",
+    "Comment": "RDS PostgreSQL database name"
+  },
+  {
+    "ParameterKey": "ACMCertificateArn",
+    "ParameterValue": "arn:aws:acm:REGION:ACCOUNT_ID:certificate/CERT_ID",
+    "Comment": "ACM certificate ARN for HTTPS (required for ALB HTTPS listener)"
+  },
+  {
+    "ParameterKey": "EnableRDSPublicAccess",
+    "ParameterValue": "false",
+    "Comment": "Enable RDS public access (set to true temporarily for data import, then set to false)"
+  },
+  {
+    "ParameterKey": "DBInstanceClass",
+    "ParameterValue": "db.t3.micro",
+    "Comment": "RDS instance class: db.t3.micro, db.t3.small, db.t3.medium"
+  },
+  {
+    "ParameterKey": "DBAllocatedStorage",
+    "ParameterValue": "20",
+    "Comment": "RDS allocated storage in GB (min: 20, max: 100)"
+  },
+  {
+    "ParameterKey": "CORSOrigin",
+    "ParameterValue": "https://www.xituan.com",
+    "Comment": "CORS allowed origin for backend API"
+  },
+  {
+    "ParameterKey": "LogLevel",
+    "ParameterValue": "warn",
+    "Comment": "Application log level: debug, info, warn, error"
+  },
+  {
+    "ParameterKey": "SentryEnabled",
+    "ParameterValue": "true",
+    "Comment": "Enable Sentry error tracking: true or false"
+  },
+  {
+    "ParameterKey": "FargateCpu",
+    "ParameterValue": "512",
+    "Comment": "Fargate CPU units (1 vCPU = 1024 units): 256 (0.25 vCPU), 512 (0.5 vCPU), 1024 (1 vCPU), 2048 (2 vCPU), 4096 (4 vCPU)"
+  },
+  {
+    "ParameterKey": "FargateMemory",
+    "ParameterValue": "1024",
+    "Comment": "Fargate memory in MB: 512, 1024 (1 GB), 2048 (2 GB), 4096 (4 GB), 8192 (8 GB). Must be compatible with CPU (e.g., 512 CPU + 1024 MB, 1024 CPU + 2048 MB)"
+  }
+]
+

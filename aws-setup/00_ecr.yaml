@@ -1,0 +1,75 @@
+# ECR Repository Configuration
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Xituan ECR Repository for Backend Docker Images'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues: [development, staging, production]
+    Description: Environment name
+
+  RepositoryName:
+    Type: String
+    Default: xituan-backend
+    Description: ECR repository name for backend Docker images
+
+  ImageScanningEnabled:
+    Type: String
+    Default: 'true'
+    AllowedValues: ['true', 'false']
+    Description: Enable image scanning on push
+
+  LifecyclePolicyDays:
+    Type: Number
+    Default: 30
+    MinValue: 1
+    MaxValue: 365
+    Description: Number of days to retain untagged images
+
+Resources:
+  # ECR Repository
+  ECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Ref RepositoryName
+      ImageScanningConfiguration:
+        ScanOnPush: !Equals [!Ref ImageScanningEnabled, 'true']
+      LifecyclePolicy:
+        LifecyclePolicyText: !Sub |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "description": "Keep last ${LifecyclePolicyDays} days of untagged images",
+                "selection": {
+                  "tagStatus": "untagged",
+                  "countType": "sinceImagePushed",
+                  "countUnit": "days",
+                  "countNumber": ${LifecyclePolicyDays}
+                },
+                "action": {
+                  "type": "expire"
+                }
+              }
+            ]
+          }
+      ImageTagMutability: MUTABLE
+      Tags:
+        - Key: Name
+          Value: !Sub '${RepositoryName}-${Environment}'
+        - Key: Environment
+          Value: !Ref Environment
+
+Outputs:
+  ECRRepositoryUri:
+    Description: ECR Repository URI
+    Value: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${RepositoryName}'
+    Export:
+      Name: !Sub '${AWS::StackName}-ECR-Repository-URI'
+
+  ECRRepositoryName:
+    Description: ECR Repository Name
+    Value: !Ref RepositoryName
+    Export:
+      Name: !Sub '${AWS::StackName}-ECR-Repository-Name'

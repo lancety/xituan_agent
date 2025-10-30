@@ -1,0 +1,27 @@
+# ECS Fargate Cluster Configuration - Simplified Version (with ALB architecture)
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Xituan ECS Fargate Cluster - Simplified'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues: [development, staging, production]
+    Description: Environment name
+
+Resources:
+  # ECS Cluster
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub 'xituan-cluster-${Environment}'
+      Tags:
+        - Key: Name
+          Value: !Sub 'xituan-cluster-${Environment}'
+
+Outputs:
+  ECSClusterName:
+    Description: ECS Cluster Name
+    Value: !Ref ECSCluster
+    Export:
+      Name: !Sub '${AWS::StackName}-ECS-Cluster-Name'
