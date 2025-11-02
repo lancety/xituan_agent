@@ -70,3 +70,5 @@ warn "Next:"
 echo "1) 在 GitHub Secrets 设置 DB_HOST=$RDS_ENDPOINT, DB_PORT=$RDS_PORT, DB_USER, DB_PASSWORD"
 echo "2) 推送代码到 production 分支，触发 GitHub Actions 构建镜像并推送到 ECR"
 echo "3) 运行 ./deploy-phase2.sh $ENVIRONMENT 部署 ECS 与服务，并自动运行迁移（可选）"
+
+
