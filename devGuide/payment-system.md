@@ -50,7 +50,6 @@ export enum epPaymentRecordMethod {
   
   // 手动确认通道
   MANUAL_CASH = 'MANUAL_CASH',
-  MANUAL_BANK_TRANSFER = 'MANUAL_BANK_TRANSFER',
   MANUAL_OTHER = 'MANUAL_OTHER'
 }
 ```

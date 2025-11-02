@@ -1,6 +1,0 @@
-Legal entity name,Account name,Account ID,Currency,Time zone,From date,To date
-XITUAN PTY LTD,XITUAN PTY LTD,acct_DZPz-SzDPcm--I0j37i-mA,AUD,Australia/Melbourne,2025-08-30,2025-08-30
-
-Fee type,Payment method,Payment method type,Count,Fee amount,Tax amount,Net amount
-Gateway fee,Wechat,,22,5.94,0.66,6.60
-Total,,,22,5.94,0.66,6.60

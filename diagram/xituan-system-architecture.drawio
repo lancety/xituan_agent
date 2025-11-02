@@ -1,0 +1,214 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/27.0.2 Chrome/134.0.6998.205 Electron/35.3.0 Safari/537.36" version="27.0.2">
+  <diagram id="xituan-system" name="Xituan System Architecture">
+    <mxGraphModel dx="3466" dy="1413" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3000" pageHeight="2000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Xituan Platform System Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="950" y="40" width="800" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="wechat-container" value="WeChat Mini Program" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E1F5FE;strokeColor=#01579B;fontSize=16;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=10;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="80" y="120" width="800" height="750" as="geometry" />
+        </mxCell>
+        <mxCell id="wechat-tech" value="Technology Stack&#xa;• WeChat Mini Program (Native)&#xa;• TypeScript&#xa;• xituan_codebase (Submodule)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#B3E5FC;strokeColor=#0277BD;align=left;verticalAlign=top;spacingLeft=10;fontSize=12;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="100" y="160" width="760" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="wechat-modes" value="Shopping Modes" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#81D4FA;strokeColor=#0288D1;fontSize=14;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=5;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="100" y="260" width="760" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wechat-regular" value="Regular Mode&#xa;• Product Browse&#xa;• Product Detail&#xa;• Add to Cart&#xa;• Checkout Flow" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="100" y="300" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="wechat-offer" value="Group-buy (Offer) Mode&lt;br&gt;• Offer List&lt;br&gt;• Offer Detail&lt;br&gt;• Quota Management" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="360" y="300" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="wechat-preorder" value="Preorder Mode&#xa;• Preorder List&#xa;• Preorder Detail&#xa;• Schedule Selection&#xa;• Reservation Flow" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="620" y="300" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="wechat-core" value="Core Features" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#81D4FA;strokeColor=#0288D1;fontSize=14;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=5;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="100" y="410" width="760" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wechat-cart" value="Cart Management&#xa;• Multi-mode Items&#xa;• Stock Validation&#xa;• Error Handling" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="100" y="450" width="180" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="wechat-order" value="Order Management&#xa;• Order Creation&#xa;• Order Detail&#xa;• Order List&#xa;• Status Tracking" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="300" y="450" width="180" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="wechat-payment" value="Payment&#xa;• Airwallex Integration&#xa;• Payment Flow&#xa;• Payment Waiting&#xa;• Cash/Bank Transfer" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="500" y="450" width="180" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="wechat-profile" value="User Profile&#xa;• Account Info&#xa;• Address Management&#xa;• Navigation &amp;amp; Location&#xa;• Customer Support" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="700" y="450" width="160" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="wechat-other" value="Other Features&#xa;• News/Blog&#xa;• Preorder Promotion&#xa;• Product Customization&#xa;• Error Handler System" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="100" y="580" width="760" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="wechat-i18n" value="Multilingual Support&#xa;• Framework Ready&#xa;• Database Level Support" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontStyle=2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="100" y="690" width="240" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="cms-container" value="CMS Management System" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#4A148C;fontSize=16;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=10;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="1040" y="120" width="880" height="750" as="geometry" />
+        </mxCell>
+        <mxCell id="cms-tech" value="Technology Stack&#xa;• Next.js (React Framework)&#xa;• Ant Design (UI Components)&#xa;• Tailwind CSS (Styling)&#xa;• TypeScript&#xa;• xituan_codebase (Submodule)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#6A1B9A;align=left;verticalAlign=top;spacingLeft=10;fontSize=12;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="1060" y="160" width="840" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="cms-features" value="Core Features" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#CE93D8;strokeColor=#7B1FA2;fontSize=14;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=5;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="1060" y="320" width="840" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="cms-dashboard" value="Dashboard &amp;amp; News&#xa;• Dashboard Analytics&#xa;• News/Content Management" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#8E24AA;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="1060" y="360" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="cms-catalog" value="Catalog Management&#xa;• Categories&#xa;• Products (CRUD)&#xa;• Product Barcodes&#xa;• Image Upload" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#8E24AA;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="1280" y="360" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="cms-promotion" value="Promotion Management&#xa;• Offers (Group-buy)&#xa;• Preorder Promotes&#xa;• Preorder Management" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#8E24AA;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="1500" y="360" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="cms-order" value="Order Management&#xa;• Order List &amp;amp; Filter&#xa;• Order Detail&#xa;• Status Management&#xa;• Payment Records" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#8E24AA;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="1720" y="360" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="cms-customer" value="Customer &amp;amp; Store&#xa;• Customer Management&#xa;• Store Management" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#8E24AA;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="1060" y="470" width="200" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="cms-partner" value="Partner Management&#xa;• Partner List&#xa;• Invoice Management&#xa;• Invoice Summary &amp;amp; Settlement" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#8E24AA;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="1280" y="470" width="200" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="cms-print" value="Print Templates &amp;amp; Barcodes&#xa;• Template Designer&#xa;• Template Statistics&#xa;• Barcode Management" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#8E24AA;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="1500" y="470" width="200" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="cms-system" value="System Management&#xa;• Platform Settings&#xa;• System Monitoring&#xa;• Auth &amp;amp; RBAC" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#8E24AA;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="1720" y="470" width="180" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="cms-ux" value="UX Features" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#CE93D8;strokeColor=#7B1FA2;fontSize=14;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=5;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="1060" y="580" width="840" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="cms-i18n" value="Multilingual Support&#xa;• Database Level Ready&#xa;• Frontend Framework Ready&#xa;• UI Copy Pending" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontStyle=2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="1060" y="620" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="cms-theme" value="Theme Support&#xa;• Light/Dark Mode&#xa;• Theme Toggle" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontStyle=2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="1280" y="620" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="cms-responsive" value="Responsive Design&#xa;• Desktop Layout&#xa;• Mobile Layout&#xa;• Adaptive Components" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontStyle=2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="1500" y="620" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-container" value="Backend API Service" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#1B5E20;fontSize=16;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=10;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="80" y="920" width="1840" height="1050" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-tech" value="Technology Stack&#xa;• NestJS (Node.js Framework)&#xa;• TypeScript&#xa;• PostgreSQL (Database)&#xa;• TypeORM (ORM)&#xa;• xituan_codebase (Submodule)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;align=left;verticalAlign=top;spacingLeft=10;fontSize=12;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="100" y="960" width="800" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-deploy" value="Deployment &amp;amp; Infrastructure&#xa;• AWS Fargate (ECS)&#xa;• RDS PostgreSQL&#xa;• GitHub Actions CI/CD&#xa;• CloudFormation&#xa;• Two-phase Deploy" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;align=left;verticalAlign=top;spacingLeft=10;fontSize=12;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="940" y="960" width="960" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-domains" value="Domain Modules" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#A5D6A7;strokeColor=#388E3C;fontSize=14;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=5;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="100" y="1100" width="1800" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-auth" value="Auth Module&#xa;• JWT Authentication&#xa;• User Registration/Login&#xa;• Session Management&#xa;• RBAC (3-level)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="100" y="1140" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-user" value="User Module&#xa;• User Management&#xa;• Address Management&#xa;• Contact Management" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="320" y="1140" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-product" value="Product Module&#xa;• Product CRUD&#xa;• Category Management&#xa;• Inventory Integration" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="540" y="1140" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-inventory" value="Inventory Module&#xa;• Stock Management&#xa;• Stock Locking&#xa;• Transaction Tracking&#xa;• Stock Calculation" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="760" y="1140" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-order" value="Order Module&#xa;• Order Split Architecture&#xa;• Mode: REGULAR/OFFER/PREORDER&#xa;• Order Status Engine&#xa;• Order Validation" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="980" y="1140" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-cart" value="Cart Module&#xa;• Multi-mode Cart&#xa;• Cart Validation&#xa;• Stock Check" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="1220" y="1140" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-payment" value="Payment Module&#xa;• Airwallex Integration&#xa;• Payment Intent&#xa;• Webhook Handling&#xa;• Payment Records" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="1440" y="1140" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-offer" value="Offer Module&#xa;• Group-buy Management&#xa;• Offer Products&#xa;• Quota Management" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="100" y="1240" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-preorder" value="Preorder Module&#xa;• Preorder Management&#xa;• Schedule Management&#xa;• Reservation System" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="320" y="1240" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-news" value="News Module&#xa;• Content Management&#xa;• News CRUD" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="540" y="1240" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-store" value="Store Module&#xa;• Store Management&#xa;• Store Locations" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="760" y="1240" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-partner" value="Partner Module&#xa;• Partner Management&#xa;• Invoice Management&#xa;• Invoice Summary&#xa;• PDF Generation" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="980" y="1240" width="220" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-print" value="PrintTemps Module&#xa;• Template Management&#xa;• Template Rendering&#xa;• Entity Fields" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="1220" y="1240" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-platform" value="Platform Settings&#xa;• System Configuration&#xa;• Payment Settings&#xa;• Order Expiry Rules" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="1440" y="1240" width="220" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-support" value="Supporting Modules" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#A5D6A7;strokeColor=#388E3C;fontSize=14;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=5;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="100" y="1330" width="1800" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-google" value="Google Maps&#xa;• Address Search&#xa;• Location Services" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="100" y="1370" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-shipping" value="Shipping Module&#xa;• Shipping Fee Calculation&#xa;• Delivery Rules" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="320" y="1370" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-notification" value="Notification Module&#xa;• Alert System&#xa;• Order Payment Alerts" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="540" y="1370" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-permission" value="Permission Module&#xa;• User Permissions&#xa;• Permission Utils" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="760" y="1370" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-preorderable" value="Preorderable Products&#xa;• Preorder Product Link&#xa;• Product Relations" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="980" y="1370" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-quality" value="Quality &amp;amp; Testing" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#A5D6A7;strokeColor=#388E3C;fontSize=14;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=5;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="100" y="1450" width="1800" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-test" value="Testing&#xa;• Unit Tests&#xa;• Integration Tests&#xa;• Test Coverage" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontStyle=2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="100" y="1490" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-arch" value="Architecture&#xa;• Split Order Design&#xa;• Validation Engines&#xa;• State Machine&#xa;• Audit Logging" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontStyle=2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="320" y="1490" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-code" value="Code Quality&#xa;• TypeScript Strict Mode&#xa;• Shared Codebase (Submodule)&#xa;• Unified Versioning&#xa;• CHANGELOG Generation" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontStyle=2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="540" y="1490" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-custom" value="100% Custom Built&#xa;• No Framework Dependency&#xa;• Built for Business Model&#xa;• Regular/Group-buy/Preorder" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFEBEE;strokeColor=#C62828;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontStyle=2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="780" y="1490" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="db-container" value="Database (PostgreSQL)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F57F17;fontSize=14;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=5;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="100" y="1600" width="1800" height="320" as="geometry" />
+        </mxCell>
+        <mxCell id="db-core" value="Core Tables&#xa;• users, admins&#xa;• products, categories&#xa;• orders, order_items&#xa;• carts, cart_items" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFDE7;strokeColor=#F9A825;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="120" y="1640" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="db-order" value="Order Related&#xa;• order_status_transitions&#xa;• order_payment_records&#xa;• alert_orders_payments" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFDE7;strokeColor=#F9A825;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="340" y="1640" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="db-payment" value="Payment Tables&lt;br&gt;• payments&lt;br&gt;• order_payment_records" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFDE7;strokeColor=#F9A825;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="560" y="1640" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="db-inventory" value="Inventory Tables&#xa;• product_inventory&#xa;• inventory_transactions&#xa;• inventory_locks" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFDE7;strokeColor=#F9A825;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="780" y="1640" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="db-offer" value="Offer &amp;amp; Preorder&#xa;• offers, offer_products&#xa;• preorders&#xa;• preorder_promotes&#xa;• products_preorderable" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFDE7;strokeColor=#F9A825;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="1000" y="1640" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="db-partner" value="Partner Tables&#xa;• partners&#xa;• partner_invoices&#xa;• partner_invoice_summaries&#xa;• partner_addresses" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFDE7;strokeColor=#F9A825;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="1240" y="1640" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="db-other" value="Other Tables&#xa;• news&#xa;• stores&#xa;• print_temps, print_temp_elements&#xa;• platform_settings&#xa;• user_permissions" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFDE7;strokeColor=#F9A825;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="1480" y="1640" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="db-i18n" value="Multilingual Support&#xa;• Database Level Ready&#xa;• Product Multilingual Data" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFE082;strokeColor=#F57C00;align=left;verticalAlign=top;spacingLeft=10;fontSize=11;fontStyle=2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="120" y="1750" width="300" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="footer" value="Built in 3 months (Aug-Oct 2025) | 100% Custom Built | AWS Fargate + RDS Deployment | AI-Assisted Development" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="100" y="1930" width="1720" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

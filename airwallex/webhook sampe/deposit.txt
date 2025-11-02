@@ -1,0 +1,112 @@
+deposit.rejected
+{
+  "account_id": "acct_TOslkS7-MnyXlQuV8Lb4og",
+  "data": {
+    "id": "67f687fe-dcf4-4462-92fa-20335301d9d8",
+    "type": "DIRECT_DEBIT",
+    "status": "REJECTED",
+    "created_at": "2017-03-20T14:00:01+1100",
+    "currency": "AUD",
+    "amount": 12794.27,
+    "failure_details": {
+      "code": "refer_to_payer",
+      "iso_code": "NARR",
+      "provider_failure_details": {
+        "code": "006",
+        "local_clearing_system": "AU_BECS",
+        "message": "refer to payer"
+      }
+    },
+    "funding_source_id": "fcfc369c-ce9d-4ab7-b9af-80df61848f8f",
+    "reference": "5487287788",
+    "provider_transaction_id": "5487287788"
+  },
+  "id": "86b69f91-06f0-3fe8-8faf-4de58954ca8e",
+  "name": "deposit.rejected"
+}
+
+deposit.settled
+{
+  "account_id": "acct_TOslkS7-MnyXlQuV8Lb4og",
+  "data": {
+    "id": "67f687fe-dcf4-4462-92fa-20335301d9d8",
+    "type": "DIRECT_DEBIT",
+    "status": "SETTLED",
+    "created_at": "2017-03-20T14:00:01+1100",
+    "currency": "AUD",
+    "amount": 12794.27,
+    "settled_at": "2017-03-22T14:00:00+0000",
+    "funding_source_id": "fcfc369c-ce9d-4ab7-b9af-80df61848f8f",
+    "reference": "5487287788",
+    "provider_transaction_id": "5487287788",
+    "fee": {
+      "type": "NET",
+      "currency": "AUD",
+      "amount": 12.79
+    }
+  },
+  "id": "86b69f91-06f0-3fe8-8faf-4de58954ca8e",
+  "name": "deposit.settled"
+}
+
+deposit.reversed
+{
+  "account_id": "acct_TOslkS7-MnyXlQuV8Lb4og",
+  "data": {
+    "id": "67f687fe-dcf4-4462-92fa-20335301d9d8",
+    "type": "DIRECT_DEBIT",
+    "status": "REVERSED",
+    "created_at": "2017-03-20T14:00:01+1100",
+    "currency": "AUD",
+    "amount": 12794.27,
+    "failure_details": {
+      "code": "refer_to_payer",
+      "iso_code": "NARR",
+      "provider_failure_details": {
+        "code": "006",
+        "local_clearing_system": "AU_BECS",
+        "message": "refer to payer"
+      }
+    },
+    "funding_source_id": "fcfc369c-ce9d-4ab7-b9af-80df61848f8f",
+    "reference": "5487287788",
+    "provider_transaction_id": "5487287788"
+  },
+  "id": "86b69f91-06f0-3fe8-8faf-4de58954ca8e",
+  "name": "deposit.reversed"
+}
+
+deposit.pending
+{
+  "account_id": "acct_TOslkS7-MnyXlQuV8Lb4og",
+  "data": {
+    "id": "67f687fe-dcf4-4462-92fa-20335301d9d8",
+    "type": "BANK_TRANSFER",
+    "status": "PENDING",
+    "created_at": "2017-03-20T14:00:01+1100",
+    "currency": "AUD",
+    "amount": 12794.27,
+    "global_account_id": "fcfc369c-ce9d-4ab7-b9af-80df61848f8f",
+    "payer": {
+      "name": "Tester Smith",
+      "country_code": "AU",
+      "bank_account": {
+        "type": "AU_BSB",
+        "au_bsb": {
+          "bsb": "063001",
+          "account_number": "89098199202"
+        },
+        "name": "Tester Smith",
+        "institution": {
+          "swift_code": "ANZBNZ22",
+          "name": "ANZ Bank Limited",
+          "country_code": "AU"
+        }
+      }
+    },
+    "reference": "5487287788",
+    "provider_transaction_id": "5487287788"
+  },
+  "id": "86b69f91-06f0-3fe8-8faf-4de58954ca8e",
+  "name": "deposit.pending"
+}

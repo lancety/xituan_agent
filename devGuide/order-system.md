@@ -767,7 +767,7 @@ async function handleExpiredOrderPayment(
     
     if (isPaymentSuccess) {
       // 更新支付状态
-      await updateOrderPaymentStatus(orderId, epPaymentRecordStatus.SUCCESS);
+      await updateOrderPaymentStatus(orderId, epPaymentRecordStatus.SETTLED);
       
       // 回退订单状态到待处理
       await transitionOrderStatus(orderId, epOrderStatus.PENDING, {

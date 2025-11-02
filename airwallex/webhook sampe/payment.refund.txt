@@ -1,0 +1,105 @@
+refund.accepted
+{
+  "id": "2a396f97-92f4-3075-98fa-43acf6e87412",
+  "name": "refund.accepted",
+  "account_id": "acct_t6nlGSCgPpWIBE-3ncOTxA",
+  "data": {
+    "object": {
+      "amount": 10,
+      "created_at": "2024-10-10T15:00:24+0000",
+      "currency": "USD",
+      "id": "rfd_hkstlgtcqh0q77j1btd_7fco97",
+      "payment_attempt_id": "att_hkstlgtcqh0q77ffhcf_7fco97",
+      "payment_intent_id": "int_hkstlgtcqh0q77fco97",
+      "reason": "message",
+      "request_id": "5f1e2eec-71e1-4710-94e7-ac0ec7f8e163",
+      "merchant_order_id": "1cd12332-9c7a-3ad8-2e3d-312f6cd819ff",
+      "status": "ACCEPTED",
+      "updated_at": "2024-10-10T15:00:24+0000"
+    }
+  },
+  "created_at": "2025-11-02T00:09:31+0000",
+  "version": "2025-06-16"
+}
+
+
+refund.failed
+{
+  "id": "2a396f97-92f4-3075-98fa-43acf6e87412",
+  "name": "refund.failed",
+  "account_id": "acct_t6nlGSCgPpWIBE-3ncOTxA",
+  "data": {
+    "error": {
+      "code": "provider_declined",
+      "details": {
+        "original_response_code": "Simulate failure for refund"
+      },
+      "message": "The payment provider declined this transaction. Please refer to the original response code.",
+      "provider_original_response_code": "Simulate failure for refund",
+      "trace_id": "6b0e2154d327565e3fe71c18c1b44762"
+    },
+    "object": {
+      "amount": 80,
+      "created_at": "2024-10-10T14:45:46+0000",
+      "currency": "HKD",
+      "id": "rfd_hkst88q2wh0q6t0m4on_sxdko3",
+      "payment_attempt_id": "att_hkst88q2wh0q6sz97vi_sxdko3",
+      "payment_intent_id": "int_hkst88q2wh0q6sxdko3",
+      "reason": "message",
+      "request_id": "ba86c3ad-5963-467d-9968-6d5924471cd4",
+      "merchant_order_id": "1cd12332-9c7a-3ad8-2e3d-312f6cd819ff",
+      "status": "FAILED",
+      "updated_at": "2024-10-10T14:45:47+0000"
+    }
+  },
+  "created_at": "2025-11-02T00:09:18+0000",
+  "version": "2025-06-16"
+}
+
+refund.received
+{
+    "id": "2a396f97-92f4-3075-98fa-43acf6e87412",
+    "name": "refund.received",
+    "account_id": "acct_t6nlGSCgPpWIBE-3ncOTxA",
+    "data": {
+      "object": {
+        "amount": 80,
+        "created_at": "2024-10-10T15:00:25+0000",
+        "currency": "EUR",
+        "id": "rfd_hkst88q2wh0q77jnbbm_7g1q5o",
+        "payment_attempt_id": "att_hkstlgtcqh0q77g4031_7g1q5o",
+        "payment_intent_id": "int_hkst88q2wh0q77g1q5o",
+        "reason": "message",
+        "request_id": "16db43c4-c926-446a-9f1c-ce2ac32cccc8",
+        "merchant_order_id": "1cd12332-9c7a-3ad8-2e3d-312f6cd819ff",
+        "status": "RECEIVED",
+        "updated_at": "2024-10-10T15:00:25+0000"
+      }
+    },
+    "created_at": "2025-11-02T00:09:18+0000",
+    "version": "2025-06-16"
+  }
+
+refund.settled
+{
+    "id": "2a396f97-92f4-3075-98fa-43acf6e87412",
+    "name": "refund.settled",
+    "account_id": "acct_t6nlGSCgPpWIBE-3ncOTxA",
+    "data": {
+      "object": {
+        "amount": 10,
+        "created_at": "2024-10-10T10:57:35+0000",
+        "currency": "EUR",
+        "id": "rfd_hkst88q2wh0q0il04ug_ijcyvo",
+        "payment_attempt_id": "att_hkstlgtcqh0q0ijhutf_ijcyvo",
+        "payment_intent_id": "int_hkstlgtcqh0q0ijcyvo",
+        "reason": "message",
+        "request_id": "a26949a3-6702-46e7-ade5-37506559abb1",
+        "merchant_order_id": "1cd12332-9c7a-3ad8-2e3d-312f6cd819ff",
+        "status": "SETTLED",
+        "updated_at": "2024-10-10T15:17:53+0000"
+      }
+    },
+    "created_at": "2025-11-02T00:09:19+0000",
+    "version": "2025-06-16"
+  }
