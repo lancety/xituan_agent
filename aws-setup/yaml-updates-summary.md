@@ -45,6 +45,11 @@ aws cloudformation deploy \
 1. 初始部署时临时设为 `true` 进行数据导入
 2. 导入完成后更新为 `false` 关闭公网访问
 
+**⚠️ 重要提醒**：
+- 开启 `EnablePublicAccess=true` 后，**必须同时在 RDS 安全组的入站规则中添加你的本地 IP 地址**（端口 5432）
+- 否则即使开启了公网访问，也无法从本地连接数据库
+- 详细步骤请参考 `aws-deployment-ai-auto.md` 的步骤 3.1
+
 **部署示例**：
 ```bash
 # 临时开启公网访问
@@ -148,6 +153,7 @@ aws cloudformation deploy --template-file security-groups.yaml \
         ALBSecurityGroupId=$(aws cloudformation describe-stacks --stack-name xituan-alb-production --query 'Stacks[0].Outputs[?OutputKey==`ALBSecurityGroupId`].OutputValue' --output text)
 
 # 5. RDS（临时开启公网访问）
+# ⚠️ 注意：开启公网访问后，需要在 RDS 安全组入站规则中添加本地 IP（端口 5432）
 aws cloudformation deploy --template-file rds.yaml \
     --stack-name xituan-rds-production \
     --parameter-overrides \

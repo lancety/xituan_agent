@@ -268,7 +268,8 @@ aws rds modify-db-instance \
 aws rds wait db-instance-available \
     --db-instance-identifier xituan-postgres-production
 
-# 2. 临时开放 RDS 安全组 5432 端口（仅限你的 IP 或特定 IP）
+# 2. ⚠️ 重要：必须在 RDS 实例的安全组入站规则中添加你的本地 IP
+# 临时开放 RDS 安全组 5432 端口（仅限你的 IP 或特定 IP）
 # 获取你的公网 IP
 $MY_IP = (Invoke-WebRequest -Uri "https://api.ipify.org" -UseBasicParsing).Content
 
@@ -283,6 +284,8 @@ aws ec2 authorize-security-group-ingress \
 # - 只在数据导入期间开启
 # - 导入完成后立即关闭
 # - 使用最小权限原则（只开放你的 IP）
+# - ⚠️ 重要：开启 RDS 公网访问后，必须同时在 RDS 安全组的入站规则中添加你的本地 IP 地址（端口 5432）
+#   否则即使开启了公网访问，也无法连接数据库
 ```
 
 #### 步骤 3.2: 准备数据库导入（如果需要从旧数据库导入）
@@ -671,6 +674,7 @@ Invoke-WebRequest -Uri "http://${PUBLIC_IP}:3050/api/products/{product-id}" -Use
   - 只开放特定 IP 的安全组规则
   - 导入完成后立即关闭
   - 使用最小权限原则
+- **⚠️ 重要提醒**: 开启 RDS 公网访问后，必须同时在 RDS 安全组的入站规则中添加本地 IP 地址（端口 5432），否则无法连接数据库
 
 ### 2. 正确的任务定义 Revision 管理
 **意义**: 

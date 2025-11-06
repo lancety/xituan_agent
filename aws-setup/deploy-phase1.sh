@@ -66,9 +66,16 @@ echo ""
 echo "=== Phase 1 Complete ==="
 log "ALB DNS: $ALB_DNS"
 log "RDS Endpoint: $RDS_ENDPOINT:$RDS_PORT"
+if [ "$(get_param EnableRDSPublicAccess)" = "true" ]; then
+  warn "⚠️  RDS 公网访问已开启，请确保在 RDS 安全组入站规则中添加本地 IP（端口 5432）"
+  warn "   否则无法从本地连接数据库。详细步骤请参考 aws-deployment-ai-auto.md"
+fi
 warn "Next:"
 echo "1) 在 GitHub Secrets 设置 DB_HOST=$RDS_ENDPOINT, DB_PORT=$RDS_PORT, DB_USER, DB_PASSWORD"
 echo "2) 推送代码到 production 分支，触发 GitHub Actions 构建镜像并推送到 ECR"
 echo "3) 运行 ./deploy-phase2.sh $ENVIRONMENT 部署 ECS 与服务，并自动运行迁移（可选）"
+
+
+
 
 

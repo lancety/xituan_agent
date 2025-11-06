@@ -161,6 +161,7 @@ Outputs:
 - 支持临时开启公网访问用于数据导入
 - 明确部署后的安全加固步骤
 - 避免手动修改 RDS 配置
+- ⚠️ 注意：开启公网访问后，必须在 RDS 安全组入站规则中添加本地 IP（端口 5432）
 
 ---
 
@@ -537,6 +538,9 @@ Outputs:
 - AWS CloudFormation 最佳实践: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/best-practices.html
 - ECS Task Definition 参数参考: https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_RegisterTaskDefinition.html
 - RDS 参数参考: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.PostgreSQL.CommonDBATasks.html
+
+
+
 
 
 

@@ -59,7 +59,10 @@ Parameters:
     AllowedValues:
       - 'true'
       - 'false'
-    Description: Enable public access for RDS (set to true temporarily for initial data import, then set to false)
+    Description: |
+      Enable public access for RDS (set to true temporarily for initial data import, then set to false).
+      ⚠️ IMPORTANT: When enabling public access, you must also update the RDS Security Group inbound rules
+      to allow your local IP address on port 5432. See aws-deployment-ai-auto.md for detailed steps.
 
 Resources:
   # DB Subnet Group (Single AZ)
@@ -122,7 +125,10 @@ Outputs:
       Next Steps After Initial Data Import:
       1. Set EnablePublicAccess=false for security
       2. Update stack: aws cloudformation deploy --template-file rds.yaml --stack-name xituan-rds-production --parameter-overrides EnablePublicAccess=false ...
-      3. Remove any temporary security group rules that allow external access
+      3. Remove any temporary security group rules that allow external access (RDS Security Group inbound rules for port 5432)
     Value: 'See description for post-deployment security hardening steps'
+
+
+
 
 

@@ -10,7 +10,7 @@
 - AWSAccountId: 12位账户ID
 - ProjectName: xituan
 - DBUsername / DBPassword / DBName
-- DBInstanceClass / DBAllocatedStorage / EnableRDSPublicAccess
+- DBInstanceClass / DBAllocatedStorage / EnableRDSPublicAccess（⚠️ 开启后需在 RDS 安全组添加本地 IP）
 - ACMCertificateArn
 - CORSOrigin / LogLevel / SentryEnabled
 - FargateCpu / FargateMemory（1 vCPU = 1024 units；512=0.5 vCPU）
@@ -29,5 +29,8 @@
 ## 注意
 - 密码不能包含 @ " / 空格
 - 镜像构建不依赖 DB_HOST，运行时由 ECS 注入
+
+
+
 
 
