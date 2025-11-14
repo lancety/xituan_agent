@@ -5,8 +5,16 @@ set -e
 
 ENVIRONMENT=${1:-production}
 PARAMETER_FILE="parameters.${ENVIRONMENT}.json"
-AWS_REGION=$(jq -r '.[] | select(.ParameterKey=="AWSRegion") | .ParameterValue' "$PARAMETER_FILE")
-PROJECT_NAME=$(jq -r '.[] | select(.ParameterKey=="ProjectName") | .ParameterValue' "$PARAMETER_FILE")
+
+# Use Node.js to parse JSON if jq is not available
+if command -v jq &> /dev/null; then
+  AWS_REGION=$(jq -r '.[] | select(.ParameterKey=="AWSRegion") | .ParameterValue' "$PARAMETER_FILE")
+  PROJECT_NAME=$(jq -r '.[] | select(.ParameterKey=="ProjectName") | .ParameterValue' "$PARAMETER_FILE")
+else
+  # Fallback to Node.js
+  AWS_REGION=$(node -e "const fs=require('fs');const d=JSON.parse(fs.readFileSync('$PARAMETER_FILE','utf8'));console.log(d.find(p=>p.ParameterKey==='AWSRegion')?.ParameterValue||'')")
+  PROJECT_NAME=$(node -e "const fs=require('fs');const d=JSON.parse(fs.readFileSync('$PARAMETER_FILE','utf8'));console.log(d.find(p=>p.ParameterKey==='ProjectName')?.ParameterValue||'')")
+fi
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'; NC='\033[0m'
 log() { echo -e "${GREEN}[INFO]${NC} $1"; }
@@ -17,7 +25,16 @@ get_output() {
   aws cloudformation describe-stacks --stack-name "$1" --region "$AWS_REGION" \
     --query "Stacks[0].Outputs[?OutputKey=='$2'].OutputValue" --output text
 }
-get_param() { jq -r ".[] | select(.ParameterKey==\"$1\") | .ParameterValue" "$PARAMETER_FILE"; }
+
+# Get parameter value from JSON file (supports both jq and Node.js)
+get_param() {
+  local key="$1"
+  if command -v jq &> /dev/null; then
+    jq -r ".[] | select(.ParameterKey==\"$key\") | .ParameterValue" "$PARAMETER_FILE"
+  else
+    node -e "const fs=require('fs');const d=JSON.parse(fs.readFileSync('$PARAMETER_FILE','utf8'));const p=d.find(x=>x.ParameterKey==='$key');console.log(p?p.ParameterValue:'')"
+  fi
+}
 
 if [ ! -f "$PARAMETER_FILE" ]; then echo "Parameter file not found: $PARAMETER_FILE"; exit 1; fi
 

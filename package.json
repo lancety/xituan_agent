@@ -10,7 +10,9 @@
     "changelog:generate": "node scripts/changelog-generator.js",
     "git:fix": "node scripts/fix-git-state.js fix",
     "git:check": "node scripts/fix-git-state.js check",
-    "ddns:start": "bash scripts/ddns-update.sh"
+    "ddns:start": "bash scripts/ddns-update.sh",
+    "deploy:infra": "cd aws-setup && bash deploy-phase1.sh production",
+    "deploy:app": "cd aws-setup && bash deploy-phase2.sh production"
   },
   "devDependencies": {
     "conventional-changelog": "^3.1.25",
