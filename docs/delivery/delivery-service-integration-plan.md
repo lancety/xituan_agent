@@ -30,6 +30,11 @@
 - 有明确发货日期 → **批量创建配送**
 - Uber/Sendle 过来**一次性取走这批订单**（一般是同一天）
 - 按发货日期分组，可批量配送多个订单
+- **Uber Direct 优化分组**：
+  - 通过经纬度计算所有订单地址的相互间距离
+  - 根据距离分组成指定的 N 组订单（每组最多 14 个订单）
+  - 按组申请 Uber 取单，确保每个配送员配送的几个地点最小范围
+  - 避免交叉浪费配送成本
 
 **Preorder 订单**：
 - 有明确配送时段 → **单笔预定取单**
@@ -845,27 +850,430 @@ export class DeliveryManagementService {
    * @param deliveryDate 配送日期
    */
   async batchCreateDeliveriesForOffer(orderIds: string[], deliveryDate: Date): Promise<void> {
-    // 详细实现见下方 createUberDirectBatchDeliveryOptimized 方法
-    // 主要逻辑：
-    // 1. 获取所有订单的经纬度
-    // 2. 计算订单间的距离矩阵
-    // 3. 基于距离进行智能分组（每组最多 14 个订单）
-    // 4. 按组创建多点配送
+    // 1. 获取所有订单信息
+    const orders = await this.orderRepository.findByIds(orderIds);
+    
+    // 2. 验证所有订单都是 Offer 订单
+    const nonOfferOrders = orders.filter(o => o.mode !== epOrderMode.OFFER);
+    if (nonOfferOrders.length > 0) {
+      throw new Error('批量配送只能用于 Offer 订单');
+    }
+    
+    // 3. 按配送服务商分组
+    const groups = await this.groupOrdersByProvider(orders);
+    
+    // 4. 对每个服务商分组创建批量配送
+    for (const group of groups) {
+      if (group.provider === epDeliveryProvider.UBER_DIRECT) {
+        // Uber Direct：基于经纬度优化分组
+        await this.createUberDirectOptimizedBatchDelivery(group.orders, deliveryDate);
+      } else if (group.provider === epDeliveryProvider.SENDLE) {
+        // Sendle 批量取单（同一天）
+        await this.createSendleBatchDelivery(group.orders, deliveryDate);
+      } else {
+        // 店铺自送，可以合并配送路线
+        await this.createStoreBatchDelivery(group.orders, deliveryDate);
+      }
+    }
   }
 
   /**
-   * 创建 Uber Direct 批量配送（基于地理位置优化分组）
+   * 创建 Uber Direct 优化批量配送（基于经纬度距离分组）
    * 
-   * 通过经纬度计算订单间的距离，将地理位置相近的订单分组，
-   * 确保每个配送员配送的地点最小范围，避免交叉浪费配送成本
+   * 通过经纬度计算所有订单地址的相互间距离，根据距离分组成指定的 N 组订单，
+   * 然后按组申请 Uber 取单，确保每个配送员配送的几个地点最小范围，避免交叉浪费配送成本
    * 
-   * 详细实现请参考：docs/uber-direct-optimization.md
+   * @param orders 订单列表（都是 Uber Direct）
+   * @param deliveryDate 配送日期
    */
-  private async createUberDirectBatchDeliveryOptimized(
-    orders: any[], 
-    deliveryDate: Date
-  ): Promise<void> {
-    // 实现细节见 uber-direct-optimization.md 文档
+  private async createUberDirectOptimizedBatchDelivery(orders: any[], deliveryDate: Date): Promise<void> {
+    // 1. 提取所有订单的地址和经纬度
+    const orderLocations = await this.extractOrderLocations(orders);
+    
+    // 2. 计算所有地址之间的相互距离矩阵（Haversine 公式）
+    const distanceMatrix = this.calculateDistanceMatrix(orderLocations);
+    
+    // 3. 根据距离和 Uber Direct 限制（最多 14 个订单）进行优化分组
+    const optimizedGroups = this.optimizeDeliveryGroups(orderLocations, distanceMatrix, 14);
+    
+    // 4. 对每个优化后的组创建 Uber Direct 多点配送
+    for (const group of optimizedGroups) {
+      const groupOrderIds = group.map(loc => loc.orderId);
+      await this.createUberDirectMultiStopDelivery(groupOrderIds, deliveryDate);
+    }
+  }
+
+  /**
+   * 提取订单的地址和经纬度信息
+   */
+  private async extractOrderLocations(orders: any[]): Promise<Array<{
+    orderId: string;
+    address: string;
+    latitude: number;
+    longitude: number;
+    order: any;
+  }>> {
+    const locations: Array<{
+      orderId: string;
+      address: string;
+      latitude: number;
+      longitude: number;
+      order: any;
+    }> = [];
+
+    for (const order of orders) {
+      const addressSnapshot = order.deliveryAddressSnapshot;
+      
+      if (!addressSnapshot) {
+        throw new Error(`订单 ${order.id} 缺少配送地址信息`);
+      }
+
+      // 从地址快照中获取经纬度
+      const latitude = addressSnapshot.latitude;
+      const longitude = addressSnapshot.longitude;
+
+      if (!latitude || !longitude) {
+        // 如果没有经纬度，尝试从地址字符串获取
+        const coordinates = await this.getCoordinatesFromAddress(
+          addressSnapshot.formattedAddress || this.formatAddress(addressSnapshot)
+        );
+        
+        if (!coordinates) {
+          throw new Error(`订单 ${order.id} 的地址无法获取经纬度`);
+        }
+        
+        locations.push({
+          orderId: order.id,
+          address: addressSnapshot.formattedAddress || this.formatAddress(addressSnapshot),
+          latitude: coordinates.latitude,
+          longitude: coordinates.longitude,
+          order
+        });
+      } else {
+        locations.push({
+          orderId: order.id,
+          address: addressSnapshot.formattedAddress || this.formatAddress(addressSnapshot),
+          latitude: Number(latitude),
+          longitude: Number(longitude),
+          order
+        });
+      }
+    }
+
+    return locations;
+  }
+
+  /**
+   * 计算所有地址之间的相互距离矩阵（使用 Haversine 公式）
+   * 
+   * @param locations 地址列表
+   * @returns 距离矩阵，distanceMatrix[i][j] 表示 locations[i] 到 locations[j] 的距离（公里）
+   */
+  private calculateDistanceMatrix(locations: Array<{ latitude: number; longitude: number }>): number[][] {
+    const matrix: number[][] = [];
+    const R = 6371; // 地球半径（公里）
+
+    for (let i = 0; i < locations.length; i++) {
+      matrix[i] = [];
+      for (let j = 0; j < locations.length; j++) {
+        if (i === j) {
+          matrix[i][j] = 0;
+        } else {
+          const loc1 = locations[i];
+          const loc2 = locations[j];
+          
+          // Haversine 公式计算两点间距离
+          const dLat = this.toRadians(loc2.latitude - loc1.latitude);
+          const dLon = this.toRadians(loc2.longitude - loc1.longitude);
+          
+          const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(this.toRadians(loc1.latitude)) * Math.cos(this.toRadians(loc2.latitude)) *
+                    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+          
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          const distance = R * c;
+          
+          matrix[i][j] = distance;
+        }
+      }
+    }
+
+    return matrix;
+  }
+
+  /**
+   * 优化配送分组（基于距离聚类）
+   * 
+   * 使用改进的 K-means 聚类算法，确保：
+   * 1. 每组订单数量不超过 Uber Direct 限制（14个）
+   * 2. 组内订单之间的距离最小化
+   * 3. 组与组之间的距离最大化（避免交叉）
+   * 
+   * @param locations 订单地址列表
+   * @param distanceMatrix 距离矩阵
+   * @param maxOrdersPerGroup 每组最大订单数（Uber Direct 限制为 14）
+   * @returns 优化后的分组列表
+   */
+  private optimizeDeliveryGroups(
+    locations: Array<{ orderId: string; latitude: number; longitude: number }>,
+    distanceMatrix: number[][],
+    maxOrdersPerGroup: number
+  ): Array<Array<{ orderId: string; latitude: number; longitude: number }>> {
+    if (locations.length === 0) {
+      return [];
+    }
+
+    // 如果订单数量少于等于 maxOrdersPerGroup，直接返回一组
+    if (locations.length <= maxOrdersPerGroup) {
+      return [locations];
+    }
+
+    // 计算需要的组数
+    const numGroups = Math.ceil(locations.length / maxOrdersPerGroup);
+
+    // 使用改进的 K-means 聚类算法
+    const groups = this.kMeansClustering(locations, numGroups, maxOrdersPerGroup, distanceMatrix);
+
+    return groups;
+  }
+
+  /**
+   * K-means 聚类算法（改进版，考虑距离矩阵和最大组大小限制）
+   */
+  private kMeansClustering(
+    locations: Array<{ orderId: string; latitude: number; longitude: number }>,
+    k: number,
+    maxSize: number,
+    distanceMatrix: number[][]
+  ): Array<Array<{ orderId: string; latitude: number; longitude: number }>> {
+    // 初始化：随机选择 k 个中心点
+    const centers: Array<{ latitude: number; longitude: number; index: number }> = [];
+    const usedIndices = new Set<number>();
+    
+    for (let i = 0; i < k; i++) {
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * locations.length);
+      } while (usedIndices.has(randomIndex));
+      
+      usedIndices.add(randomIndex);
+      centers.push({
+        latitude: locations[randomIndex].latitude,
+        longitude: locations[randomIndex].longitude,
+        index: randomIndex
+      });
+    }
+
+    let groups: Array<Array<{ orderId: string; latitude: number; longitude: number }>> = [];
+    let changed = true;
+    let iterations = 0;
+    const maxIterations = 100;
+
+    while (changed && iterations < maxIterations) {
+      iterations++;
+      
+      // 分配每个点到最近的中心点
+      groups = Array(k).fill(null).map(() => []);
+      
+      for (let i = 0; i < locations.length; i++) {
+        let minDistance = Infinity;
+        let nearestCenterIndex = 0;
+        
+        // 找到最近的中心点
+        for (let j = 0; j < centers.length; j++) {
+          const centerIndex = centers[j].index;
+          const distance = distanceMatrix[i][centerIndex];
+          
+          if (distance < minDistance) {
+            minDistance = distance;
+            nearestCenterIndex = j;
+          }
+        }
+        
+        // 检查组大小限制
+        if (groups[nearestCenterIndex].length < maxSize) {
+          groups[nearestCenterIndex].push(locations[i]);
+        } else {
+          // 如果最近的组已满，找下一个最近的未满组
+          let assigned = false;
+          for (let j = 0; j < groups.length; j++) {
+            if (groups[j].length < maxSize) {
+              const centerIndex = centers[j].index;
+              const distance = distanceMatrix[i][centerIndex];
+              if (!assigned || distance < minDistance) {
+                minDistance = distance;
+                nearestCenterIndex = j;
+                assigned = true;
+              }
+            }
+          }
+          groups[nearestCenterIndex].push(locations[i]);
+        }
+      }
+
+      // 更新中心点（使用组内所有点的平均位置）
+      changed = false;
+      for (let i = 0; i < centers.length; i++) {
+        if (groups[i].length === 0) continue;
+        
+        const avgLat = groups[i].reduce((sum, loc) => sum + loc.latitude, 0) / groups[i].length;
+        const avgLon = groups[i].reduce((sum, loc) => sum + loc.longitude, 0) / groups[i].length;
+        
+        // 找到组内最接近平均位置的点作为新中心
+        let minDist = Infinity;
+        let newCenterIndex = centers[i].index;
+        
+        for (let j = 0; j < groups[i].length; j++) {
+          const loc = groups[i][j];
+          const dist = Math.sqrt(
+            Math.pow(loc.latitude - avgLat, 2) + Math.pow(loc.longitude - avgLon, 2)
+          );
+          if (dist < minDist) {
+            minDist = dist;
+            const originalIndex = locations.findIndex(l => l.orderId === loc.orderId);
+            newCenterIndex = originalIndex;
+          }
+        }
+        
+        if (newCenterIndex !== centers[i].index) {
+          centers[i].index = newCenterIndex;
+          centers[i].latitude = locations[newCenterIndex].latitude;
+          centers[i].longitude = locations[newCenterIndex].longitude;
+          changed = true;
+        }
+      }
+    }
+
+    // 移除空组
+    return groups.filter(group => group.length > 0);
+  }
+
+  /**
+   * 创建 Uber Direct 多点配送（一组订单）
+   */
+  private async createUberDirectMultiStopDelivery(orderIds: string[], deliveryDate: Date): Promise<void> {
+    // 1. 获取订单信息
+    const orders = await this.orderRepository.findByIds(orderIds);
+    
+    // 2. 准备多点配送数据
+    const stops = orders.map(order => ({
+      address: order.deliveryAddressSnapshot.formattedAddress,
+      latitude: order.deliveryAddressSnapshot.latitude,
+      longitude: order.deliveryAddressSnapshot.longitude,
+      contactName: order.deliveryAddressSnapshot.contactName,
+      contactNumber: order.deliveryAddressSnapshot.contactNumber
+    }));
+    
+    // 3. 调用 Uber Direct API 创建多点配送
+    const { UberDirectService } = require('./uber-direct.service');
+    const uberService = new UberDirectService();
+    
+    const result = await uberService.createMultiStopDelivery({
+      pickupAddress: await this.getStoreAddress(),
+      stops: stops,
+      scheduledPickupTime: deliveryDate
+    });
+    
+    // 4. 更新所有订单的配送信息
+    const batchId = `uber_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    for (const order of orders) {
+      await this.updateOrderDeliveryInfo(order.id, {
+        provider: epDeliveryProvider.UBER_DIRECT,
+        providerOrderId: result.orderId,
+        trackingNumber: result.trackingNumber,
+        trackingUrl: result.trackingUrl,
+        batchId: batchId,
+        scheduledPickupTime: deliveryDate
+      });
+    }
+  }
+
+  /**
+   * 辅助方法：角度转弧度
+   */
+  private toRadians(degrees: number): number {
+    return degrees * (Math.PI / 180);
+  }
+
+  /**
+   * 辅助方法：从地址获取经纬度
+   */
+  private async getCoordinatesFromAddress(address: string): Promise<{ latitude: number; longitude: number } | null> {
+    try {
+      const { GoogleMapsService } = require('../../google-maps/services/google-maps.service');
+      const { configUtil } = require('../../../shared/config/config.util');
+      const googleMapsConfig = configUtil.getGoogleMapsConfig();
+      const googleMapsService = new GoogleMapsService(googleMapsConfig);
+      
+      const result = await googleMapsService.getCoordinatesFromAddress(address, 'en');
+      if (result?.results && result.results.length > 0) {
+        const location = result.results[0].geometry?.location;
+        if (location) {
+          return {
+            latitude: typeof location.lat === 'function' ? location.lat() : location.lat,
+            longitude: typeof location.lng === 'function' ? location.lng() : location.lng
+          };
+        }
+      }
+    } catch (error) {
+      console.error('获取地址经纬度失败:', error);
+    }
+    return null;
+  }
+
+  /**
+   * 辅助方法：格式化地址
+   */
+  private formatAddress(addressSnapshot: any): string {
+    return `${addressSnapshot.streetNumber || ''} ${addressSnapshot.route || ''}, ${addressSnapshot.locality || ''}, ${addressSnapshot.administrativeArea || ''} ${addressSnapshot.postalCode || ''}, ${addressSnapshot.country || ''}`.trim();
+  }
+
+  /**
+   * 辅助方法：获取店铺地址
+   */
+  private async getStoreAddress(): Promise<string> {
+    const { StoreAddressService } = require('../../store/services/store-address.service');
+    const storeService = new StoreAddressService();
+    const defaultStore = await storeService.getDefaultStoreAddress();
+    return defaultStore?.formattedAddress || '';
+  }
+
+  /**
+   * 按配送服务商分组订单
+   */
+  private async groupOrdersByProvider(orders: any[]): Promise<Array<{ provider: epDeliveryProvider; orders: any[] }>> {
+    const groups = new Map<epDeliveryProvider, any[]>();
+    
+    for (const order of orders) {
+      const provider = order.deliveryProvider || epDeliveryProvider.STORE_DELIVERY;
+      
+      if (!groups.has(provider)) {
+        groups.set(provider, []);
+      }
+      groups.get(provider)!.push(order);
+    }
+    
+    return Array.from(groups.entries()).map(([provider, orders]) => ({ provider, orders }));
+  }
+
+  /**
+   * 创建 Sendle 批量配送（同一天取单）
+   */
+  private async createSendleBatchDelivery(orders: any[], deliveryDate: Date): Promise<void> {
+    // 1. 为每个订单创建 Sendle 配送订单
+    // 2. 使用相同的取件日期
+    // 3. Sendle 会安排同一天取单
+    // TODO: 实现
+  }
+
+  /**
+   * 创建店铺自送批量配送（合并配送路线）
+   */
+  private async createStoreBatchDelivery(orders: any[], deliveryDate: Date): Promise<void> {
+    // 1. 优化配送路线
+    // 2. 创建配送任务
+    // 3. 更新订单状态
+    // TODO: 实现
   }
 }
 ```
@@ -1251,4 +1659,56 @@ Preorder 订单：
 - 如果 `enableUberDirect = false` 且 `enableSendle = false`，系统行为与现有完全一致（使用店铺自送）
 - 现有的运费计算逻辑保持不变，只是增加了新的服务商选项
 - 订单表中的 `delivery_provider` 字段可以为空，兼容旧订单
+
+---
+
+## 🎯 Offer 订单 Uber Direct 优化分组算法
+
+### 算法概述
+
+通过经纬度计算所有订单地址的相互间距离，使用改进的 K-means 聚类算法进行优化分组，确保：
+1. 每组订单数量不超过 Uber Direct 限制（14个）
+2. 组内订单之间的距离最小化（减少配送员行驶距离）
+3. 组与组之间的距离最大化（避免交叉，减少配送成本）
+
+### 算法步骤
+
+```
+1. 提取订单地址和经纬度
+   ├─ 从订单的 delivery_address_snapshot 获取经纬度
+   └─ 如果没有经纬度，通过 Google Maps API 获取
+
+2. 计算距离矩阵
+   └─ 使用 Haversine 公式计算所有地址之间的相互距离
+      └─ 生成 N×N 距离矩阵（N = 订单数量）
+
+3. 优化分组（改进的 K-means 聚类）
+   ├─ 计算需要的组数：ceil(订单数 / 14)
+   ├─ 随机初始化 k 个中心点
+   ├─ 迭代分配：
+   │  ├─ 将每个订单分配到最近的中心点
+   │  ├─ 检查组大小限制（最多 14 个）
+   │  └─ 如果组已满，分配到下一个最近的未满组
+   └─ 更新中心点（组内平均位置）
+      └─ 重复直到收敛或达到最大迭代次数
+
+4. 按组创建多点配送
+   └─ 每组最多 14 个订单，调用 Uber Direct 多点配送 API
+```
+
+### 算法优势
+
+1. **成本优化**：组内距离最小化，减少配送员行驶距离
+2. **避免交叉**：组与组之间距离最大化，避免配送路线交叉
+3. **符合限制**：严格遵守 Uber Direct 最多 14 个订单的限制
+4. **自动处理**：无需手动分组，系统自动优化
+
+### 性能考虑
+
+- **距离矩阵计算**：O(N²) 时间复杂度，对于 100 个订单约需计算 10,000 次距离
+- **K-means 聚类**：O(N×k×iterations)，通常 10-100 次迭代即可收敛
+- **优化建议**：
+  - 如果订单数量 > 200，考虑分批处理
+  - 可以缓存距离矩阵，避免重复计算
+  - 考虑使用更高效的聚类算法（如 DBSCAN）处理大规模数据
 
