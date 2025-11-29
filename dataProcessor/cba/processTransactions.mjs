@@ -144,6 +144,52 @@ try {
     console.log('');
   }
   
+  // Generate statistics report file
+  const outputFilePath = path.join(__dirname, '统计结果.txt');
+  let reportContent = '';
+  
+  reportContent += '=== 转账记录统计结果 ===\n\n';
+  reportContent += `处理文件: ${fileName}\n`;
+  reportContent += `处理时间: ${new Date().toLocaleString('zh-CN')}\n\n`;
+  
+  reportContent += '=== 汇总统计 ===\n\n';
+  reportContent += `Joymart/Yaochii: $${joymartYaochiiSum.toFixed(2)} (${joymartYaochiiGroup.length} 笔交易)\n`;
+  reportContent += `Dragon Bay: $${dragonBaySum.toFixed(2)} (${dragonBayGroup.length} 笔交易)\n`;
+  reportContent += `其他: $${otherSum.toFixed(2)} (${otherGroup.length} 笔交易)\n`;
+  reportContent += `排除的退款: $${excludedRefundsSum.toFixed(2)} (${excludedRefunds.length} 笔交易)\n`;
+  reportContent += `总计 (排除退款): $${(joymartYaochiiSum + dragonBaySum + otherSum).toFixed(2)}\n\n`;
+  
+  // Joymart/Yaochii transactions detail
+  if (joymartYaochiiGroup.length > 0) {
+    reportContent += '=== Joymart/Yaochii 交易明细 ===\n\n';
+    joymartYaochiiGroup.forEach(t => {
+      reportContent += `${t.date} | $${t.amount.toFixed(2)} | ${t.description}\n`;
+    });
+    reportContent += '\n';
+  }
+  
+  // Dragon Bay transactions detail
+  if (dragonBayGroup.length > 0) {
+    reportContent += '=== Dragon Bay 交易明细 ===\n\n';
+    dragonBayGroup.forEach(t => {
+      reportContent += `${t.date} | $${t.amount.toFixed(2)} | ${t.description}\n`;
+    });
+    reportContent += '\n';
+  }
+  
+  // Excluded Refunds detail
+  if (excludedRefunds.length > 0) {
+    reportContent += '=== 排除的退款明细 ===\n\n';
+    excludedRefunds.forEach(t => {
+      reportContent += `${t.date} | $${t.amount.toFixed(2)} | ${t.description}\n`;
+    });
+    reportContent += '\n';
+  }
+  
+  // Write to file
+  fs.writeFileSync(outputFilePath, reportContent, 'utf-8');
+  console.log(`\n✅ 统计结果已保存到: ${outputFilePath}`);
+  
 } catch (error) {
   console.error('Error processing file:', error.message);
   process.exit(1);
