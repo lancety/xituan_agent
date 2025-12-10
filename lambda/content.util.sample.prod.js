@@ -45842,13 +45842,18 @@ var ThumborMapper = class _ThumborMapper {
     const dimensionsMatchResult = path.match(/\/((\d+x\d+)|(0x\d+))\//g);
     if (dimensionsMatchResult) {
       const [width, height] = dimensionsMatchResult[0].replace(/\//g, "").split("x").map((x3) => parseInt(x3));
+      
+      // Convert to nearest allowed size
+      width = width === 0 ? null : width;
+      height = height === 0 ? null : height;
+
       if (!isNaN(width) && !isNaN(height)) {
         const resizeEdit = { resize: {} };
         if (width === 0 || height === 0) {
           resizeEdit.resize.fit = "inside" /* INSIDE */;
         }
-        resizeEdit.resize.width = width === 0 ? null : width;
-        resizeEdit.resize.height = height === 0 ? null : height;
+        resizeEdit.resize.width = width;
+        resizeEdit.resize.height = height;
         return resizeEdit;
       }
     }
@@ -46547,10 +46552,11 @@ var ImageHandler = class _ImageHandler {
     try {
       if (!edits || !Object.keys(edits).length) {
         if (imageRequestInfo.outputFormat !== void 0) {
-          const modifiedImage2 = this.modifyImageOutput(
-            await this.instantiateSharpImage(originalImage, edits, options),
-            imageRequestInfo
-          );
+          const image = await this.instantiateSharpImage(originalImage, edits, options);
+          if (imageRequestInfo.outputFormat === "webp" /* WEBP */) {
+            image.autoOrient();
+          }
+          const modifiedImage2 = this.modifyImageOutput(image, imageRequestInfo);
           return await modifiedImage2.toBuffer();
         }
         return originalImage;
@@ -46634,6 +46640,13 @@ var ImageHandler = class _ImageHandler {
         }
         default: {
           if (SHARP_EDIT_ALLOWLIST_ARRAY.includes(edit)) {
+            // Hardcode transparent background for contain fit
+            if (edit === "resize" && edits[edit].fit === "contain") {
+              console.log("Processing contain resize with transparent background");
+              // Set background for contain fit
+              edits[edit].background = { r: 0, g: 0, b: 0, alpha: 0 };
+              console.log("Final resize options:", JSON.stringify(edits[edit]));
+            }
             originalImage[edit](edits[edit]);
           }
         }

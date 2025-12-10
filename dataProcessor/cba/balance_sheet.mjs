@@ -109,6 +109,17 @@ function csvEscape(value) {
 
 // --- heuristics for classification ---
 
+// Keywords for fuel / petrol stations, used for summary stats only
+const FUEL_EXPENSE_KEYWORDS = [
+  'eg group',
+  'caltex',
+  'ampol',
+  'shell',
+  'bp ',
+  '7-eleven',
+  '7 eleven',
+];
+
 // Vendors that are clearly business related (raw material, suppliers, platforms, etc.)
 const BUSINESS_EXPENSE_KEYWORDS = [
   // Known suppliers and food related
@@ -154,6 +165,8 @@ const BUSINESS_EXPENSE_KEYWORDS = [
   'asic',
   'basicingred',
   'whats cooking',
+  // Logistics / freight
+  'success logistics',
 ];
 
 // Keywords that are very likely personal only (school, shopping mall, etc.)
@@ -242,7 +255,6 @@ const POSSIBLE_SUPPLIER_KEYWORDS = [
   'agl',
   'liquorland',
   '河南星宸',
-  'success logistics sydney',
   '佳音海运',
   'jiayin',
   'freshcorp fruitmarket',
@@ -419,12 +431,14 @@ let personalIncome = 0;
 let companyExpense = 0;
 let personalExpense = 0;
 let unknownExpense = 0;
+let fuelExpense = 0;
 
 const classifiedRows = [];
 
 transactions.forEach((tx) => {
   const result = classifyTransaction(tx);
   const { type, party } = result;
+  const descLower = (tx.description || '').toLowerCase();
 
   if (type === 'income') {
     if (party === 'company') {
@@ -440,6 +454,11 @@ transactions.forEach((tx) => {
       personalExpense += value;
     } else {
       unknownExpense += value;
+    }
+
+    // Track fuel-related expenses separately for summary (subset of total expenses)
+    if (FUEL_EXPENSE_KEYWORDS.some((kw) => descLower.includes(kw))) {
+      fuelExpense += value;
     }
   }
 
@@ -500,6 +519,9 @@ console.log('Expense summary (absolute values):');
 console.log(`  Company expense : $${companyExpense.toFixed(2)}`);
 console.log(`  Personal expense: $${personalExpense.toFixed(2)}`);
 console.log(`  Unknown expense : $${unknownExpense.toFixed(2)}\n`);
+
+console.log('Fuel expense (subset of above, absolute values):');
+console.log(`  Fuel expense    : $${fuelExpense.toFixed(2)}\n`);
 
 console.log(
   'Note: "unknown" and low-confidence rows should be reviewed manually before final tax figures.'

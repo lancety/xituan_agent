@@ -46528,7 +46528,7 @@ var ImageHandler = class _ImageHandler {
     const modifiedOutputImage = modifiedImage;
     if (imageRequestInfo.outputFormat !== void 0) {
       if (imageRequestInfo.outputFormat === "webp" /* WEBP */ && typeof imageRequestInfo.effort !== "undefined") {
-        modifiedOutputImage.webp({ effort: imageRequestInfo.effort });
+          modifiedOutputImage.webp({ effort: imageRequestInfo.effort });
       } else {
         modifiedOutputImage.toFormat(_ImageHandler.convertImageFormatType(imageRequestInfo.outputFormat));
       }
@@ -46552,10 +46552,11 @@ var ImageHandler = class _ImageHandler {
     try {
       if (!edits || !Object.keys(edits).length) {
         if (imageRequestInfo.outputFormat !== void 0) {
-          const modifiedImage2 = this.modifyImageOutput(
-            await this.instantiateSharpImage(originalImage, edits, options),
-            imageRequestInfo
-          );
+          const image = await this.instantiateSharpImage(originalImage, edits, options);
+          if (imageRequestInfo.outputFormat === "webp" /* WEBP */) {
+            image.autoOrient();
+          }
+          const modifiedImage2 = this.modifyImageOutput(image, imageRequestInfo);
           return await modifiedImage2.toBuffer();
         }
         return originalImage;
