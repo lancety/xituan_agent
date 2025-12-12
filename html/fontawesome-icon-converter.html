@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FontAwesome 图标转 PNG 工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #8b5cf6;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .icon-preview {
+            text-align: center;
+            margin: 30px 0;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px dashed #dee2e6;
+        }
+
+        .icon-preview i {
+            font-size: 4em;
+            color: #8b5cf6;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .icon-preview .icon-name {
+            font-size: 1.2em;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin: 10px 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 10px 20px rgba(108, 117, 125, 0.3);
+        }
+
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .icon-item {
+            text-align: center;
+            padding: 15px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .icon-item:hover {
+            background: #e9ecef;
+            border-color: #8b5cf6;
+        }
+
+        .icon-item.selected {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .icon-item i {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .icon-item span {
+            font-size: 0.8em;
+            display: block;
+            word-break: break-all;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .export-options {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .export-options h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .size-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .size-option {
+            text-align: center;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .size-option:hover {
+            border-color: #8b5cf6;
+        }
+
+        .size-option.selected {
+            border-color: #8b5cf6;
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .size-option .size {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .size-option .desc {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .theme-colors {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .theme-color-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .theme-color-item:hover {
+            border-color: #8b5cf6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+        }
+
+        .theme-color-item.selected {
+            border-color: #8b5cf6;
+            background: #f8f9ff;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+        }
+
+        .theme-color-item .color-preview {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 12px;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .theme-color-item span {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        .theme-color-item small {
+            color: #666;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-magic"></i> FontAwesome 图标转 PNG 工具</h1>
+            <p>将 FontAwesome Solid 图标转换为指定颜色的 PNG 图片</p>
+        </div>
+
+        <div class="content">
+            <div class="form-group">
+                <label for="iconSearch">搜索图标：</label>
+                <input type="text" id="iconSearch" placeholder="输入图标名称搜索，如：home, cart, user...">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="selectedIcon">选中的图标：</label>
+                    <input type="text" id="selectedIcon" placeholder="点击下方图标选择" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="iconColor">图标颜色：</label>
+                    <input type="color" id="iconColor" value="#8b5cf6">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>项目主题颜色：</label>
+                <div class="theme-colors">
+                    <div class="theme-color-item" data-color="#8b5cf6" data-name="紫色主题">
+                        <div class="color-preview" style="background: #8b5cf6;"></div>
+                        <span>紫色主题</span>
+                        <small>#8b5cf6</small>
+                    </div>
+                    <div class="theme-color-item" data-color="#06b6d4" data-name="青色主题">
+                        <div class="color-preview" style="background: #06b6d4;"></div>
+                        <span>青色主题</span>
+                        <small>#06b6d4</small>
+                    </div>
+                    <div class="theme-color-item" data-color="#f59e0b" data-name="橙色主题">
+                        <div class="color-preview" style="background: #f59e0b;"></div>
+                        <span>橙色主题</span>
+                        <small>#f59e0b</small>
+                    </div>
+                    <div class="theme-color-item" data-color="#28a745" data-name="绿色主题">
+                        <div class="color-preview" style="background: #28a745;"></div>
+                        <span>绿色主题</span>
+                        <small>#28a745</small>
+                    </div>
+                    <div class="theme-color-item" data-color="#7c3aed" data-name="深紫色">
+                        <div class="color-preview" style="background: #7c3aed;"></div>
+                        <span>深紫色</span>
+                        <small>#7c3aed</small>
+                    </div>
+                    <div class="theme-color-item" data-color="#a78bfa" data-name="浅紫色">
+                        <div class="color-preview" style="background: #a78bfa;"></div>
+                        <span>浅紫色</span>
+                        <small>#a78bfa</small>
+                    </div>
+                    <div class="theme-color-item" data-color="#0891b2" data-name="深青色">
+                        <div class="color-preview" style="background: #0891b2;"></div>
+                        <span>深青色</span>
+                        <small>#0891b2</small>
+                    </div>
+                    <div class="theme-color-item" data-color="#22d3ee" data-name="浅青色">
+                        <div class="color-preview" style="background: #22d3ee;"></div>
+                        <span>浅青色</span>
+                        <small>#22d3ee</small>
+                    </div>
+                    <div class="theme-color-item" data-color="#d97706" data-name="深橙色">
+                        <div class="color-preview" style="background: #d97706;"></div>
+                        <span>深橙色</span>
+                        <small>#d97706</small>
+                    </div>
+                    <div class="theme-color-item" data-color="#fbbf24" data-name="浅橙色">
+                        <div class="color-preview" style="background: #fbbf24;"></div>
+                        <span>浅橙色</span>
+                        <small>#fbbf24</small>
+                    </div>
+                    <div class="theme-color-item" data-color="#6b7280" data-name="灰色">
+                        <div class="color-preview" style="background: #6b7280;"></div>
+                        <span>灰色</span>
+                        <small>#6b7280</small>
+                    </div>
+                    <div class="theme-color-item" data-color="#9ca3af" data-name="浅灰色">
+                        <div class="color-preview" style="background: #9ca3af;"></div>
+                        <span>浅灰色</span>
+                        <small>#9ca3af</small>
+                    </div>
+                    <div class="theme-color-item" data-color="#374151" data-name="深灰色">
+                        <div class="color-preview" style="background: #374151;"></div>
+                        <span>深灰色</span>
+                        <small>#374151</small>
+                    </div>
+                    <div class="theme-color-item" data-color="#000000" data-name="黑色">
+                        <div class="color-preview" style="background: #000000;"></div>
+                        <span>黑色</span>
+                        <small>#000000</small>
+                    </div>
+                    <div class="theme-color-item" data-color="#ffffff" data-name="白色">
+                        <div class="color-preview" style="background: #ffffff; border: 1px solid #e5e7eb;"></div>
+                        <span>白色</span>
+                        <small>#ffffff</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="icon-preview">
+                <i id="previewIcon" class="fas fa-home"></i>
+                <div class="icon-name" id="previewName">home</div>
+            </div>
+
+            <div class="export-options">
+                <h3>导出设置</h3>
+                <div class="size-options">
+                    <div class="size-option selected" data-size="81">
+                        <div class="size">81×81</div>
+                        <div class="desc">微信推荐</div>
+                    </div>
+                    <div class="size-option" data-size="64">
+                        <div class="size">64×64</div>
+                        <div class="desc">标准</div>
+                    </div>
+                    <div class="size-option" data-size="128">
+                        <div class="size">128×128</div>
+                        <div class="desc">高清</div>
+                    </div>
+                    <div class="size-option" data-size="256">
+                        <div class="size">256×256</div>
+                        <div class="desc">超高清</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <button class="btn" onclick="exportIcon()">
+                    <i class="fas fa-download"></i> 导出 PNG
+                </button>
+                <button class="btn btn-secondary" onclick="exportAllSizes()">
+                    <i class="fas fa-images"></i> 导出所有尺寸
+                </button>
+                <button class="btn btn-secondary" onclick="clearSelection()">
+                    <i class="fas fa-refresh"></i> 重置
+                </button>
+            </div>
+
+            <div id="status"></div>
+
+            <div class="icon-grid" id="iconGrid">
+                <!-- 图标网格将通过 JavaScript 动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // FontAwesome Solid 图标列表（常用图标）
+        const solidIcons = [
+            'home', 'user', 'shopping-cart', 'heart', 'star', 'search', 'bell', 'envelope',
+            'phone', 'map-marker-alt', 'calendar', 'clock', 'cog', 'sign-out-alt', 'sign-in-alt',
+            'plus', 'minus', 'edit', 'trash', 'save', 'download', 'upload', 'share', 'link',
+            'copy', 'cut', 'paste', 'undo', 'redo', 'print', 'file', 'folder', 'folder-open',
+            'image', 'video', 'music', 'play', 'pause', 'stop', 'forward', 'backward',
+            'thumbs-up', 'thumbs-down', 'comment', 'comments', 'like', 'dislike', 'smile',
+            'frown', 'meh', 'laugh', 'angry', 'sad', 'surprise', 'wink', 'kiss',
+            'gift', 'trophy', 'medal', 'award', 'certificate', 'badge', 'ribbon',
+            'shopping-bag', 'credit-card', 'money-bill', 'coins', 'wallet', 'receipt',
+            'chart-line', 'chart-bar', 'chart-pie', 'chart-area', 'trending-up', 'trending-down',
+            'database', 'server', 'cloud', 'wifi', 'bluetooth', 'signal', 'battery-full',
+            'battery-half', 'battery-empty', 'plug', 'power-off', 'lightbulb', 'flashlight',
+            'key', 'lock', 'unlock', 'shield-alt', 'eye', 'eye-slash', 'user-secret',
+            'fingerprint', 'qrcode', 'barcode', 'tag', 'tags', 'price-tag', 'percent',
+            'calculator', 'abacus', 'ruler', 'compass', 'globe', 'map', 'location-arrow',
+            'directions', 'route', 'walking', 'car', 'bus', 'train', 'plane', 'ship',
+            'bicycle', 'motorcycle', 'truck', 'ambulance', 'fire', 'police', 'hospital',
+            'building', 'store', 'warehouse', 'factory', 'school', 'university', 'church',
+            'mosque', 'synagogue', 'temple', 'cross', 'star-and-crescent', 'yin-yang',
+            'peace', 'handshake', 'users', 'user-friends', 'user-plus', 'user-minus',
+            'user-times', 'user-check', 'user-edit', 'user-cog', 'user-shield', 'user-lock',
+            'user-unlock', 'user-slash', 'user-tag', 'user-graduate', 'user-ninja', 'user-astronaut',
+            'user-injured', 'user-md', 'user-nurse', 'user-tie', 'user-headset', 'user-clock',
+            'user-crown', 'user-hard-hat', 'user-construction', 'user-doctor', 'user-edit',
+            'user-friends', 'user-graduate', 'user-injured', 'user-lock', 'user-md',
+            'user-ninja', 'user-nurse', 'user-plus', 'user-secret', 'user-shield',
+            'user-slash', 'user-tag', 'user-times', 'user-unlock', 'users-cog', 'users-slash'
+        ];
+
+        let selectedIcon = 'home';
+        let selectedSize = 81;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            generateIconGrid();
+            setupEventListeners();
+            
+            // 默认选中紫色主题
+            const purpleTheme = document.querySelector('.theme-color-item[data-color="#8b5cf6"]');
+            if (purpleTheme) {
+                purpleTheme.classList.add('selected');
+            }
+        });
+
+        function setupEventListeners() {
+            // 搜索功能
+            document.getElementById('iconSearch').addEventListener('input', function(e) {
+                filterIcons(e.target.value);
+            });
+
+            // 颜色变化
+            document.getElementById('iconColor').addEventListener('change', function(e) {
+                updatePreview();
+            });
+
+            // 尺寸选择
+            document.querySelectorAll('.size-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.size-option').forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedSize = parseInt(this.dataset.size);
+                });
+            });
+
+            // 主题颜色选择
+            document.querySelectorAll('.theme-color-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    document.querySelectorAll('.theme-color-item').forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    const color = this.dataset.color;
+                    document.getElementById('iconColor').value = color;
+                    updatePreview();
+                });
+            });
+        }
+
+        function generateIconGrid() {
+            const grid = document.getElementById('iconGrid');
+            grid.innerHTML = '';
+
+            solidIcons.forEach(iconName => {
+                const iconItem = document.createElement('div');
+                iconItem.className = 'icon-item';
+                iconItem.innerHTML = `
+                    <i class="fas fa-${iconName}"></i>
+                    <span>${iconName}</span>
+                `;
+                iconItem.addEventListener('click', () => selectIcon(iconName));
+                grid.appendChild(iconItem);
+            });
+        }
+
+        function filterIcons(searchTerm) {
+            const iconItems = document.querySelectorAll('.icon-item');
+            const term = searchTerm.toLowerCase();
+
+            iconItems.forEach(item => {
+                const iconName = item.querySelector('span').textContent;
+                if (iconName.includes(term)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function selectIcon(iconName) {
+            selectedIcon = iconName;
+            document.getElementById('selectedIcon').value = iconName;
+            updatePreview();
+
+            // 更新选中状态
+            document.querySelectorAll('.icon-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+        }
+
+        function updatePreview() {
+            const previewIcon = document.getElementById('previewIcon');
+            const previewName = document.getElementById('previewName');
+            const color = document.getElementById('iconColor').value;
+
+            previewIcon.className = `fas fa-${selectedIcon}`;
+            previewIcon.style.color = color;
+            previewName.textContent = selectedIcon;
+        }
+
+        function exportIcon() {
+            if (!selectedIcon) {
+                showStatus('请先选择一个图标！', 'error');
+                return;
+            }
+
+            const color = document.getElementById('iconColor').value;
+            const size = selectedSize;
+
+            // 创建临时容器来渲染图标
+            const tempContainer = document.createElement('div');
+            tempContainer.style.position = 'absolute';
+            tempContainer.style.left = '-9999px';
+            tempContainer.style.top = '-9999px';
+            tempContainer.style.width = size + 'px';
+            tempContainer.style.height = size + 'px';
+            tempContainer.style.display = 'flex';
+            tempContainer.style.alignItems = 'center';
+            tempContainer.style.justifyContent = 'center';
+            tempContainer.style.backgroundColor = 'transparent';
+            
+            // 创建图标元素
+            const iconElement = document.createElement('i');
+            iconElement.className = `fas fa-${selectedIcon}`;
+            iconElement.style.fontSize = `${size * 0.6}px`;
+            iconElement.style.color = color;
+            iconElement.style.lineHeight = '1';
+            
+            tempContainer.appendChild(iconElement);
+            document.body.appendChild(tempContainer);
+
+            // 使用 html2canvas 渲染
+            html2canvas(tempContainer, {
+                width: size,
+                height: size,
+                backgroundColor: null,
+                scale: 1,
+                useCORS: true,
+                allowTaint: true
+            }).then(canvas => {
+                // 导出 PNG
+                canvas.toBlob(function(blob) {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `fa-${selectedIcon}-${size}x${size}.png`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+
+                    showStatus(`图标 ${selectedIcon} (${size}×${size}) 导出成功！`, 'success');
+                });
+
+                // 清理临时元素
+                document.body.removeChild(tempContainer);
+            }).catch(error => {
+                console.error('导出失败:', error);
+                showStatus('导出失败，请重试', 'error');
+                document.body.removeChild(tempContainer);
+            });
+        }
+
+        function drawIconToCanvas(ctx, canvas, tempDiv, color, size) {
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 设置字体和颜色
+            ctx.font = `${size * 0.6}px "Font Awesome 6 Free"`;
+            ctx.fillStyle = color;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // 获取图标字符
+            const iconChar = getIconChar(selectedIcon);
+            if (iconChar) {
+                ctx.fillText(iconChar, size / 2, size / 2);
+            } else {
+                // 如果无法获取字符，使用备用方法
+                ctx.fillText('?', size / 2, size / 2);
+            }
+        }
+
+        // 使用更可靠的方法绘制图标
+        function drawIconToCanvasReliable(ctx, canvas, color, size) {
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 设置字体和颜色
+            ctx.font = `${size * 0.6}px "Font Awesome 6 Free"`;
+            ctx.fillStyle = color;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // 获取图标字符
+            const iconChar = getIconChar(selectedIcon);
+            if (iconChar) {
+                ctx.fillText(iconChar, size / 2, size / 2);
+            } else {
+                // 如果无法获取字符，使用备用方法
+                ctx.fillText('?', size / 2, size / 2);
+            }
+        }
+
+        // 使用SVG方法绘制图标（更可靠）
+        function drawIconWithSVG(ctx, canvas, color, size) {
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 创建SVG元素
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', size);
+            svg.setAttribute('height', size);
+            svg.setAttribute('viewBox', '0 0 24 24');
+
+            // 创建文本元素
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', '12');
+            text.setAttribute('y', '16');
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('font-family', 'Font Awesome 6 Free');
+            text.setAttribute('font-size', '14');
+            text.setAttribute('fill', color);
+            text.setAttribute('font-weight', '900');
+            
+            const iconChar = getIconChar(selectedIcon);
+            text.textContent = iconChar || '?';
+            svg.appendChild(text);
+
+            // 将SVG转换为图片
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const img = new Image();
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0, size, size);
+            };
+            img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+        }
+
+        function getIconChar(iconName) {
+            // FontAwesome 6 的 Unicode 映射（部分常用图标）
+            const iconMap = {
+                'home': '\uf015',
+                'user': '\uf007',
+                'shopping-cart': '\uf07a',
+                'heart': '\uf004',
+                'star': '\uf005',
+                'search': '\uf002',
+                'bell': '\uf0f3',
+                'envelope': '\uf0e0',
+                'phone': '\uf095',
+                'map-marker-alt': '\uf3c5',
+                'calendar': '\uf133',
+                'clock': '\uf017',
+                'cog': '\uf013',
+                'sign-out-alt': '\uf2f5',
+                'sign-in-alt': '\uf2f6',
+                'plus': '\uf067',
+                'minus': '\uf068',
+                'edit': '\uf044',
+                'trash': '\uf1f8',
+                'save': '\uf0c7',
+                'download': '\uf019',
+                'upload': '\uf093',
+                'share': '\uf064',
+                'link': '\uf0c1',
+                'copy': '\uf0c5',
+                'cut': '\uf0c4',
+                'paste': '\uf0ea',
+                'undo': '\uf0e2',
+                'redo': '\uf01e',
+                'print': '\uf02f',
+                'file': '\uf15b',
+                'folder': '\uf07b',
+                'folder-open': '\uf07c',
+                'image': '\uf03e',
+                'video': '\uf03d',
+                'music': '\uf001',
+                'play': '\uf04b',
+                'pause': '\uf04c',
+                'stop': '\uf04d',
+                'forward': '\uf04e',
+                'backward': '\uf04a',
+                'thumbs-up': '\uf164',
+                'thumbs-down': '\uf165',
+                'comment': '\uf075',
+                'comments': '\uf086',
+                'like': '\uf004',
+                'dislike': '\uf165',
+                'smile': '\uf118',
+                'frown': '\uf119',
+                'meh': '\uf11a',
+                'laugh': '\uf59c',
+                'angry': '\uf556',
+                'sad': '\uf5b2',
+                'surprise': '\uf5b2',
+                'wink': '\uf58c',
+                'kiss': '\uf596',
+                'gift': '\uf06b',
+                'trophy': '\uf091',
+                'medal': '\uf5a2',
+                'award': '\uf559',
+                'certificate': '\uf0a3',
+                'badge': '\uf335',
+                'ribbon': '\uf7e6',
+                'shopping-bag': '\uf290',
+                'credit-card': '\uf09d',
+                'money-bill': '\uf0d6',
+                'coins': '\uf51e',
+                'wallet': '\uf555',
+                'receipt': '\uf543',
+                'chart-line': '\uf201',
+                'chart-bar': '\uf080',
+                'chart-pie': '\uf200',
+                'chart-area': '\uf1fe',
+                'trending-up': '\uf3c1',
+                'trending-down': '\uf3c3',
+                'database': '\uf1c0',
+                'server': '\uf233',
+                'cloud': '\uf0c2',
+                'wifi': '\uf1eb',
+                'bluetooth': '\uf294',
+                'signal': '\uf012',
+                'battery-full': '\uf240',
+                'battery-half': '\uf242',
+                'battery-empty': '\uf244',
+                'plug': '\uf1e6',
+                'power-off': '\uf011',
+                'lightbulb': '\uf0eb',
+                'flashlight': '\uf0b0',
+                'key': '\uf084',
+                'lock': '\uf023',
+                'unlock': '\uf09c',
+                'shield-alt': '\uf3ed',
+                'eye': '\uf06e',
+                'eye-slash': '\uf070',
+                'user-secret': '\uf21b',
+                'fingerprint': '\uf577',
+                'qrcode': '\uf029',
+                'barcode': '\uf02a',
+                'tag': '\uf02b',
+                'tags': '\uf02c',
+                'price-tag': '\uf02d',
+                'percent': '\uf295',
+                'calculator': '\uf1ec',
+                'abacus': '\uf5e0',
+                'ruler': '\uf545',
+                'compass': '\uf14e',
+                'globe': '\uf0ac',
+                'map': '\uf279',
+                'location-arrow': '\uf124',
+                'directions': '\uf5eb',
+                'route': '\uf4d7',
+                'walking': '\uf554',
+                'car': '\uf1b9',
+                'bus': '\uf207',
+                'train': '\uf238',
+                'plane': '\uf072',
+                'ship': '\uf21a',
+                'bicycle': '\uf206',
+                'motorcycle': '\uf21c',
+                'truck': '\uf0d1',
+                'ambulance': '\uf0f9',
+                'fire': '\uf06d',
+                'police': '\uf21a',
+                'hospital': '\uf0f8',
+                'building': '\uf1ad',
+                'store': '\uf54e',
+                'warehouse': '\uf494',
+                'factory': '\uf275',
+                'school': '\uf549',
+                'university': '\uf19c',
+                'church': '\uf51d',
+                'mosque': '\uf678',
+                'synagogue': '\uf69b',
+                'temple': '\uf6ea',
+                'cross': '\uf654',
+                'star-and-crescent': '\uf699',
+                'yin-yang': '\uf6ad',
+                'peace': '\uf99c',
+                'handshake': '\uf2b5',
+                'users': '\uf0c0',
+                'user-friends': '\uf500',
+                'user-plus': '\uf234',
+                'user-minus': '\uf503',
+                'user-times': '\uf235',
+                'user-check': '\uf4fc',
+                'user-edit': '\uf4ff',
+                'user-cog': '\uf4fe',
+                'user-shield': '\uf505',
+                'user-lock': '\uf502',
+                'user-unlock': '\uf501',
+                'user-slash': '\uf506',
+                'user-tag': '\uf507',
+                'user-graduate': '\uf501',
+                'user-ninja': '\uf504',
+                'user-astronaut': '\uf4fb',
+                'user-injured': '\uf728',
+                'user-md': '\uf0f0',
+                'user-nurse': '\uf82f',
+                'user-tie': '\uf508',
+                'user-headset': '\uf82d',
+                'user-clock': '\uf4fd',
+                'user-crown': '\uf6a4',
+                'user-hard-hat': '\uf807',
+                'user-construction': '\uf82c',
+                'user-doctor': '\uf0f0'
+            };
+
+            return iconMap[iconName] || null;
+        }
+
+        function exportAllSizes() {
+            if (!selectedIcon) {
+                showStatus('请先选择一个图标！', 'error');
+                return;
+            }
+
+            const sizes = [64, 81, 128, 256];
+            const color = document.getElementById('iconColor').value;
+            let completed = 0;
+
+            showStatus('正在导出所有尺寸...', 'info');
+
+            sizes.forEach((size, index) => {
+                setTimeout(() => {
+                    exportSingleSize(size, color);
+                    completed++;
+                    if (completed === sizes.length) {
+                        showStatus('所有尺寸导出完成！', 'success');
+                    }
+                }, index * 500); // 延迟导出避免浏览器阻塞
+            });
+        }
+
+        function exportSingleSize(size, color) {
+            // 创建临时容器来渲染图标
+            const tempContainer = document.createElement('div');
+            tempContainer.style.position = 'absolute';
+            tempContainer.style.left = '-9999px';
+            tempContainer.style.top = '-9999px';
+            tempContainer.style.width = size + 'px';
+            tempContainer.style.height = size + 'px';
+            tempContainer.style.display = 'flex';
+            tempContainer.style.alignItems = 'center';
+            tempContainer.style.justifyContent = 'center';
+            tempContainer.style.backgroundColor = 'transparent';
+            
+            // 创建图标元素
+            const iconElement = document.createElement('i');
+            iconElement.className = `fas fa-${selectedIcon}`;
+            iconElement.style.fontSize = `${size * 0.6}px`;
+            iconElement.style.color = color;
+            iconElement.style.lineHeight = '1';
+            
+            tempContainer.appendChild(iconElement);
+            document.body.appendChild(tempContainer);
+
+            // 使用 html2canvas 渲染
+            html2canvas(tempContainer, {
+                width: size,
+                height: size,
+                backgroundColor: null,
+                scale: 1,
+                useCORS: true,
+                allowTaint: true
+            }).then(canvas => {
+                canvas.toBlob(function(blob) {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `fa-${selectedIcon}-${size}x${size}.png`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                });
+
+                // 清理临时元素
+                document.body.removeChild(tempContainer);
+            }).catch(error => {
+                console.error('导出失败:', error);
+                document.body.removeChild(tempContainer);
+            });
+        }
+
+        function clearSelection() {
+            selectedIcon = 'home';
+            document.getElementById('selectedIcon').value = '';
+            document.getElementById('iconColor').value = '#8b5cf6';
+            document.querySelectorAll('.size-option').forEach(opt => opt.classList.remove('selected'));
+            document.querySelector('.size-option[data-size="81"]').classList.add('selected');
+            selectedSize = 81;
+            
+            // 重置主题颜色选择
+            document.querySelectorAll('.theme-color-item').forEach(item => item.classList.remove('selected'));
+            document.querySelector('.theme-color-item[data-color="#8b5cf6"]').classList.add('selected');
+            
+            updatePreview();
+            document.getElementById('status').innerHTML = '';
+            document.querySelectorAll('.icon-item').forEach(item => item.classList.remove('selected'));
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            
+            if (type === 'success' || type === 'error') {
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>
