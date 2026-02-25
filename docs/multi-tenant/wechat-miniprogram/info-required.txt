@@ -1,0 +1,33 @@
+# Information required from you (for the two WeChat class application documents)
+
+Fill in the placeholders in the two templates. You need to provide:
+
+--- 
+1. COMPANY (for both documents)
+   - [Company legal name]          e.g. Xituan Pty Ltd
+   - [ACN]                          (9 digits, from ASIC)
+   - [ABN]                          (11 digits, from ATO/ABR)
+   - [Registered address]           full address as on ASIC/ABR
+   - [Optional: letterhead]         if you have a logo/letterhead, use it when printing to sign
+
+---
+2. SIGNATORY (person who will sign both documents)
+   - [Full name]                    e.g. Zhang San
+   - [Title]                        e.g. Director, or Company Secretary
+   - [Email]                        platform contact email (for Consumer Protection Policy – support contact)
+
+---
+3. PLATFORM (optional, for tailoring the Consumer Protection Policy)
+   - [Platform / app name]          e.g. Xituan Mini Program, or your brand name
+   - [Support email]                for customer complaints/disputes (can be same as above)
+   - [Change-of-mind refunds]       Yes or No – does your platform allow refunds when the customer simply changes mind? (e.g. "Yes, within 7 days if unopened")
+
+---
+4. YOU ALREADY HAVE (you obtain these yourself, not from us)
+   - ASIC: Certificate of Registration or current company extract (download from ASIC)
+   - ABN: ABN Lookup result for your company (screenshot or print from abr.business.gov.au)
+
+After you provide the above, replace the placeholders in:
+  - wechat-ecommerce-platform-qualification-letter.txt
+  - wechat-consumer-protection-policy.txt
+then print on company letterhead (or plain with company name/address at top), sign and date, and upload as required.
