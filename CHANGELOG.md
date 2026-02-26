@@ -1,0 +1,42 @@
+## [2.0.1] - 2026-02-26
+
+### ✨ 新功能
+
+- feat: new feature invesitgations
+- financial feature
+- feat: list item + modal solution
+- feat: DDNS for dev;  rds doc updated
+- feat: barcode
+- feat: printTemp system; templateBatchPrinter refactor;
+
+### 🐛 修复
+
+- fix - make image content orientation
+- fix: invoice, summary, gst , price related refactor
+- fix: moved docs form backend project
+- fix: query analysis
+- fix: ecs scaling config added; db optimization guide added;
+- release version bug fix
+- bug fix
+- fix submodule and stay on master
+- bug fix
+
+### 📚 文档
+
+- payment status, payment record status clean up refund solution docs airwallex webhook samples
+- aws-setup docs
+- aws setup docs
+- final order payment commit design docs
+
+### 📝 其他
+
+- permission additional dev guide; merchant, inventory dev guide;
+- multi merchants
+- task: md added
+- balance_sheet process tool
+- alb + ecs fargate + rds postgresql formation deployment solution
+- md added, save
+- updates
+- improved version script
+- init
+
