@@ -15,7 +15,9 @@ class SmartUnifiedReleaseManager {
       { name: 'xituan_codebase', path: path.join(projectRoot, 'xituan_backend/submodules/xituan_codebase') },
       { name: 'xituan_backend', path: path.join(projectRoot, 'xituan_backend') },
       { name: 'xituan_cms', path: path.join(projectRoot, 'xituan_cms') },
-      { name: 'xituan_wechat_app', path: path.join(projectRoot, 'xituan_wechat_app') }
+      { name: 'xituan_platform', path: path.join(projectRoot, 'xituan_platform') },
+      { name: 'xituan_wechat_app', path: path.join(projectRoot, 'xituan_wechat_app') },
+      { name: 'xituan_agent', path: path.join(projectRoot, 'xituan_agent') }
     ];
   }
 
@@ -470,10 +472,14 @@ class SmartUnifiedReleaseManager {
     
     this.projects.forEach(project => {
       if (project.name !== 'xituan_codebase') {
+        const submodulePath = path.join(project.path, 'submodules/xituan_codebase');
+        if (!fs.existsSync(submodulePath)) {
+          console.log(`${project.name} 无 xituan_codebase submodule，跳过`);
+          return;
+        }
         console.log(`更新 ${project.name} 的submodule引用...`);
         try {
           // 先进入submodule目录，拉取最新代码
-          const submodulePath = path.join(project.path, 'submodules/xituan_codebase');
           this.exec('git fetch --tags', submodulePath);
           this.exec('git checkout master', submodulePath);
           this.exec('git pull origin master', submodulePath);

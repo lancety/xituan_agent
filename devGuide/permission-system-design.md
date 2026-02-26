@@ -367,3 +367,22 @@ router.post(
 3. **安全性**：后端权限检查是必须的，前端检查仅用于UI控制
 4. **配置同步**：确保前后端使用相同的配置版本
 
+## 八、CMS 与平台权限分离及路由拆分
+
+**数据边界**：
+- **Merchant 业务**不读 platform `users` 表；对应的是 **merchant member**（user_merchants 映射表）与 **merchant client**（未来映射表），列表与权限均通过映射表存取。
+- **Platform 业务**才读 platform `users` 表；仅平台管理端需要 users 相关 API。
+
+**路由与中间件拆分**：CMS 业务与 platform 业务的 backend API 路由应拆分开，各自使用一套权限与中间件，不混合。
+
+- **Platform API 路由**（如 `/api/platform/users`）：
+  - 仅使用 platform 相关中间件：认证 + **platform user role**（如 `requireAnyRole([ADMIN, SUPER_ADMIN])`）。
+  - 不使用 merchant 上下文、不检查 merchant role / merchant member role。
+  - 读写的为 platform 表（如 users 表）。
+- **CMS API 路由**（如 `/api/admin/merchant-members`、各类商户维度的 admin 接口）：
+  - 仅使用 CMS/merchant 相关中间件：认证 + **requestContext** + **merchantRequired** + **requireMerchantAccess** + **requireMerchantPermission** / **requireMerchantAdmin** 等。
+  - 不检查 platform user role（admin / super_admin）。
+  - 读写商户维度数据（映射表、商户 scoped 表）。
+
+**禁止**：同一路由上既校验 platform user role 又校验 merchant member role；不混用两套权限。
+
