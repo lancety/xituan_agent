@@ -49,7 +49,7 @@
 | `GET /api/orders/my` | 读 | 中等 | 用户订单列表，JOIN 查询 |
 | `GET /api/orders/:id` | 读 | 中等 | 订单详情，多表 JOIN |
 | `GET /api/carts` | 读 | 中等 | 购物车，关联商品信息 |
-| `GET /api/offers` | 读 | 中等 | 报价列表，关联商品 |
+| `GET /api/offers` | 读 | 中等 | 团购列表，关联商品 |
 | `GET /api/preorders` | 读 | 中等 | 预订单列表，JOIN |
 | `GET /api/products/:id/option-groups` | 读 | 中等 | 产品选项，多表关联 |
 
@@ -60,7 +60,7 @@
 | Route | 操作 | 复杂度 | 说明 |
 |-------|------|--------|------|
 | `POST /api/orders/regular` | 写 | 复杂 | 创建订单，事务，多表写入 |
-| `POST /api/orders/offer` | 写 | 复杂 | 创建报价订单，事务 |
+| `POST /api/orders/offer` | 写 | 复杂 | 创建团购订单，事务 |
 | `POST /api/orders/preorder` | 写 | 复杂 | 创建预订单，事务 |
 | `POST /api/carts` | 写 | 中等 | 更新购物车 |
 | `PUT /api/carts/:id` | 写 | 中等 | 更新购物车项 |

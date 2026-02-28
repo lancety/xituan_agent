@@ -1,7 +1,7 @@
-# 报价库存系统设计说明
+# 团购库存系统设计说明
 
 ## 概述
-本系统采用"库存借用+预留"的机制来管理报价产品的库存，确保库存一致性并避免超卖。
+本系统采用"库存借用+预留"的机制来管理团购产品的库存，确保库存一致性并避免超卖。
 
 ## 核心概念
 
@@ -77,7 +77,7 @@ if (returnQuantity > 0) {
   await productRepo.updateProductStock(offerProduct.productId, newStock);
 }
 
-// 3. 将报价产品库存设为0
+// 3. 将团购产品库存设为0
 await offerProductRepo.updateStock(offerProduct.id, -offerProduct.stock);
 ```
 

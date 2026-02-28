@@ -35,7 +35,7 @@ Permission keys and which merchant roles have them. Source: `xituan_backend/src/
 | **购物车** cart | GET/POST/PUT/PATCH/DELETE 购物车、购物车项、合并、统计、库存检查 | 与下单流程相关，可用 `order:list` 或 不细分 |
 | **订单支付警报** alert-orders-payments | GET 警报列表、用户警报、承诺支付统计；POST 记录警报、处理过期承诺 | `order:list` |
 | **产品** admin-product / product | 产品/分类/选项/库存 列表、详情、创建、更新、删除、恢复、批量 | `product:create` / `product:update` / `product:delete`（查看可用其一或 order:list 视业务） |
-| **报价** admin-offer | 报价列表、详情、创建、更新、删除、发布、统计、特色图 | 可归入 `product:create`/`product:update`/`product:delete` 或 新增 `offer:*` |
+| **团购** admin-offer | 团购列表、详情、创建、更新、删除、发布、统计、特色图 | 可归入 `product:create`/`product:update`/`product:delete` 或 新增 `offer:*` |
 | **预约** admin-preorder | 预约列表、详情、更新状态、确认时段、统计 | `order:list`；`order:update_status` |
 | **预定商品** admin-products-preorderable | 预定商品 创建、更新、删除、批量 | `product:create` / `product:update` / `product:delete` |
 | **预订单推广** admin-preorder-promotes | 预订单推广 创建、列表、更新、删除、发布 | 可归入 `setting:read`/`setting:write` 或 新增 key |
