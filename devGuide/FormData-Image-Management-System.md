@@ -35,7 +35,7 @@ const [tempFields] = useState<Set<string>>(new Set());
 
 #### 状态说明
 - `fileList`: Ant Design Upload 组件的文件列表状态，用于 UI 显示
-- `currentImages`: 当前保留的图片路径数组，用于后端处理
+- `currentImages`: 当前保留的图片 **存储路径（S3 key）** 数组，用于后端处理（**必须是数据库里存的 key，不是 URL**）
 - `tempFields`: 临时字段集合，用于清理不需要的数据（如多语言字段的临时字段）
 
 ### 2. 表单初始化
@@ -64,13 +64,15 @@ useEffect(() => {
         if (isFullUrl) {
           url = imgPath;
         } else {
-          url = contentUtil.getContentUrlImage(currentEnv, 'content', imgPath, 128, 128);
+          url = contentUtil.getContentUrlImage(currentEnv, 'images', imgPath, 128, 128);
         }
         return {
-          uid: `${index}`,
+          uid: imgPath || `${index}`,
           name: `image-${index}`,
           status: 'done' as const,
           url,
+          // 关键：把“存储路径(key)”保存在 response.path，后续不要从 url 反推 key
+          response: { url, path: imgPath },
         };
       });
       setFileList(files);
@@ -145,21 +147,21 @@ form.setFieldsValue({ metadata: {} });
 
 #### 图片状态同步处理
 ```typescript
+function getUploadFileStoredPath(file: UploadFile): string | undefined {
+  const response = file.response as unknown;
+  if (!response || typeof response !== 'object') return undefined;
+  if (!('path' in response)) return undefined;
+  const path = (response as { path?: unknown }).path;
+  return typeof path === 'string' ? path : undefined;
+}
+
 const handleUploadChange: UploadProps['onChange'] = ({ fileList: newFileList }) => {
   setFileList(newFileList);
   
-  // 同步更新currentImages - 只保留有url的图片（现有图片）
-  const remainingImages: string[] = [];
-  newFileList.forEach((file) => {
-    if (file.url) {
-      // 从URL中提取图片路径
-      const imagePath = file.url.includes('?') ? file.url.split('?')[0] : file.url;
-      const pathMatch = imagePath.match(/\/product\/image\/[^\/]+\.png$/);
-      if (pathMatch) {
-        remainingImages.push(pathMatch[0]);
-      }
-    }
-  });
+  // 同步更新 currentImages：只保留“已有图片”（带存储 path），避免从 URL 反推路径导致 merchantId 等前缀丢失
+  const remainingImages = newFileList
+    .map(getUploadFileStoredPath)
+    .filter((p): p is string => typeof p === 'string' && p.length > 0);
   setCurrentImages(remainingImages);
 };
 ```
@@ -355,6 +357,12 @@ updateProduct = async (req: Request, res: Response): Promise<void> => {
     
     // 处理图片更新
     let finalImages: string[] = [];
+    const uploadedImages: string[] = [];
+    const merchantId = getMerchantId();
+    const shouldEnforceMerchantPrefix = oldImages.some((p) => {
+      const normalized = p.startsWith('/') ? p.substring(1) : p;
+      return normalized.startsWith(`${merchantId}/`);
+    });
     
     // 1. 处理新上传的图片
     if (req.files && Array.isArray(req.files) && req.files.length > 0) {
@@ -362,19 +370,32 @@ updateProduct = async (req: Request, res: Response): Promise<void> => {
         const random = Math.floor(Math.random() * 100000);
         const fileName = `${productUpdateData.code || id}_${random}.png`;
         const imageResult = await s3UploadManager.uploadFileToS3(['product', 'image'], fileName, file.buffer, file.mimetype);
-        finalImages.push(imageResult.path);
+        uploadedImages.push(imageResult.path);
       }
     }
     
     // 2. 处理现有图片（从查询参数中获取）
     if (currentImages.length > 0) {
-      finalImages = [...finalImages, ...currentImages];
+      // 标准化：只移除前导 "/"；并且在旧数据已是多商户结构时，补齐 merchantId 前缀以避免误删
+      const normalizedCurrentImages = currentImages.map((imgPath) => {
+        const normalized = imgPath.startsWith('/') ? imgPath.substring(1) : imgPath;
+        if (normalized.startsWith(`${merchantId}/`)) return normalized;
+        if (shouldEnforceMerchantPrefix && normalized.startsWith('product/')) return `${merchantId}/${normalized}`;
+        return normalized;
+      });
+      // 保持“旧图在前，新图在后”
+      finalImages = [...normalizedCurrentImages];
     }
     
-    // 3. 更新产品数据中的图片列表
+    // 3. 新上传的图片追加到末尾
+    if (uploadedImages.length > 0) {
+      finalImages = [...finalImages, ...uploadedImages];
+    }
+    
+    // 4. 更新产品数据中的图片列表
     productUpdateData.images = finalImages;
     
-    // 4. 找出被删除的图片并从S3删除
+    // 5. 找出被删除的图片并从S3删除
     const removedImages = oldImages.filter(img => !finalImages.includes(img));
     if (removedImages.length > 0) {
       console.log('Removing images from S3:', removedImages);
@@ -403,8 +424,8 @@ updateProduct = async (req: Request, res: Response): Promise<void> => {
 ### 1. 前端避坑点
 
 #### 图片状态管理
-- ❌ **错误**: 从 `fileList` 计算 `currentImages`
-- ✅ **正确**: 直接从数据源初始化 `currentImages`，通过 `handleUploadChange` 同步更新
+- ❌ **错误**: 从 `file.url`（URL）用正则/字符串截取来“反推出” S3 key（多商户结构下极易把 `merchantId/` 前缀截没）
+- ✅ **正确**: `currentImages` 永远存 **S3 key**；编辑初始化时把 key 写入 `UploadFile.response.path`，`handleUploadChange` 只从 `response.path` 同步
 
 #### 多语言字段处理
 - ❌ **错误**: 手动解析多语言字段
@@ -435,9 +456,9 @@ updateProduct = async (req: Request, res: Response): Promise<void> => {
 ### 3. 通用避坑点
 
 #### 文件路径处理
-- 确保从完整 URL 中正确提取 S3 路径
-- 使用正则表达式匹配特定的路径格式
-- 处理 URL 参数（如 `?v=123`）
+- ❌ 不要从 URL 中提取/推导 key（URL 可能包含 resize 参数、CDN 域名、多商户前缀等，容易截断出错）
+- ✅ 前端传递到后端的 `currentImages` 必须是数据库存的 **S3 key**（例如 `merchantId/product/image/xxx.png`）
+- ✅ 后端只做最小标准化（如去掉前导 `/`）；在旧数据已是多商户结构时，可做“缺 merchantId 前缀”的防御性补齐，避免误删
 
 #### 错误处理
 - 前端：统一的错误提示和加载状态管理
