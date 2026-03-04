@@ -34,7 +34,7 @@ Step 3: We do not replace the merchant's legal responsibility for their goods or
 5. Risk notice
 
 - Transactions on the platform are between you and the merchant. The platform provides the marketplace; we do not guarantee the quality of individual goods or services beyond our obligations under the ACL and our policies.
-- Please keep records of your orders and communications. Use secure payment methods as offered on the platform.
+- Payments are processed through Airwallex, a licensed payment provider. Merchant funds are held and managed by Airwallex under its regulatory framework, with segregated accounts per merchant; the platform does not hold or control your funds. Please keep records of your orders and communications.
 
 6. Contact
 

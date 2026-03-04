@@ -32,6 +32,14 @@ export enum epBarCodeRetained {
 - **barCodeShared**: 产品共享的条形码（引用其他产品的 barCode）
 - **retained**: 条形码保留状态（epBarCodeRetained.UNSET, epBarCodeRetained.SHARED）
 
+### 4. EAN-13 / UPC-A 与“前导 0”兼容
+
+商户可能购买 0 开头的 13 位 EAN-13 一次性条码（如 Barcodes Australia）；超市扫码器常将此类条码按 UPC-A 处理，只输出 12 位（去掉前导 0）。为兼容双方：
+
+- **存储**：条码一律以**规范 13 位 EAN-13** 存入（`bar_code` / `bar_code_shared` 为 `text`）。若输入为 12 位纯数字，入库前自动前补 `0`。
+- **工具**：`xituan_codebase/utils/barcode.util.ts` 提供 `barcodeUtil.normalizeEan13(raw)`，用于入库前及任何“按条码查找”的入参规范化。
+- **使用处**：产品创建/更新（barCode、barCodeShared）、批量添加条码、更新产品条码、条码共享替换等，所有写入与按条码查询的入口均先做 `normalizeEan13`，保证库内唯一为 13 位；合作方若回传 12 位，在查询前对入参做一次 `normalizeEan13` 即可匹配。
+
 ## 系统架构
 
 ### 后端 API

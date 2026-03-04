@@ -6,11 +6,11 @@ Unified pattern for list pages that show as **Table on desktop** and **Cards on 
 
 - **Breakpoint**: Ant Design Grid `useBreakpoint()`; default **mobile** when `!screens.md` (i.e. below `md`). Configurable via `mobileBreakpoint` (`'xs'|'sm'|'md'|'lg'|'xl'|'xxl'`).
 - **Desktop (≥ breakpoint)**: Renders Ant Design `<Table>`; all Table props (including `scroll`, column `fixed`) are passed through. So desktop has full Table behaviour: fixed columns and horizontal scroll are supported natively.
-- **Mobile (< breakpoint)**: Renders a list of Cards (one per row). Column order and visibility use `mobileShow` / `mobilePriority` / `mobileLabel` / `mobileRender`; no fixed columns (cards scroll vertically as a list).
+- **Mobile (< breakpoint)**: Renders a list of Cards (one per row). Column order and visibility use `mobileShow` / `mobilePriority` / `mobileLabel` / `mobileRender`; no fixed columns (cards scroll vertically as a list). When `dataSource` is empty, shows an **Empty** component with `locale.emptyText` (string or React element); if not provided, uses "暂无数据".
 
 ## Component
 
-- **Path**: `xituan_cms/src/components/common/ResponsiveTable.tsx`
+- **Path**: `xituan_cms/submodules/xituan_codebase/components/ResponsiveTable.tsx`
 
 ## Fixed columns and horizontal scroll (desktop)
 
@@ -32,7 +32,7 @@ Result: 法定名称 stays on the left, 操作 stays on the right; the rest scro
 ## Usage
 
 ```tsx
-import ResponsiveTable from '../components/common/ResponsiveTable';
+import ResponsiveTable from '../../submodules/xituan_codebase/components/ResponsiveTable';
 
 <ResponsiveTable
   columns={columns}
@@ -41,8 +41,11 @@ import ResponsiveTable from '../components/common/ResponsiveTable';
   pagination={{ ... }}
   mobileBreakpoint="md"
   mobileCardClassName="responsive-table-mobile-card"
+  locale={{ emptyText: '暂无XXX' }}
 />
 ```
+
+**Empty state (mobile)**: Always pass `locale={{ emptyText: '...' }}` (string or React element) for a clear empty message on mobile. Default is "暂无数据".
 
 ## Column Extensions
 
@@ -76,6 +79,22 @@ For fully custom card layout per row, pass `mobileCardRender`:
 
 When `mobileCardRender` is provided, the default card builder is not used.
 
+## List Card Wrapper (parent Card styling)
+
+Pages that use ResponsiveTable should wrap it in a Card. On **mobile**, make the Card transparent so the mobile card list blends with the main background. See MainLayout devGuide Section 6.1 for full pattern:
+
+```tsx
+const isMobile = !useBreakpoint().md;
+<Card
+  style={isMobile ? { backgroundColor: 'transparent', border: 'none' } : cardStyle}
+  styles={isMobile ? { body: { backgroundColor: 'transparent', padding: 0, boxShadow: 'none' } } : undefined}
+>
+  <ResponsiveTable ... />
+</Card>
+```
+
+---
+
 ## Styling and Theme
 
 - **Container**: `.responsive-table-mobile-container` wraps the list of cards.
@@ -92,6 +111,7 @@ Default card body uses label (left, `var(--text-secondary)`) and value (right, `
 ## Checklist
 
 - [ ] Replace `Table` with `ResponsiveTable` (same props plus optional mobile*).
+- [ ] Pass `locale={{ emptyText: '...' }}` for mobile empty state.
 - [ ] Set `rowKey` (string or function).
 - [ ] **Desktop**: For fixed main column(s) at start: set first column(s) `fixed: 'left'` and `width`. For fixed action column(s) at end: set last column(s) `fixed: 'right'` and `width`. Set `scroll={{ x: number }}` or `scroll={{ x: 'max-content' }}`.
 - [ ] For columns to hide on mobile: `mobileShow: false`.

@@ -218,19 +218,21 @@ Purpose:
 - Track global changes to the supply list configuration so partners can see:
   - when products were added/removed
   - when base prices changed
+  - when product GST-inclusive flag changed (含GST / 不含GST, i.e. `is_gst_free`)
 
-Suggested schema:
+Suggested schema (see migration 1710000000240 for `new_is_gst_free` and `GST_INCLUSIVE_CHANGE`; old = !new for display):
 
 ```sql
 CREATE TABLE merchant.partner_supply_list_changes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   merchant_id UUID NOT NULL,
   product_id UUID NOT NULL,
-  change_type VARCHAR(32) NOT NULL, -- 'ADD' | 'REMOVE' | 'BASE_PRICE_CHANGE'
+  change_type VARCHAR(32) NOT NULL, -- 'ADD' | 'REMOVE' | 'BASE_PRICE_CHANGE' | 'GST_INCLUSIVE_CHANGE'
   old_is_partner_supply_item BOOLEAN,
   new_is_partner_supply_item BOOLEAN,
   old_base_price NUMERIC(10,2),
   new_base_price NUMERIC(10,2),
+  new_is_gst_free BOOLEAN,  -- for GST_INCLUSIVE_CHANGE (null as false; old = !new)
   changed_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   operator_id UUID, -- optional: admin user who made the change
   note TEXT
@@ -403,10 +405,16 @@ When certain product fields change, we write rows into `partner_supply_list_chan
      - `base_price` changes while `is_partner_supply_item = true` (either before or after, depending on how strict we want to be).
    - Insert with `change_type = 'BASE_PRICE_CHANGE'` and the old/new base price values.
 
+4. **GST-inclusive change (product 含GST / 不含GST)**
+
+   - Condition:
+     - `is_gst_free` (product-level) changes while `is_partner_supply_item = true`.
+   - Insert with `change_type = 'GST_INCLUSIVE_CHANGE'`, `new_is_gst_free` only (old = !new for display), and existing base price fields so the history row is consistent.
+
 Hook points:
 
 - Product admin update flows in `ProductService` or `ProductRepository`:
-  - When updating `basePrice` or the new `isPartnerSupplyItem` flag, compare old vs new values and insert a change-row if needed.
+  - When updating `basePrice`, `isPartnerSupplyItem`, or `isGstFree`, compare old vs new values and insert a change-row if needed (ADD/REMOVE/BASE_PRICE_CHANGE/GST_INCLUSIVE_CHANGE).
 
 ### 4.4 API surface
 
@@ -471,8 +479,9 @@ Two main tabs:
    - Each row shows:
      - Time (`changed_at`)
      - Product (name + barcode)
-     - Change type (ADD / REMOVE / BASE_PRICE_CHANGE)
-     - Old vs new partner wholesale price (ex-GST and GST, derived via util)
+     - Change type (ADD / REMOVE / BASE_PRICE_CHANGE / GST 含/不含 变更)
+     - For GST_INCLUSIVE_CHANGE: label "改为含GST" or "改为不含GST" per `new_is_gst_free`
+     - Old vs new partner wholesale price (ex-GST and GST, derived via util) where applicable
      - Optional operator information.
    - Ordered by `changed_at DESC`.
 
@@ -527,10 +536,11 @@ This design is minimal, consistent with existing domains (product, partner, barc
 | Area | File | Change |
 |------|------|--------|
 | Migration | `migrations/1710000000238_partner_supply_list.sql` | Add `products.is_partner_supply_item`; create `partner_supply_list_changes` (partitioned by `merchant_id`). |
+| Migration | `migrations/1710000000240_partner_supply_list_gst_change.sql` | Add `new_is_gst_free`; extend `change_type` CHECK to `GST_INCLUSIVE_CHANGE`. |
 | Product entity | `product.entity.ts` | Add `isPartnerSupplyItem`. |
 | Product types | `typing_entity/product.type.ts`, `typing_api/products.type.ts`, `product/types/product.type.ts` | Add `isPartnerSupplyItem` to iProduct, create/update requests. |
 | Partner entity | `partner/domain/partner-supply-list-change.entity.ts` | New entity for change log. |
-| Partner types | `typing_entity/partner.type.ts` | Add `epPartnerSupplyListChangeType`, `iPartnerSupplyListChange`, `iPartnerSupplyListItem`. |
+| Partner types | `typing_entity/partner.type.ts` | Add `epPartnerSupplyListChangeType` (incl. `GST_INCLUSIVE_CHANGE`), `iPartnerSupplyListChange` (incl. `newIsGstFree`), `iPartnerSupplyListItem`. |
 | DB config | `shared/infrastructure/database.config.ts` | Register `PartnerSupplyListChange` entity. |
 | Product repo | `product/infrastructure/product.repository.ts` | Add `findSupplyListProductsByMerchantId(merchantId)`. |
 | Partner repo | `partner/infrastructure/partner.repository.ts` | Add `getPartnerByIdAndMerchantId`, `createSupplyListChange`, `getSupplyListChanges`. |
