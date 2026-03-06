@@ -95,9 +95,35 @@ const isMobile = !useBreakpoint().md;
 
 ---
 
+## Mobile Card Styling (ResponsiveTable.module.css)
+
+ResponsiveTable provides **unified margin and border-radius** for all list items via `.mobileContainer > *`. Values align with `mobile-product-card` responsive breakpoints.
+
+### Rules
+
+1. **Do NOT set `margin-bottom` or `border-radius`** on:
+   - `.mobileCard` (default card)
+   - Custom cards in `mobileCardRender` (e.g. `mobile-order-card`, `mobile-product-card`, or `responsive-table-mobile-card`)
+
+2. **Single source of truth**: `.mobileContainer > *` controls spacing and radius for both default and custom cards.
+
+### Responsive values
+
+| Breakpoint | margin-bottom | border-radius | .mobileCardBody padding |
+|------------|---------------|---------------|-------------------------|
+| Default    | 12px          | 8px           | 12px                    |
+| max-width 768px | 8px    | 6px           | 8px                     |
+| max-width 480px | 18px    | 6px           | 6px                     |
+
+### Custom card usage
+
+When using `mobileCardRender`, custom cards (e.g. `<Card className="mobile-order-card">`) should **omit** `margin-bottom` and `border-radius` from their styles. The container provides them. Pages (order-list.css, ProductList, NewsList, etc.) must not override these.
+
+---
+
 ## Styling and Theme
 
-- **Container**: `.responsive-table-mobile-container` wraps the list of cards.
+- **Container**: `.mobileContainer` wraps the list; `.mobileContainer > *` provides unified margin/border-radius.
 - **Card**: `.responsive-table-mobile-card`; use for custom cards so theme applies.
 - **Theme**: Use CSS variables: `var(--text-primary)`, `var(--text-secondary)`, `var(--border-primary)`, `var(--bg-primary)`. Global styles in `globals.css` define `body[data-theme='dark'] .responsive-table-mobile-card` for background/border/hover.
 
@@ -108,10 +134,17 @@ Default card body uses label (left, `var(--text-secondary)`) and value (right, `
 - Any list page that uses Ant Design `Table` and must work on mobile: use `ResponsiveTable` instead of `Table`, add column options as needed.
 - Existing pages using it: suppliers, expenses, equipment, users, stores, categories, payment-records, partners, partner-invoices, partner-invoice-summaries, orders, products (ProductList), news (NewsList), tax-return-report.
 
+## Filter bar / search input
+
+For list pages with a search/filter Input that triggers API queries, use the IME-safe pattern (debounced onChange + composition events, separate refs for desktop/mobile). See:
+
+- `xituan_agent/devGuide/cms-filter-search-input-ime-solution.md`
+
 ## Checklist
 
 - [ ] Replace `Table` with `ResponsiveTable` (same props plus optional mobile*).
 - [ ] Pass `locale={{ emptyText: '...' }}` for mobile empty state.
+- [ ] Custom mobileCardRender cards: do **not** set margin-bottom or border-radius (ResponsiveTable provides via .mobileContainer > *).
 - [ ] Set `rowKey` (string or function).
 - [ ] **Desktop**: For fixed main column(s) at start: set first column(s) `fixed: 'left'` and `width`. For fixed action column(s) at end: set last column(s) `fixed: 'right'` and `width`. Set `scroll={{ x: number }}` or `scroll={{ x: 'max-content' }}`.
 - [ ] For columns to hide on mobile: `mobileShow: false`.

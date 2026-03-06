@@ -16,6 +16,7 @@ class SmartUnifiedReleaseManager {
       { name: 'xituan_backend', path: path.join(projectRoot, 'xituan_backend') },
       { name: 'xituan_cms', path: path.join(projectRoot, 'xituan_cms') },
       { name: 'xituan_platform', path: path.join(projectRoot, 'xituan_platform') },
+      { name: 'xituan_site', path: path.join(projectRoot, 'xituan_site') },
       { name: 'xituan_wechat_app', path: path.join(projectRoot, 'xituan_wechat_app') },
       { name: 'xituan_agent', path: path.join(projectRoot, 'xituan_agent') }
     ];

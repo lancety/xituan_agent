@@ -1,3 +1,13 @@
+## [2.3.2] - 2026-03-06
+
+### 🐛 修复
+
+- fix: renamed offer description words
+
+### 📝 其他
+
+- barcode, partner-supply-list, responsive-table, airwallex, layout documentation
+
 ## [2.1.0] - 2026-03-01
 
 ### ✨ 新功能
