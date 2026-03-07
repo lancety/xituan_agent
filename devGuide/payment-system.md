@@ -483,4 +483,5 @@ PaymentHandlerService.handlePayment(context, status)
 - `src/domains/payment/services/payment-lock.service.ts` - 支付锁定评估服务
 - `src/domains/order/services/order.service.ts` - 订单服务 (支付状态更新)
 - `src/domains/inventory/services/inventory-cron.service.ts` - 定时任务服务 (承诺支付过期处理)
-- `src/domains/order/services/alert-orders-payments.service.ts` - 订单支付监控服务 (待实现)
+- `src/domains/order/services/alert-orders-payments.service.ts` - 订单支付监控服务
+- [System Monitoring — Overview](./System-Monitoring-Overview.md) — 监控 UI 与 CMS/Platform 页面结构

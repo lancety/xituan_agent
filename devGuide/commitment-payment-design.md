@@ -446,6 +446,7 @@ CREATE INDEX idx_alert_orders_payments_order_ids ON alert_orders_payments USING 
 ### 与现有系统的集成点
 - **订单系统**: 在 `order-system.md` 中简要介绍
 - **支付系统**: 在 `payment-system.md` 中简要介绍
+- **监控 UI**: 订单支付监控页面结构见 [System Monitoring — Overview](./System-Monitoring-Overview.md)、[System Monitoring — CMS](./System-Monitoring-CMS.md)、[System Monitoring — Platform](./System-Monitoring-Platform.md)
 - **详细设计**: 本文档包含所有实现细节
 
 ---

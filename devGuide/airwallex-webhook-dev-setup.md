@@ -59,9 +59,9 @@ npm run dev
 
 ### 1.4 验证 Webhook 端点
 
-Webhook 端点路径: `/api/payments/webhooks/airwallex`
+Webhook 端点路径: `/api/webhooks/airwallex`
 
-完整 URL: `http://localhost:3050/api/payments/webhooks/airwallex`
+完整 URL: `http://localhost:3050/api/webhooks/airwallex`
 
 ---
 
@@ -342,12 +342,12 @@ curl -X POST https://backend-dev.xituan.com.au/api/payments/webhooks/airwallex \
 ❌ Webhook 签名验证失败: { ... }
 ```
 
-#### 5.5.3 使用 CMS 监控页面
+#### 5.5.3 使用监控页面查看 Webhook 事件
 
-1. 访问 CMS 监控页面: `http://localhost:3000/monitoring`
-2. 切换到 **系统监控** 标签
-3. 查看 **Webhook 监控** 页面
-4. 可以看到所有接收到的 webhook 事件及其状态
+- **CMS（商户）**：访问 `http://localhost:3010/monitoring/webhooks` 查看本商户的 webhook 事件
+- **Platform（平台）**：访问 `http://localhost:3020/monitoring/webhooks` 查看全部商户，支持 `?merchantId=` 过滤
+
+详见 [System Monitoring — Overview](./System-Monitoring-Overview.md)、[System Monitoring — CMS](./System-Monitoring-CMS.md)、[System Monitoring — Platform](./System-Monitoring-Platform.md)。
 
 ### 5.6 Webhook 事件处理流程
 
@@ -376,7 +376,7 @@ curl -X POST https://backend-dev.xituan.com.au/api/payments/webhooks/airwallex \
 #### 5.7.3 事件处理失败
 
 - ✅ 查看后端日志中的错误信息
-- ✅ 在 CMS Webhook 监控页面查看失败的事件
+- ✅ 在 CMS 或 Platform 的 Webhook 监控页面查看失败的事件（[System Monitoring — CMS](./System-Monitoring-CMS.md)、[System Monitoring — Platform](./System-Monitoring-Platform.md)）
 - ✅ 可以点击 **重试** 按钮重新处理失败的事件
 
 ---
@@ -411,7 +411,7 @@ curl -X POST https://backend-dev.xituan.com.au/api/payments/webhooks/airwallex \
 - [ ] 可以通过域名访问 webhook 端点
 - [ ] Airwallex 测试事件可以成功发送
 - [ ] 后端日志显示事件已接收和处理
-- [ ] CMS 监控页面可以查看 webhook 事件
+- [ ] CMS 或 Platform Webhook 监控页面可以查看 webhook 事件（见 [System Monitoring — Overview](./System-Monitoring-Overview.md)）
 
 ---
 
@@ -420,8 +420,8 @@ curl -X POST https://backend-dev.xituan.com.au/api/payments/webhooks/airwallex \
 - **Airwallex API 文档**: https://www.airwallex.com/docs/api
 - **Airwallex Webhook 文档**: https://www.airwallex.com/docs/api#/Webhooks
 - **AWS Route 53 文档**: https://docs.aws.amazon.com/route53/
-- **后端 Webhook 端点**: `/api/payments/webhooks/airwallex`
-- **CMS Webhook 监控**: `/monitoring` → 系统监控标签
+- **后端 Webhook 端点**: `/api/webhooks/airwallex`
+- **Webhook 监控**: [System Monitoring — Overview](./System-Monitoring-Overview.md) — CMS `/monitoring/webhooks`、Platform `/monitoring/webhooks`
 
 ---
 

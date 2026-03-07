@@ -33,12 +33,14 @@ Structured design and implementation rules for the Platform front-end (xituan_pl
 | Merchant review | List pending merchants; approve/reject. | super_admin |
 | Platform settings | View/edit platform-level settings (e.g. order category). | super_admin |
 | Reload settings | Reload platform settings from backend (e.g. after config change). | super_admin |
+| System monitoring | Order payment alerts, webhook events, unmatched webhooks; filter by merchantId/eventId. See [System Monitoring — Platform](./System-Monitoring-Platform.md). | platform role |
 
-Menu and routes should expose only the above (and any future platform-only features). Do not add CMS-only features (e.g. merchant join, member management) to Platform.
+Menu and routes should expose only the above (and any future platform-only features). Do not add CMS-only features (e.g. merchant join, member management) to Platform. System monitoring pages are under the "系统监控" menu group; each domain has its own page (see [System Monitoring — Overview](./System-Monitoring-Overview.md)).
 
 ---
 
 ## 4. References
 
 - [System boundaries: Store, CMS, Platform](../docs/system-boundaries-and-platform.md) — high-level scope and login.
+- [System Monitoring — Overview](./System-Monitoring-Overview.md), [System Monitoring — Platform](./System-Monitoring-Platform.md) — monitoring pages and structure.
 - Backend: admin merchants API, platform-setting API; auth returns user without requiring merchantId for platform admin use.

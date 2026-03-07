@@ -109,6 +109,22 @@ Layout follows common e-commerce patterns (e.g. Taobao/JD); block order can diff
 - Simple header, no bottom nav
 - Used for: checkout flows
 
+### 4.5 Template page design docs (split policy)
+
+Overall site design changes stay in this document (`xituan-site-design.md`).  
+Detailed UI/UX specifications for each **feature template page** must be documented in `devGuide/` as separate docs with a unified filename prefix:
+
+- **Prefix**: `TplPage-`
+- **Granularity**: one doc per template page (and optional shared template such as a shared header)
+- **Detail rule**: do not expand per-page detailed specs here; keep them in the corresponding `TplPage-*` doc
+
+Current template docs (site):
+
+- `TplPage-xituan_site-Header-Shared.md`
+- `TplPage-xituan_site-Home.md`
+- `TplPage-xituan_site-Search.md`
+- `TplPage-Documentation-Convention.md`
+
 ---
 
 ## 5. Merchant Type and Header
@@ -250,13 +266,13 @@ Use left border or tag badge per card type; avoid margin/border-radius conflicts
 
 ### 10.2 Desktop and user layout
 
-- **Desktop max-width**: 1660px for main content container.
+- **Desktop max-width**: 1600px for main content container.
 - **User layout main menu**: fixed width 220px (UserLayout sidebar/menu).
 
 ### 10.3 Principles
 
 - Mobile-first.
-- Main content max-width: ~480px (phone), ~768px (tablet), ~1200px (desktop), 1660px (desktop).
+- Main content max-width: ~480px (phone), ~768px (tablet), ~1200px (desktop), 1600px (desktop).
 - Padding: 12px (mobile), 24px (desktop).
 
 ### 10.4 Card grid
