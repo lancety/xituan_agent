@@ -89,7 +89,7 @@ Platform monitoring pages should support:
 |------|----------|
 | Old Platform `/monitoring` | Remove (no redirect). New structure fully replaces. |
 | Unmatched Webhook | Implement in step 3 (after CMS and Platform split). |
-| CMS permission | 支付相关阅读权限 (to be confirmed: use ORDER_LIST or add PAYMENT_READ). |
+| CMS permission | 订单支付监控、Webhook 监控 → `PAYMENT_READ`. 订单列表/状态、支付记录管理 → `ORDER_LIST`. |
 | Platform permission | platform role (ADMIN/SUPER_ADMIN) — agreed. |
 | Filter / Table layout | Independent filter bar (query and table separated); ResponsiveTable; desktop and mobile layouts. See [ResponsiveTable Solution](./responsive-table-solution.md), skill **responsive-table-mobile-card-styling**, **mainlayout-content-padding-rule**. |
 

@@ -18,8 +18,10 @@ See also: [System Monitoring — Overview](./System-Monitoring-Overview.md), [Sy
 
 | Menu Item | Route | Permission |
 |-----------|-------|------------|
-| 订单支付监控 | `/monitoring/order-payment` | 支付相关阅读权限（待确认：ORDER_LIST 或新增 PAYMENT_READ） |
+| 订单支付监控 | `/monitoring/order-payment` | `payment:read` (PAYMENT_READ) |
 | Webhook 监控 | `/monitoring/webhooks` | 同上 |
+
+**Note**: `ORDER_LIST` is for 订单列表/状态 and 支付记录管理. 订单支付监控 and Webhook 监控 use `PAYMENT_READ`.
 
 ---
 

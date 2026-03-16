@@ -1,3 +1,13 @@
+## [2.4.0] - 2026-03-16
+
+### 🐛 修复
+
+- fix: docs
+
+### 📝 其他
+
+- barcode, partner-supply-list, responsive-table, airwallex, layout documentation
+
 ## [2.3.2] - 2026-03-06
 
 ### 🐛 修复

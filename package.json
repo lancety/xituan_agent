@@ -1,6 +1,6 @@
 {
   "name": "xituan-module",
-  "version": "2.3.2",
+  "version": "2.4.0",
   "description": "Xituan项目版本管理",
   "scripts": {
     "release:major": "node scripts/unified-release.js major",
