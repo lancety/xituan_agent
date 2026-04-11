@@ -95,7 +95,7 @@ src/pages/monitoring/
 
 ### 5.1 Content
 
-- List events from `platform.webhook_events_airwallex_unmatched`
+- List events from `platform.webhook_events_psp_unmatched`
 - These are webhook events that could not be resolved to a merchant (e.g. missing metadata)
 - Platform-only; no merchant can see these
 

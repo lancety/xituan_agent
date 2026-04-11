@@ -80,7 +80,7 @@ A phased implementation plan for system monitoring features. See [System Monitor
 
 ### 3.5 Unmatched Webhooks — Backend API
 
-- [ ] `WebhookEventService`: Add `getUnmatchedEvents(params)` method (read from `platform.webhook_events_airwallex_unmatched`)
+- [ ] `WebhookEventService`: Add `getUnmatchedEvents(params)` method (read from `platform.webhook_events_psp_unmatched`)
 - [ ] Create `PlatformWebhookUnmatchedController` or extend platform webhook controller
 - [ ] Add route `GET /api/admin/platform/webhooks-unmatched` (pagination, filters)
 - [ ] Register route in `app.ts` before `/api/admin` catch-all

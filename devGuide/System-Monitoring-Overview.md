@@ -34,7 +34,7 @@ Both CMS and Platform use a **系统监控** (System Monitoring) menu group. Eac
 |-----------|-------|---------|
 | 订单支付监控 | `/monitoring/order-payment` | All merchants; filter by `?merchantId=` |
 | Webhook 监控 | `/monitoring/webhooks` | All merchants; filter by `?merchantId=`, `?eventId=` |
-| 未匹配 Webhook | `/monitoring/webhooks-unmatched` | `platform.webhook_events_airwallex_unmatched` (platform-only) |
+| 未匹配 Webhook | `/monitoring/webhooks-unmatched` | `platform.webhook_events_psp_unmatched` (platform-only) |
 | 用户监控 | `/monitoring/users` | Placeholder for future |
 
 ---
@@ -48,7 +48,7 @@ Both CMS and Platform use a **系统监控** (System Monitoring) menu group. Eac
 | `/api/admin/platform/alert-orders-payments` | auth + platform role | All (optional `?merchantId=`) | Platform |
 | `/api/admin/platform/webhooks/*` | auth + platform role | All (optional `?merchantId=`, `?eventId=`) | Platform |
 
-Unmatched webhooks: Platform-only API (to be added) for `platform.webhook_events_airwallex_unmatched`.
+Unmatched webhooks: Platform-only API (to be added) for `platform.webhook_events_psp_unmatched`.
 
 ---
 
@@ -74,7 +74,7 @@ Platform monitoring pages should support:
 
 | API | Purpose |
 |-----|---------|
-| `GET /api/admin/platform/webhooks-unmatched` | List events from `platform.webhook_events_airwallex_unmatched`; support pagination and filters. Implement in step 3. |
+| `GET /api/admin/platform/webhooks-unmatched` | List events from `platform.webhook_events_psp_unmatched`; support pagination and filters. Implement in step 3. |
 
 ### 5.3 Existing APIs (unchanged)
 

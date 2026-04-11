@@ -10,6 +10,8 @@
 4. [DDNS 任务持续运行](#4-ddns-任务持续运行)
 5. [Airwallex 沙盒环境 Webhook 设置](#5-airwallex-沙盒环境-webhook-设置)
 
+**重要（2025+ 沙盒政策）**：Airwallex 沙盒在 Dashboard 中配置 Webhook URL 时要求 **`https://`**，且地址须从公网可达。纯 `http://localhost` 或仅内网 HTTP 无法作为 Webhook 端点；本地后端仍可监听 HTTP，通过 **HTTPS 隧道**（推荐）或在边界用 **正式证书**（Let's Encrypt 等）终结 TLS。
+
 ---
 
 ## 1. 本地 Backend 运行环境配置
@@ -55,13 +57,97 @@ npm install
 npm run dev
 ```
 
-后端服务将在 `http://localhost:3050` 启动。
+后端服务将在 `http://localhost:3050` 启动（进程本身仍可使用 HTTP；对外告知 Airwallex 的地址必须是 HTTPS）。
 
-### 1.4 验证 Webhook 端点
+### 1.4 公网 HTTPS 地址（沙盒 Webhook 必填）
 
-Webhook 端点路径: `/api/webhooks/airwallex`
+在 Airwallex Dashboard 里填写的 Webhook URL 必须类似：
 
-完整 URL: `http://localhost:3050/api/webhooks/airwallex`
+- **Connect / 统一平台密钥**：`https://<公网域名或隧道域名>/api/webhooks/airwallex`
+- **单商户（路径含 `webhookKey`）**：`https://<公网域名或隧道域名>/api/webhooks/airwallex-single/<webhookKey>`
+
+任选其一即可满足「HTTPS + 公网」：
+
+#### 方案 A：HTTPS 隧道（本地开发最省事）
+
+隧道在边缘提供受公网信任的 HTTPS 证书，反向代理到你本机 `http://localhost:PORT`。
+
+**ngrok**（示例，`PORT` 与 `.env` 一致，如 `3050`）：
+
+```bash
+ngrok http 3050
+```
+
+复制控制台里的 `https://....ngrok-free.app`（或付费固定域名），在 Airwallex 中填写：
+
+`https://<ngrok-host>/api/webhooks/airwallex`（或带 `webhookKey` 的单商户路径）。
+
+**Cloudflare Tunnel（cloudflared）**：
+
+```bash
+cloudflared tunnel --url http://localhost:3050
+```
+
+使用命令输出中的 `https://....trycloudflare.com` 同理拼接路径。
+
+更完整的 Windows 安装、临时隧道与 **Named Tunnel + CF 托管 DNS（固定 URL）** 分步说明见：[cloudflared-tunnel-setup.md](./cloudflared-tunnel-setup.md)。
+
+> 给本机 Express 单独配自签名证书 **一般无法**通过 Airwallex 侧校验（需公网信任的证书链）。隧道或带 Let's Encrypt 的域名才是可行做法。
+
+#### 方案 B：Route53 域名 + 端口转发 + **本机** HTTPS（与你当前架构一致）
+
+你已用 Route 53 把子域名指到家庭公网 IP，并在路由器做端口转发时，**不必**让 Node 自己监听 HTTPS（也可选，见下文）。推荐在同一台跑后端的 Windows 机器上装 **Caddy**：监听 **443**（及 **80**），自动申请/续期 **Let's Encrypt** 证书，再把请求反代到后端 `http://127.0.0.1:3050`。
+
+**要点**：
+
+1. **后端照旧**：`npm run dev` 只监听 `PORT`（如 `3050`）的 HTTP，无需改代码。
+2. **路由器端口转发**（在原有规则上**增加或调整**）  
+   - **WAN 443 → 本机 443**（HTTPS，给 Airwallex 访问）  
+   - **WAN 80 → 本机 80**（HTTP，Let's Encrypt **HTTP-01** 校验证书时必须能从公网访问；仅转 443 不够）  
+   - 若你曾把 **3050** 直接暴露到公网，可保留给调试，但 **Airwallex Dashboard 应填 `https://你的子域名/...`**，不要填 `:3050` 的 HTTP URL。
+3. **Windows 防火墙**：为 **TCP 80、443** 添加入站允许（与下文 3050 规则类似）。
+4. **安装并运行 Caddy（Windows）**  
+   - **一种方式 — Scoop**（已装 [Scoop](https://scoop.sh/) 时）：
+
+```powershell
+scoop install caddy
+```
+
+   - **一种方式 — 手动**：打开 [Caddy 安装说明 — Windows](https://caddyserver.com/docs/install#windows)，下载对应架构的 `.zip`，解压后将 **`caddy.exe` 所在目录** 加入系统 **PATH**，或把 `caddy.exe` 放到固定目录（例如 `D:\tools\caddy\`）并在该目录工作。  
+   - **`Caddyfile`**：在与 `caddy.exe` 同目录或任意工作目录新建纯文本文件 **`Caddyfile`**（无后缀名），内容把主机名换成你的 Route 53 记录，例如：
+
+```text
+backend-dev.xituan.com.au {
+  reverse_proxy 127.0.0.1:3050
+}
+```
+
+   - **启动**：先启动后端（`npm run dev`，保证 `127.0.0.1:3050` 可访问）。在 **`Caddyfile` 所在目录** 打开 **「以管理员身份运行」的 PowerShell 或 CMD**（绑定 **80/443** 在 Windows 上通常需要管理员权限），执行：
+
+```powershell
+cd D:\tools\caddy
+caddy validate --config Caddyfile
+caddy run --config Caddyfile
+```
+
+   若 `caddy.exe` 已在 PATH 且当前目录就是 `Caddyfile` 所在目录，可简写为 `caddy run`。  
+   - **首次启动**：Caddy 会自动向 Let's Encrypt 申请证书；失败时检查：域名 A 记录是否指向当前公网 IP、路由器 **80/443** 是否转到本机、本机防火墙是否放行 80/443、本机 **无其它程序占用 80/443**（含 IIS、其它 Web 服务器）。  
+   - **可选 — 安装为 Windows 服务**：见 [Caddy 文档 Keep Caddy running](https://caddyserver.com/docs/running#windows-service)；开发阶段前台 `caddy run` 即可。
+
+5. **Airwallex Webhook URL**：`https://backend-dev.xituan.com.au/api/webhooks/airwallex`（或单商户路径 `/api/webhooks/airwallex-single/<webhookKey>`）。
+
+**若不能用 80 端口**（运营商封 80 等）：需改用 **DNS-01**（例如 `acme.sh` + Route53 API、或 Caddy 的 DNS 插件）签发证书，步骤比 HTTP-01 多，此处不展开。
+
+**备选：Node 直接 HTTPS**（不推荐优先）：用 Certbot / acme.sh 把证书落到文件后，可用 `https.createServer` 挂同一 Express 应用；仍须公网能访问用于校验的端口，且要自己处理续期与 reload。多数情况下 **Caddy/Nginx 终结 TLS + 反代 HTTP** 更简单。
+
+### 1.5 本地验证 Webhook 路由（可选）
+
+端点路径：
+
+- Connect / 统一：`/api/webhooks/airwallex`
+- 单商户：`/api/webhooks/airwallex-single/:webhookKey`
+
+本机自测可用：`http://localhost:3050/api/webhooks/airwallex`（仅用于本机 `curl`/联调；**不能**作为 Dashboard 里填写的 URL）。
 
 ---
 
@@ -80,6 +166,8 @@ Webhook 端点路径: `/api/webhooks/airwallex`
 7. 应用到所有配置文件（域、专用、公用）
 8. 命名为 "Xituan Backend Dev Port 3050"
 
+若使用方案 B（Caddy HTTPS），请再为 **TCP 80、443** 各建一条入站规则（显示名例如 `Xituan Dev HTTP-ACME 80`、`Xituan Dev HTTPS 443`）。
+
 #### 2.1.2 PowerShell 命令（快速配置）
 
 ```powershell
@@ -92,6 +180,12 @@ New-NetFirewallRule -DisplayName "Xituan Backend Dev Port 3050" `
     -LocalPort 3050 `
     -Action Allow `
     -Profile Any
+
+# HTTPS 与证书校验（方案 B）
+New-NetFirewallRule -DisplayName "Xituan Dev HTTPS 443" `
+    -Direction Inbound -Protocol TCP -LocalPort 443 -Action Allow -Profile Any
+New-NetFirewallRule -DisplayName "Xituan Dev HTTP-ACME 80" `
+    -Direction Inbound -Protocol TCP -LocalPort 80 -Action Allow -Profile Any
 ```
 
 ### 2.2 路由器端口映射（Port Forwarding）
@@ -109,12 +203,9 @@ ipconfig
 
 1. 登录路由器管理界面（通常是 `192.168.1.1` 或 `192.168.0.1`）
 2. 找到 **端口转发** 或 **虚拟服务器** 设置
-3. 添加端口转发规则：
-   - **外部端口**: `3050`
-   - **内部 IP**: `192.168.1.138`（你的本地 IP）
-   - **内部端口**: `3050`
-   - **协议**: TCP
-   - **状态**: 启用
+3. 添加端口转发规则（按需要多条）：
+   - **仅 HTTP 后端调试**：外部 `3050` → 内网 `192.168.1.138:3050`，TCP。  
+   - **本机 HTTPS（方案 B，Airwallex 推荐）**：外部 **`443`** → 内网 **`192.168.1.138:443`**；外部 **`80`** → 内网 **`192.168.1.138:80`**（Let's Encrypt HTTP-01 用）。内网目标端口应对应运行 **Caddy**（或 Nginx）的机器，由反代再转到 `127.0.0.1:3050`。
 
 #### 2.2.3 获取公网 IP
 
@@ -255,11 +346,13 @@ dig backend-dev.xituan.com.au
 ### 4.3 测试域名访问
 
 ```bash
-# 测试 webhook 端点是否可访问
-curl -X POST https://backend-dev.xituan.com.au/api/payments/webhooks/airwallex \
+# 测试 webhook 端点是否可访问（路径须与 app 注册一致）
+curl -X POST https://backend-dev.xituan.com.au/api/webhooks/airwallex \
   -H "Content-Type: application/json" \
   -d '{"test": "data"}'
 ```
+
+若尚未在边界配置 HTTPS，可改用隧道给出的 `https://...` 主机名测试同一路径。
 
 ---
 
@@ -277,10 +370,11 @@ curl -X POST https://backend-dev.xituan.com.au/api/payments/webhooks/airwallex \
 2. 点击 **Create Webhook** 或 **Add Webhook**
 3. 填写以下信息：
 
-   **Webhook URL**:
+   **Webhook URL**（须为 **https**，且与后端路由一致）:
    ```
-   https://backend-dev.xituan.com.au/api/payments/webhooks/airwallex
+   https://backend-dev.xituan.com.au/api/webhooks/airwallex
    ```
+   本地开发可使用 ngrok / cloudflare 隧道的 `https://...` 主机 + 同上路径。单商户场景请将路径换为 `/api/webhooks/airwallex-single/<webhookKey>`。
    
    **Events to Subscribe**:
    - ✅ `payment_intent.succeeded`
@@ -403,7 +497,7 @@ curl -X POST https://backend-dev.xituan.com.au/api/payments/webhooks/airwallex \
 
 ### 6.4 Airwallex 配置
 - [ ] 已登录 Airwallex 沙盒环境
-- [ ] 已创建 Webhook，URL 指向正确的域名
+- [ ] 已创建 Webhook，URL 为 **https** 且可公网访问（隧道或域名+TLS），路径为 `/api/webhooks/airwallex` 或 `/api/webhooks/airwallex-single/...`
 - [ ] 已订阅所有需要的事件类型
 - [ ] Webhook Secret 已保存并配置到后端
 
@@ -450,6 +544,6 @@ curl -X POST https://backend-dev.xituan.com.au/api/payments/webhooks/airwallex \
 
 ---
 
-**最后更新**: 2024-10-XX
+**最后更新**: 2026-04-08（沙盒 HTTPS、隧道、Route53+Caddy；Windows 下 Caddy 安装与运行）
 **维护者**: 开发团队
 

@@ -8,10 +8,10 @@ After migrating to multi-tenant, `merchant.webhooks_events_airwallex` and relate
 
 If a webhook event does not match any order or payment record, we **cannot** assign a merchant. To avoid the transaction “disappearing” (only in logs):
 
-- We **persist the event** in **platform.webhook_events_airwallex_unmatched** (no merchant_id): event_id, event_type, merchant_order_id (nullable), payment_intent_id (nullable), raw_payload, headers, signature, timestamp, received_at. Migration: `1710000000237_platform_webhook_events_airwallex_unmatched.sql`.
+- We **persist the event** in **platform.webhook_events_psp_unmatched** (no merchant_id): created/replaced by migration `1710000000259_platform_webhook_events_psp_unmatched.sql` (after `1710000000237_platform_webhook_events_airwallex_unmatched.sql` legacy table).
 - **Idempotency**: If the same event_id is already in the unmatched table, we skip insert and still return 200.
 - We return **200** so Airwallex does not retry.
-- Ops can query `platform.webhook_events_airwallex_unmatched` to review and handle unmatched events. Implementation: `WebhookEventService.saveUnmatchedWebhookEvent()`, `isEventInUnmatched()`.
+- Ops can query `platform.webhook_events_psp_unmatched` to review and handle unmatched events. Implementation: `WebhookEventService.saveUnmatchedWebhookEvent()`, `isEventInUnmatched()`.
 
 ---
 
@@ -50,14 +50,14 @@ So: event comes in → resolve merchant_id from 收款银行信息 (account_id) 
 
 ## Processing flow
 
-- **Sync**: Verify signature → resolve `merchant_id`. If failed → save to **platform.webhook_events_airwallex_unmatched**, return 200. Else → idempotency check → persist event in merchant table → return 200.
+- **Sync**: Verify signature → resolve `merchant_id`. If failed → save to **platform.webhook_events_psp_unmatched**, return 200. Else → idempotency check → persist event in merchant table → return 200.
 - **Async**: Run in `runWithContextAsync(merchantId)`: update status → `handleWebhookEvent(payload)` → update status (processed/failed).
 
 ---
 
 ## Code / DB references
 
-- **platform.webhook_events_airwallex_unmatched**: Stores events that could not be resolved to a merchant (migration 1710000000237).
+- **platform.webhook_events_psp_unmatched**: Stores events that could not be resolved to a merchant (migration 1710000000259; legacy name from 1710000000237 is dropped in that step).
 - **platform.airwallex_deposit_account_merchant**: Maps `airwallex_account_id` (receiving bank) to `merchant_id` (migration 1710000000237).
 - **WebhookEventService.saveUnmatchedWebhookEvent**: Inserts into unmatched table when resolve fails.
 - **WebhookMerchantResolver** (deposit): First lookup by `payload.account_id` in `airwallex_deposit_account_merchant`; fallback to reference/amount/date global order match.
