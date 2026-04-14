@@ -1,3 +1,13 @@
+## [2.5.0] - 2026-04-14
+
+### 🐛 修复
+
+- fix: docs
+
+### 📚 文档
+
+- docs(devGuide): monitoring, webhooks, Stripe, Airwallex, tunnel
+
 ## [2.4.0] - 2026-03-16
 
 ### 🐛 修复
