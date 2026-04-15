@@ -97,27 +97,31 @@
 
 ### 4. 支付 & 退款与库存的关系
 
-#### 4.1 支付路径（`updateInventoryOnPayment`）
+> **与业务期望的对照**：若团购应为主仓「划拨 → 活动内自洽 → 结束返还」，见 `devGuide/inventory-offer-main-warehouse-flow-expected-vs-actual.md`（当前实现与期望差异、工程 Todo 列表）。
 
-1. 对 `regular` 商品：
-   - 调用 `updateProductInventory`：  
-     - `stock -= quantity`, `total_stock -= quantity`。  
-   - 即在 `products` 级别上直接确认售出。
-2. 对 `offer` / `preorder`：
-   - 通过 `updateModeSpecificInventory` 分别调用：
-     - `updateOfferStock` → `updateOfferProductStock(offerProductId, -quantity, -quantity)`  
-     - `updatePreorderStock` → `updatePreorderProductStock(productId, -quantity, -quantity)`
-   - 只影响各自模式表，不反向修改 `products`。
+#### 4.1 支付路径（`updateInventoryOnPayment`）— 以代码为准
 
-#### 4.2 退款路径（`restoreInventoryOnRefund`）
+实现中对**每个订单行**顺序固定为（见 `inventory-management.service.ts`）：
 
-1. 对 `regular` 商品：
-   - 调用 `restoreProductInventory`：  
-     - `stock += quantity`, `total_stock += quantity`。
-2. 对 `offer` / `preorder`：
-   - 通过 `restoreModeSpecificInventory` 分别调用：
-     - `restoreOfferStock` → `updateOfferProductStock(offerProductId, +quantity, +quantity)`  
-     - `restorePreorderStock` → `updatePreorderProductStock(productId, +quantity, +quantity)`。
+1. **始终先**调用 `updateProductInventory`：  
+   - 若主产品 `products.stock >= 0`：检查并扣减 `products` 的 `stock` / `total_stock`。  
+   - 若 `stock === -1`：不改动数值，仅记交易。  
+   - **注意**：此步骤**不区分** `REGULAR` / `OFFER` / `PREORDER` 订单模式。
+2. **再**调用 `updateModeSpecificInventory`：  
+   - `OFFER`：`updateOfferStock` → 扣减 `offer_products`。  
+   - `PREORDER`：`updatePreorderStock` → 扣减 `products_preorderable`。  
+   - `REGULAR`：无额外模式表操作。
+
+因此：在 **OFFER 且主产品为有限库存** 时，支付成功路径会**同时**更新 `products` 与 `offer_products`；这与「活动期内订单只动活动子库存」的应然模型不一致时，需按上述对照文档做改造而非仅改本段文字。
+
+#### 4.2 退款路径（`restoreInventoryOnRefund`）— 以代码为准
+
+对每个订单行顺序为：
+
+1. **始终先** `restoreProductInventory`（有限主仓则恢复 `products`）。  
+2. **再** `restoreModeSpecificInventory`（`OFFER` / `PREORDER` 恢复对应模式表）。
+
+与 §4.1 对称。
 
 ### 5. 无限库存（`stock = -1`）的约定
 
