@@ -1,0 +1,38 @@
+Backend Git / PowerShell: "Permission denied" on src/domains/order/utils
+================================================================================
+
+Observed
+--------
+- git status / rebase: warning or error when touching src/domains/order/utils
+- PowerShell: UnauthorizedAccessException on Get-ChildItem / Get-Acl for that path
+- takeown / icacls: "File ownership cannot be applied to insecure filesystem; ACL not supported"
+
+Root cause (this machine)
+-------------------------
+- Workspace drive D: is exFAT (not NTFS). exFAT does not support NTFS ACLs, so
+  icacls / takeown cannot repair permissions the way they do on NTFS.
+- Volume health reported Warning / OperationalStatus "Full Repair Needed", which
+  can correlate with unreadable directory entries on exFAT.
+
+Why CMS repo "works" but backend fails
+--------------------------------------
+- Different path: only backend has src/domains/order/utils with this broken entry.
+- Not a Git bug; Git needs to stat every tracked path.
+
+Recommended actions (pick one)
+------------------------------
+1. Run CHKDSK on D: (may require reboot). Example (run elevated CMD):
+   chkdsk D: /F
+   After repair, retry listing the folder; if still bad, delete the folder and
+   git checkout -- src/domains/order/utils (or restore from remote).
+
+2. Move or clone xituan_backend to an NTFS volume (e.g. C:) for stable dev work.
+
+3. If an elevated Explorer/CMD can delete or rename src/domains/order/utils,
+   remove it and run: git checkout -- src/domains/order/utils
+   (only if you accept losing uncommitted content under that path.)
+
+Git rebase syntax note
+----------------------
+- Prefer: git fetch origin && git rebase origin/master
+- "git rebase origin master" passes two arguments; not the main issue here.
