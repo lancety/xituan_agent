@@ -24,8 +24,8 @@ todos:
     content: "Phase3: CMS merchant-only 绑定/向导 + ProductEditModal 动态化 + entityFields 严格合并（无静默回退）+ 打印联动"
     status: pending
   - id: phase4-site
-    content: "Phase4: Site schema 驱动展示与筛选 façade，lang 与缓存策略"
-    status: pending
+    content: "Phase4: Site 详情页 schema 驱动展示 + lang + schemaVersion/条件 GET；列表 metadata 展示本期取消；筛选/facet façade 见正文"
+    status: done
   - id: phase5-wechat
     content: "Phase5: Wechat 对齐 schema 契约与 UI"
     status: pending
@@ -41,7 +41,7 @@ isProject: false
 | **一** | 最小平台骨架 + 类型与 schema 入口收口 + 数据与键名一次到位 | 行业/领域 + **全局**平台父类树种子（**从默认商户** `categories` **一次性导入**）；**四字段**（`ingredient`/`storageType`/`storageDay`/`cuisine_style`）**全部**写入行业 `platform_metadata_attribute` 为 **schema 唯一真源**；`getEffectiveMetadataSchema` + LRU + bust；`region`→`cuisine_style` **一次性** SQL + 同一发布列车（migration 先行）；打印模板中 `metadata.region` **一次性**修复；全仓库引用扫描；**未知 metadata 键保存即拒绝**；`entityFields` 可选 `categoryId` |
 | **二** | 平台侧可运营维护 | 完整 DDL（含枚举、审计）；Platform CRUD API；`xituan_platform` 模板中心 UI；`storage_key` 发布后不可改 |
 | **三** | 商户绑定与 CMS/打印动态化 | **折中存储**：父类表快照 `platform_domain_id` + **`platform_category_id`**（平台父或子单引用）+ `binding_status` / `mapping_version`，向导/任务独立表；`merchant_metadata_attribute`、迁移任务；`GET product-metadata-schema`（**ETag / 完整缓存策略延至 Phase 3 完成之后**，本阶段可先 correctness-first）；CMS 动态表单与迁移向导；**`entityFields` 严格动态合并**（冲突显式失败，不静默回退静态字段） |
-| **四** | Site 对齐契约 | 展示/筛选走 schema 与 `lang`；搜索经 façade；可选前端 `schemaVersion` 缓存 |
+| **四** | Site 对齐契约 | **详情页**按 schema 与 `lang` 展示 metadata；可选前端 `schemaVersion` 缓存与条件 GET；**列表页 metadata 展示本期不做**；筛选经搜索 façade（facet 等见正文） |
 | **五** | 微信小程序对齐契约 | 与 Site 同 API/类型；详情列表 schema 驱动 |
 
 **已定执行策略（跨阶段约束）**
@@ -194,10 +194,10 @@ flowchart LR
 
 ## 第四阶段：Site
 
-**目标**：展示/筛选不依赖散落魔法字符串；为后续搜索留 façade。
+**目标**：详情展示不依赖散落魔法字符串；为后续「按 metadata 筛选 / 分面搜索」预留后端统一入口（façade）；列表页暂不展示 metadata。
 
-1. 商品列表/详情：按 schema 的 `jsonKey` + `lang` 渲染 metadata。
-2. 筛选：优先经 **`ProductSearchService`（或等价）** 抽象，内部仍 PG；facet 键与 `visibility` 白名单（SKILL Review 项）定稿后再加列。
+1. **仅商品详情页**：按 schema 的 `jsonKey` + `lang` 渲染 metadata。**列表页**不在本阶段展示 metadata（**已取消**）。
+2. **筛选与搜索**：优先经 **`ProductSearchService`（或等价）** 抽象，内部仍用 PG；**facet**（按属性值聚类计数，如「料理风格=日式」的筛选项）的键与 `visibility` 白名单（SKILL Review 项）定稿后再加列。**façade** 指：Site（及后续 Wechat）不直接拼 SQL 或散落调多个内部服务，而是经**单一搜索/列表服务层**拿商品与可选 facet，便于以后换索引（如 OpenSearch）而不改前端契约。
 3. 前端可缓存 `schemaVersion`（如 sessionStorage），配合条件 GET。
 
 ---
