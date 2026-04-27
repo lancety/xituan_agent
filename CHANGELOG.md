@@ -1,3 +1,15 @@
+## [3.0.0] - 2026-04-27
+
+### 📚 文档
+
+- docs(devGuide): sync workspace updates
+- docs(devGuide): metadata visibility facet facade plan and updates
+- docs(devGuide): update metadata migration implementation notes
+- docs(devGuide): add logistics tracking phased integration plan
+- docs(devGuide): add todo folder convention README
+- docs(devGuide): offer inventory flow notes and stock model updates
+- docs(devGuide): monitoring, webhooks, Stripe, Airwallex, tunnel
+
 ## [2.5.0] - 2026-04-14
 
 ### 🐛 修复
