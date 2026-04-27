@@ -28,7 +28,7 @@ todos:
     status: done
   - id: phase5-wechat
     content: "Phase5: Wechat 对齐 schema 契约与 UI"
-    status: pending
+    status: done
 isProject: false
 ---
 
