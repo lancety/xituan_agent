@@ -181,8 +181,6 @@ Resources:
               Value: '0.1'
             - Name: S3_REGION
               Value: !Ref AWS::Region
-            - Name: AIRWALLEX_BASE_URL
-              Value: 'https://api.airwallex.com'
           LogConfiguration:
             LogDriver: awslogs
             Options:

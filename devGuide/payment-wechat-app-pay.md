@@ -70,7 +70,7 @@ const availablePaymentMethods = isDev
 ### 关键差异点
 
 #### 1. 支付方式限制
-- **标准支付**: 支持所有Airwallex支付方式
+- **标准支付**: 支持站点配置的在线支付方式（与 checkout PSP 能力一致）
 - **小程序支付**: 受微信政策限制，仅支持特定支付方式
 
 #### 2. 支付页面处理
@@ -87,22 +87,23 @@ const availablePaymentMethods = isDev
 
 ### 1. 微信支付（小程序内）
 ```typescript
-// 小程序内微信支付流程
-async function processWeChatPayment(orderData: any) {
-  // 1. 创建Airwallex Payment Intent
+// 小程序内微信支付流程（当前栈：后端 createPaymentIntent → OmiPay MakeAppletOrder 等，见 payment.controller）
+async function processWeChatPayment(orderData: { totalAmount: number; orderId: string }) {
+  // 1. 向后端创建支付意图（返回 miniProgramPayParams 等）
   const paymentIntent = await createPaymentIntent({
     amount: orderData.totalAmount,
     currency: 'AUD',
-    payment_method: 'AIRWALLEX_WECHAT'
+    orderId: orderData.orderId
   });
   
-  // 2. 调用微信支付API
+  // 2. 调起微信收银台（字段名以后端返回的 miniProgramPayParams 为准）
+  const p = paymentIntent.miniProgramPayParams ?? paymentIntent;
   wx.requestPayment({
-    timeStamp: paymentIntent.timeStamp,
-    nonceStr: paymentIntent.nonceStr,
-    package: paymentIntent.package,
-    signType: 'MD5',
-    paySign: paymentIntent.paySign,
+    timeStamp: p.timeStamp,
+    nonceStr: p.nonceStr,
+    package: p.package,
+    signType: p.signType ?? 'MD5',
+    paySign: p.paySign,
     success: (res) => {
       // 3. 支付成功处理
       handlePaymentSuccess(orderData.orderId);

@@ -116,16 +116,16 @@ PaymentHandlerService.handlePayment(context, status)
 
 ### 动态支付方式检测
 ```typescript
-// 新增方法：从webhook payload动态提取支付方式
-private getPaymentMethodFromPaymentIntent(paymentIntentData: any): epPaymentRecordMethod {
+// 从 webhook / intent payload 映射到 epPaymentRecordMethod（示意；以当前 PSP 实现为准）
+private getPaymentMethodFromPaymentIntent(paymentIntentData: { payment_method?: { type?: string } }): epPaymentRecordMethod {
   const paymentMethod = paymentIntentData.payment_method?.type;
   switch (paymentMethod) {
-    case 'wechat': return epPaymentRecordMethod.AIRWALLEX_WECHAT;
-    case 'apple_pay': return epPaymentRecordMethod.AIRWALLEX_APPLE_PAY;
-    case 'google_pay': return epPaymentRecordMethod.AIRWALLEX_GOOGLE_PAY;
+    case 'wechat': return epPaymentRecordMethod.OMIPAY_WECHAT;
+    case 'apple_pay': return epPaymentRecordMethod.STRIPE_APPLE_PAY;
+    case 'google_pay': return epPaymentRecordMethod.STRIPE_GOOGLE_PAY;
     case 'card':
-    case 'mastercard': return epPaymentRecordMethod.AIRWALLEX_MASTERCARD;
-    default: return epPaymentRecordMethod.AIRWALLEX_WECHAT;
+    case 'mastercard': return epPaymentRecordMethod.STRIPE_CARD;
+    default: return epPaymentRecordMethod.STRIPE_CARD;
   }
 }
 ```

@@ -37,18 +37,15 @@ export enum epUserPaymentMethod {
 ```
 
 #### 支付记录通道（后端处理）
+
+以仓库 **`xituan_codebase/typing_entity/order-payment-record.type.ts`** 为唯一准绳（含 Stripe、OmiPay、手动及历史 PSP 记录枚举）。文档不逐字复制，避免与实现漂移。
+
 ```typescript
+// 摘录示意（完整定义见上述 type 文件）
 export enum epPaymentRecordMethod {
-  // 实时支付通道
-  AIRWALLEX_WECHAT = 'AIRWALLEX_WECHAT',
-  AIRWALLEX_APPLE_PAY = 'AIRWALLEX_APPLE_PAY',
-  AIRWALLEX_GOOGLE_PAY = 'AIRWALLEX_GOOGLE_PAY',
-  AIRWALLEX_MASTERCARD = 'AIRWALLEX_MASTERCARD',
-  
-  // 银行转账通道
-  AIRWALLEX_BANK_TRANSFER = 'AIRWALLEX_BANK_TRANSFER',
-  
-  // 手动确认通道
+  STRIPE_CARD = 'STRIPE_CARD',
+  OMIPAY_WECHAT = 'OMIPAY_WECHAT',
+  OMIPAY_ALIPAY = 'OMIPAY_ALIPAY',
   MANUAL_CASH = 'MANUAL_CASH',
   MANUAL_OTHER = 'MANUAL_OTHER'
 }
@@ -77,7 +74,7 @@ ALTER TABLE users ADD COLUMN allow_bank_transfer BOOLEAN DEFAULT true;
 
 ### 1. 微信支付流程
 ```
-用户下单 → 选择微信支付 → 创建Airwallex Payment Intent → 微信支付 → Webhook确认 → 支付状态更新
+用户下单 → 选择微信支付 → 创建支付意图（当前 PSP，如 OmiPay / Stripe）→ 微信收银台 → Webhook 确认 → 支付状态更新
 ```
 
 ### 2. 现金支付流程

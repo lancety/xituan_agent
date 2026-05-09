@@ -1,6 +1,10 @@
-# Airwallex Webhook 开发环境配置指南
+# Airwallex Webhook 开发环境配置指南（已归档）
 
-本文档介绍如何配置本地开发环境以接收和处理 Airwallex 沙盒环境的 webhook 事件。
+> **P4 / 2026 状态**：后端已 **下线 Airwallex PSP**（无 `createPaymentIntent`、无 `/api/webhooks/airwallex*`）。下列内容为 **历史联调记录**，保留作隧道、HTTPS、公网可达性等**通用开发**参考。  
+> **当前 Webhook**：Stripe → `POST /api/webhooks/stripe`；OmiPay → `POST /api/webhooks/omipay/:webhookKey`。  
+> **运维**：见同目录 `airwallex-p4-ops-checklist.md`。隧道示例（非 Airwallex 专用）见 `cloudflared-tunnel-setup.md`。
+
+本文档（历史）介绍曾如何配置本地环境以接收 Airwallex 沙盒 Webhook。
 
 ## 📋 目录
 
@@ -8,9 +12,9 @@
 2. [本地防火墙 + 路由映射](#2-本地防火墙--路由映射)
 3. [域名绑定](#3-域名绑定)
 4. [DDNS 任务持续运行](#4-ddns-任务持续运行)
-5. [Airwallex 沙盒环境 Webhook 设置](#5-airwallex-沙盒环境-webhook-设置)
+5. [Airwallex 沙盒环境 Webhook 设置（历史）](#5-airwallex-沙盒环境-webhook-设置)
 
-**重要（2025+ 沙盒政策）**：Airwallex 沙盒在 Dashboard 中配置 Webhook URL 时要求 **`https://`**，且地址须从公网可达。纯 `http://localhost` 或仅内网 HTTP 无法作为 Webhook 端点；本地后端仍可监听 HTTP，通过 **HTTPS 隧道**（推荐）或在边界用 **正式证书**（Let's Encrypt 等）终结 TLS。
+**重要（历史背景）**：第三方沙盒在 Dashboard 中配置 Webhook URL 时通常要求 **`https://`**，且地址须从公网可达。纯 `http://localhost` 或仅内网 HTTP 不适合作为公网 Webhook 端点；本地后端监听 HTTP 时，通过 **HTTPS 隧道**（推荐）或在边界用 **正式证书**（Let's Encrypt 等）终结 TLS。该原则仍适用于 Stripe、OmiPay 等。
 
 ---
 
@@ -18,15 +22,9 @@
 
 ### 1.1 环境变量配置
 
-在 `xituan_backend` 项目的 `.env` 文件中配置以下环境变量：
+在 `xituan_backend` 项目的本地 `.env` 中配置端口、数据库等常规项（示例见下）。**仓库模板与 GitHub Actions 已不再列出或注入旧版 Airwallex 的全局密钥变量**；若你仍需在本地对照本文调试遗留 Airwallex 沙盒，请仅在私有 `.env` 中按 Airwallex Dashboard 文档自行填写凭据与 Webhook 验签密钥，**勿提交密钥**。
 
 ```env
-# Airwallex 配置
-AIRWALLEX_BASE_URL=https://api-demo.airwallex.com
-AIRWALLEX_API_KEY=your_api_key_here
-AIRWALLEX_CLIENT_ID=your_client_id_here
-AIRWALLEX_WEBHOOK_SECRET=your_webhook_secret_here
-
 # 后端服务配置
 PORT=3050
 NODE_ENV=development
@@ -41,13 +39,8 @@ DB_DATABASE=your_database
 
 ### 1.2 关键配置说明
 
-- **AIRWALLEX_BASE_URL**: 
-  - 沙盒环境: `https://api-demo.airwallex.com`
-  - 生产环境: `https://api.airwallex.com`
-
-- **AIRWALLEX_WEBHOOK_SECRET**: 
-  - 在 Airwallex Dashboard 中创建 Webhook 时生成
-  - 用于验证 webhook 请求的签名
+- **Airwallex API 根域名**：沙盒与生产 host 以 Airwallex 官方文档为准（常见为 `api-demo` / `api` 子域），仅在本地 `.env` 配置。
+- **Webhook 验签密钥**：在 Airwallex Dashboard 创建 Webhook 时生成，仅用于本地或自建环境验签，勿写入仓库。
 
 ### 1.3 启动后端服务
 
@@ -61,10 +54,14 @@ npm run dev
 
 ### 1.4 公网 HTTPS 地址（沙盒 Webhook 必填）
 
-在 Airwallex Dashboard 里填写的 Webhook URL 必须类似：
+在 **当前后端** 中，公网 HTTPS 下应使用的路径示例（**勿再使用**已删除的 `/api/webhooks/airwallex*`）：
 
-- **Connect / 统一平台密钥**：`https://<公网域名或隧道域名>/api/webhooks/airwallex`
-- **单商户（路径含 `webhookKey`）**：`https://<公网域名或隧道域名>/api/webhooks/airwallex-single/<webhookKey>`
+- **Stripe（平台 webhook）**：`https://<公网域名或隧道域名>/api/webhooks/stripe`
+- **OmiPay（每商户 webhookKey）**：`https://<公网域名或隧道域名>/api/webhooks/omipay/<webhookKey>`
+
+以下为 **历史** Airwallex 路径说明（仅作对照，路由已不存在）：
+
+- ~~`/api/webhooks/airwallex`~~、~~`/api/webhooks/airwallex-single/<webhookKey>`~~
 
 任选其一即可满足「HTTPS + 公网」：
 
@@ -80,7 +77,7 @@ ngrok http 3050
 
 复制控制台里的 `https://....ngrok-free.app`（或付费固定域名），在 Airwallex 中填写：
 
-`https://<ngrok-host>/api/webhooks/airwallex`（或带 `webhookKey` 的单商户路径）。
+`https://<ngrok-host>/api/webhooks/stripe` 或 `https://<ngrok-host>/api/webhooks/omipay/<webhookKey>`（按当前 PSP 选择）。
 
 **Cloudflare Tunnel（cloudflared）**：
 
@@ -134,7 +131,7 @@ caddy run --config Caddyfile
    - **首次启动**：Caddy 会自动向 Let's Encrypt 申请证书；失败时检查：域名 A 记录是否指向当前公网 IP、路由器 **80/443** 是否转到本机、本机防火墙是否放行 80/443、本机 **无其它程序占用 80/443**（含 IIS、其它 Web 服务器）。  
    - **可选 — 安装为 Windows 服务**：见 [Caddy 文档 Keep Caddy running](https://caddyserver.com/docs/running#windows-service)；开发阶段前台 `caddy run` 即可。
 
-5. **Airwallex Webhook URL**：`https://backend-dev.xituan.com.au/api/webhooks/airwallex`（或单商户路径 `/api/webhooks/airwallex-single/<webhookKey>`）。
+5. **（历史）Airwallex Webhook URL** 曾形如 `https://backend-dev.xituan.com.au/api/webhooks/airwallex`；**当前**请改为 Stripe `/api/webhooks/stripe` 或 OmiPay `/api/webhooks/omipay/<webhookKey>`（见文首说明）。
 
 **若不能用 80 端口**（运营商封 80 等）：需改用 **DNS-01**（例如 `acme.sh` + Route53 API、或 Caddy 的 DNS 插件）签发证书，步骤比 HTTP-01 多，此处不展开。
 
@@ -142,12 +139,14 @@ caddy run --config Caddyfile
 
 ### 1.5 本地验证 Webhook 路由（可选）
 
-端点路径：
+**当前**端点示例：
 
-- Connect / 统一：`/api/webhooks/airwallex`
-- 单商户：`/api/webhooks/airwallex-single/:webhookKey`
+- Stripe：`/api/webhooks/stripe`（须带合法 `Stripe-Signature` 与 body，参见 Stripe 文档）
+- OmiPay：`/api/webhooks/omipay/:webhookKey`
 
-本机自测可用：`http://localhost:3050/api/webhooks/airwallex`（仅用于本机 `curl`/联调；**不能**作为 Dashboard 里填写的 URL）。
+本机仅测连通性时可用 `curl` 打上述路径；**公网 Dashboard** 仍须使用 `https://` 隧道或正式域名。
+
+**（历史）** Airwallex 路径 ~~`/api/webhooks/airwallex`~~ 已删除，勿再配置。
 
 ---
 
@@ -346,17 +345,17 @@ dig backend-dev.xituan.com.au
 ### 4.3 测试域名访问
 
 ```bash
-# 测试 webhook 端点是否可访问（路径须与 app 注册一致）
-curl -X POST https://backend-dev.xituan.com.au/api/webhooks/airwallex \
+# 测试 HTTPS 可达（示例：Stripe 路径；无合法签名时后端会按 Stripe 规则拒绝，此处仅验证 TLS/路由）
+curl -i -X POST https://backend-dev.xituan.com.au/api/webhooks/stripe \
   -H "Content-Type: application/json" \
-  -d '{"test": "data"}'
+  -d '{}'
 ```
 
 若尚未在边界配置 HTTPS，可改用隧道给出的 `https://...` 主机名测试同一路径。
 
 ---
 
-## 5. Airwallex 沙盒环境 Webhook 设置
+## 5. Airwallex 沙盒环境 Webhook 设置（历史参考）
 
 ### 5.1 登录 Airwallex Dashboard
 
@@ -370,11 +369,11 @@ curl -X POST https://backend-dev.xituan.com.au/api/webhooks/airwallex \
 2. 点击 **Create Webhook** 或 **Add Webhook**
 3. 填写以下信息：
 
-   **Webhook URL**（须为 **https**，且与后端路由一致）:
+   **Webhook URL**（历史示例；后端已不再提供该路径）:
    ```
-   https://backend-dev.xituan.com.au/api/webhooks/airwallex
+   https://backend-dev.xituan.com.au/api/webhooks/airwallex   # 已废弃
    ```
-   本地开发可使用 ngrok / cloudflare 隧道的 `https://...` 主机 + 同上路径。单商户场景请将路径换为 `/api/webhooks/airwallex-single/<webhookKey>`。
+   **当前**：在 Stripe / OmiPay 各自 Dashboard 配置 `.../api/webhooks/stripe` 或 `.../api/webhooks/omipay/<webhookKey>`。本地开发用 ngrok / Cloudflare Tunnel 的 `https://...` 主机名 + 上述路径。
    
    **Events to Subscribe**:
    - ✅ `payment_intent.succeeded`
@@ -399,10 +398,7 @@ curl -X POST https://backend-dev.xituan.com.au/api/webhooks/airwallex \
 
 1. 创建 Webhook 后，Airwallex 会生成一个 **Webhook Secret**
 2. **重要**: 立即复制并保存这个 Secret
-3. 将 Secret 添加到 `.env` 文件：
-   ```env
-   AIRWALLEX_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-   ```
+3. 将 Secret 写入**本地** `.env`（变量名以后端当前验签实现为准），勿提交仓库。
 4. 重启后端服务使配置生效
 
 ### 5.4 Webhook 签名验证
@@ -443,13 +439,11 @@ curl -X POST https://backend-dev.xituan.com.au/api/webhooks/airwallex \
 
 详见 [System Monitoring — Overview](./System-Monitoring-Overview.md)、[System Monitoring — CMS](./System-Monitoring-CMS.md)、[System Monitoring — Platform](./System-Monitoring-Platform.md)。
 
-### 5.6 Webhook 事件处理流程
+### 5.6 Webhook 事件处理流程（历史 + 当前表名）
 
-1. **接收**: 后端接收 Airwallex 发送的 webhook 请求
-2. **验证**: 验证签名和幂等性
-3. **保存**: 将事件保存到 `webhooks_events_airwallex` 表
-4. **处理**: 异步处理事件，更新订单状态和支付记录
-5. **响应**: 立即返回 200 状态码（避免超时）
+**历史（Airwallex）**：后端曾验签并入队处理；该路径已移除。
+
+**当前（Stripe / OmiPay）**：验签后写入 **`merchant.webhooks_events_psp`**（按 `payment_provider` 区分），再异步更新订单与支付记录；成功路径应尽快返回 **200**，避免 PSP 端超时重试。
 
 ### 5.7 常见问题排查
 
@@ -463,7 +457,7 @@ curl -X POST https://backend-dev.xituan.com.au/api/webhooks/airwallex \
 
 #### 5.7.2 签名验证失败
 
-- ✅ 确认 `AIRWALLEX_WEBHOOK_SECRET` 环境变量已正确配置
+- ✅ 确认本地已配置与 Dashboard 一致的 Webhook 验签密钥（勿依赖仓库模板中的旧变量名）
 - ✅ 确认 Webhook Secret 与 Airwallex Dashboard 中的一致
 - ✅ 检查后端日志中的签名验证详情
 
@@ -479,9 +473,7 @@ curl -X POST https://backend-dev.xituan.com.au/api/webhooks/airwallex \
 
 ### 6.1 环境配置
 - [ ] 后端服务运行在 `localhost:3050`
-- [ ] `.env` 文件中配置了所有 Airwallex 相关环境变量
-- [ ] `AIRWALLEX_BASE_URL` 指向沙盒环境
-- [ ] `AIRWALLEX_WEBHOOK_SECRET` 已配置
+- [ ] 本地 `.env` 已按需配置数据库等；若调试遗留 Airwallex，沙盒 API host 与 Webhook 验签密钥已与 Dashboard 一致且未提交仓库
 
 ### 6.2 网络配置
 - [ ] Windows 防火墙已允许端口 3050
@@ -495,15 +487,15 @@ curl -X POST https://backend-dev.xituan.com.au/api/webhooks/airwallex \
 - [ ] DDNS 任务正在持续运行
 - [ ] 域名可以正确解析到公网 IP
 
-### 6.4 Airwallex 配置
-- [ ] 已登录 Airwallex 沙盒环境
-- [ ] 已创建 Webhook，URL 为 **https** 且可公网访问（隧道或域名+TLS），路径为 `/api/webhooks/airwallex` 或 `/api/webhooks/airwallex-single/...`
-- [ ] 已订阅所有需要的事件类型
-- [ ] Webhook Secret 已保存并配置到后端
+### 6.4 PSP Webhook 配置（当前：Stripe / OmiPay）
+- [ ] 已在对应 PSP Dashboard 创建 Webhook，URL 为 **https** 且可公网访问
+- [ ] Stripe：`/api/webhooks/stripe`，且后端已配置 `STRIPE_WEBHOOK_SECRET`
+- [ ] OmiPay：`/api/webhooks/omipay/<webhookKey>`，验签使用商户 OmiPay 配置中的密钥
+- [ ] （历史）若仍看到 Airwallex Dashboard 中指向本系统的 URL，应删除或停用，避免误投事件
 
 ### 6.5 测试验证
-- [ ] 可以通过域名访问 webhook 端点
-- [ ] Airwallex 测试事件可以成功发送
+- [ ] 可以通过域名访问 webhook 端点（HTTPS）
+- [ ] 使用当前 PSP 的测试事件或 Dashboard「Send test」验证签名校验与入库
 - [ ] 后端日志显示事件已接收和处理
 - [ ] CMS 或 Platform Webhook 监控页面可以查看 webhook 事件（见 [System Monitoring — Overview](./System-Monitoring-Overview.md)）
 
@@ -514,7 +506,7 @@ curl -X POST https://backend-dev.xituan.com.au/api/webhooks/airwallex \
 - **Airwallex API 文档**: https://www.airwallex.com/docs/api
 - **Airwallex Webhook 文档**: https://www.airwallex.com/docs/api#/Webhooks
 - **AWS Route 53 文档**: https://docs.aws.amazon.com/route53/
-- **后端 Webhook 端点**: `/api/webhooks/airwallex`
+- **后端 Webhook 端点（当前）**: `/api/webhooks/stripe`，`/api/webhooks/omipay/:webhookKey`
 - **Webhook 监控**: [System Monitoring — Overview](./System-Monitoring-Overview.md) — CMS `/monitoring/webhooks`、Platform `/monitoring/webhooks`
 
 ---

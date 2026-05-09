@@ -1,6 +1,6 @@
 # cloudflared（Cloudflare Tunnel）本地开发指南
 
-用于把本机 HTTP 服务（如 `xituan_backend` 的 `PORT`）暴露为公网 **HTTPS**，满足沙盒 Webhook（如 Airwallex）等对 `https://` 的要求。本文分两种模式：**临时 Quick Tunnel** 与 **Named Tunnel + Cloudflare 托管 DNS（固定域名）**。
+用于把本机 HTTP 服务（如 `xituan_backend` 的 `PORT`）暴露为公网 **HTTPS**，满足 PSP Webhook（Stripe、OmiPay 等）对 **`https://`** 的要求。本文分两种模式：**临时 Quick Tunnel** 与 **Named Tunnel + Cloudflare 托管 DNS（固定域名）**。
 
 ---
 
@@ -48,13 +48,14 @@ cloudflared tunnel --url http://127.0.0.1:3050
 
 `https://<random>.trycloudflare.com`
 
-### Airwallex Webhook 示例
+### Webhook URL 示例（当前后端）
 
-将 Dashboard 中的 URL 设为（路径以本仓库后端为准）：
+将 **Stripe / OmiPay** Dashboard 中的 URL 设为（路径以本仓库 `app.ts` 注册为准）：
 
-`https://<random>.trycloudflare.com/api/webhooks/airwallex`
+- Stripe：`https://<random>.trycloudflare.com/api/webhooks/stripe`
+- OmiPay：`https://<random>.trycloudflare.com/api/webhooks/omipay/<webhookKey>`
 
-单商户场景使用：`/api/webhooks/airwallex-single/<webhookKey>`。
+（历史）Airwallex 路径 `/api/webhooks/airwallex*` 已删除，勿再配置。
 
 ### 注意
 
@@ -104,9 +105,10 @@ Start-Service Cloudflared   # if not Running
 3. **Domain**：下拉选择已接入 CF 的 zone（若为空，说明 NS 未切到 CF 或站点未添加成功）。
 4. **Service URL**：`http://127.0.0.1:3050`（与后端端口一致；不要用 `https://localhost` 除非本机 origin 真是 HTTPS）。
 
-### 5. Airwallex Webhook 示例
+### 5. Webhook 示例（固定域名）
 
-`https://backend-dev.example.com/api/webhooks/airwallex`
+- Stripe：`https://backend-dev.example.com/api/webhooks/stripe`
+- OmiPay：`https://backend-dev.example.com/api/webhooks/omipay/<webhookKey>`
 
 ---
 
@@ -117,7 +119,7 @@ Start-Service Cloudflared   # if not Running
 - **可选方向（择一）**：
   - **整域迁到 Cloudflare**：`Add a site` 填根域 → 同步 DNS → 注册商改 NS → 再走模式 B（固定 URL，Tunnel + CF DNS）。
   - **继续模式 A**：Quick Tunnel，`trycloudflare.com`（URL 常变）。
-  - **不用 Tunnel，DNS 仍在 Route 53**：公网 IP + **Caddy / Nginx + Let’s Encrypt**（参见 `airwallex-webhook-dev-setup.md` 方案 B）。
+  - **不用 Tunnel，DNS 仍在 Route 53**：公网 IP + **Caddy / Nginx + Let’s Encrypt**（参见 `airwallex-webhook-dev-setup.md` 中 Caddy 方案；该文档已归档但 TLS 步骤仍适用）。
   - 高级场景（如 **Bring your own DNS**、仅手工 CNAME 到 `*.cfargotunnel.com`）需对照 [Cloudflare Tunnel 文档](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) 当前说明，且不一定再走 Published application 同一套 UI。
 
 ---
@@ -125,7 +127,7 @@ Start-Service Cloudflared   # if not Running
 ## 安全提示
 
 - **Tunnel token** 等同于入站凭证，勿提交到仓库、勿发到公开聊天；泄露后在 Cloudflare 控制台轮换/重建隧道。
-- Webhook 签名密钥仍使用环境变量中的 `AIRWALLEX_WEBHOOK_SECRET` 等，与隧道无关。
+- Webhook 签名密钥由各 PSP（如 Stripe、OmiPay）在商户设置或环境变量中配置，与隧道无关。
 
 ---
 

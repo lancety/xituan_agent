@@ -35,9 +35,6 @@ $env:DB_PASSWORD="Xituan2024Secure"  # ⚠️ 注意：不能包含 @ 符号和�
 在 GitHub 仓库设置中添加以下 Secrets：
 - `JWT_SECRET`: JWT 密钥
 - `WECHAT_APP_SECRET`: 微信小程序密钥
-- `AIRWALLEX_API_KEY`: Airwallex API 密钥
-- `AIRWALLEX_CLIENT_ID`: Airwallex 客户端 ID
-- `AIRWALLEX_WEBHOOK_SECRET`: Airwallex Webhook 密钥
 - `GOOGLE_MAPS_API_KEY`: Google Maps API 密钥
 - `S3_KEY`: AWS S3 访问密钥
 - `S3_SECRET_KEY`: AWS S3 秘密密钥

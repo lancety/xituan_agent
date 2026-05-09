@@ -99,17 +99,8 @@ const isDeposit = paymentRecord.paymentMethod &&
   eAirwallexDepositMethods.has(paymentRecord.paymentMethod);
 const isManualPayment = !isPaymentIntent && !isDeposit;
 
-// 枚举集合定义
-export const eAirwallexPaymentMethods = new Set([
-  epPaymentRecordMethod.AIRWALLEX_WECHAT,      // → PaymentIntent 退款
-  epPaymentRecordMethod.AIRWALLEX_APPLE_PAY,   // → PaymentIntent 退款
-  epPaymentRecordMethod.AIRWALLEX_GOOGLE_PAY,  // → PaymentIntent 退款
-  epPaymentRecordMethod.AIRWALLEX_MASTERCARD   // → PaymentIntent 退款
-]);
-
-export const eAirwallexDepositMethods = new Set([
-  epPaymentRecordMethod.AIRWALLEX_BANK_TRANSFER // → Deposit 退款（Payout）
-]);
+// 枚举集合定义（以 order-payment-record.type.ts 为准，含 eStripePaymentRecordMethods、eOmipayPaymentRecordMethods、eAirwallexPaymentMethods 等）
+// 此处不展开成员字面量，避免与实现漂移。
 ```
 
 ### 2. 退款流程设计（已实现）
@@ -487,14 +478,13 @@ function determineRefundMethod(paymentMethod: epPaymentRecordMethod, metadata: a
   useBankTransfer: boolean;
   useManual: boolean;
 } {
-  // PaymentIntent退款：所有Airwallex移动支付
+  // PaymentIntent 退款：命中 eAirwallexPaymentMethods 集合的通道（历史实现命名保留）
   if (eAirwallexPaymentMethods.has(paymentMethod)) {
     return { usePaymentIntentRefund: true, useBankTransfer: false, useManual: false };
   }
   
-  // Bank Transfer退款：Deposit收款
-  if (paymentMethod === epPaymentRecordMethod.AIRWALLEX_BANK_TRANSFER || 
-      metadata?.type === 'BANK_TRANSFER') {
+  // Bank Transfer退款：Deposit 收款（是否命中以 eAirwallexDepositMethods 或业务 metadata 为准）
+  if (eAirwallexDepositMethods.has(paymentMethod) || metadata?.type === 'BANK_TRANSFER') {
     return { usePaymentIntentRefund: false, useBankTransfer: true, useManual: false };
   }
   
@@ -538,8 +528,9 @@ function determinePaymentType(refundAmount: number, originalAmount: number): epP
 
 1. **识别 Deposit 支付记录**：
    ```typescript
-   const isDeposit = selectedPaymentRecord?.paymentMethod === 
-     epPaymentRecordMethod.AIRWALLEX_BANK_TRANSFER;
+   const isDeposit =
+     selectedPaymentRecord?.paymentMethod != null &&
+     eAirwallexDepositMethods.has(selectedPaymentRecord.paymentMethod);
    ```
 
 2. **提取 payer 银行信息**：
@@ -567,14 +558,8 @@ function determinePaymentType(refundAmount: number, originalAmount: number): epP
 
 ### 3. 退款方式选项（已实现）
 
-所有退款方式选项：
-- `AIRWALLEX_WECHAT`：Airwallex微信支付
-- `AIRWALLEX_APPLE_PAY`：Airwallex Apple Pay
-- `AIRWALLEX_GOOGLE_PAY`：Airwallex Google Pay
-- `AIRWALLEX_MASTERCARD`：Airwallex Mastercard
-- `AIRWALLEX_BANK_TRANSFER`：Airwallex银行转账退款
-- `MANUAL_CASH`：手动现金退款
-- `MANUAL_OTHER`：手动其他退款
+所有退款方式选项以 **`epPaymentRecordMethod`** 为准（PSP 钱包/卡、OmiPay、Stripe、历史 Deposit、手动等），详见 `order-payment-record.type.ts`；CMS 下拉与后端校验应与该枚举及退款服务逻辑一致。
+- **手动类**：`MANUAL_CASH`、`MANUAL_OTHER`（见同一枚举）
 
 **默认值**：使用原支付记录的 `paymentMethod`
 

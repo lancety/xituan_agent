@@ -41,7 +41,7 @@
 
 #### 1. 类型定义和枚举
 - **支付方式枚举**: `epPaymentMethod` 已定义，包含 WECHAT、CASH、BANK_TRANSFER 等
-- **支付记录方法枚举**: `epPaymentRecordMethod` 已定义，包含各种 Airwallex 和手动支付方式
+- **支付记录方法枚举**: `epPaymentRecordMethod` 已定义，包含各 PSP 与手动支付方式（见 `order-payment-record.type.ts`）
 - **支付相关接口**: `iOrderPaymentRecord`、`iManualPaymentConfirmation` 等接口已定义
 
 #### 2. 后端核心功能
@@ -162,13 +162,11 @@ export enum epUserPaymentMethod {
   BANK_TRANSFER = 'BANK_TRANSFER'
 }
 
-// 支付记录通道
+// 支付记录通道（完整枚举见 xituan_codebase/typing_entity/order-payment-record.type.ts）
 export enum epPaymentRecordMethod {
-  AIRWALLEX_WECHAT = 'AIRWALLEX_WECHAT',
-  AIRWALLEX_APPLE_PAY = 'AIRWALLEX_APPLE_PAY',
-  AIRWALLEX_GOOGLE_PAY = 'AIRWALLEX_GOOGLE_PAY',
-  AIRWALLEX_MASTERCARD = 'AIRWALLEX_MASTERCARD',
-  AIRWALLEX_BANK_TRANSFER = 'AIRWALLEX_BANK_TRANSFER',
+  STRIPE_CARD = 'STRIPE_CARD',
+  OMIPAY_WECHAT = 'OMIPAY_WECHAT',
+  OMIPAY_ALIPAY = 'OMIPAY_ALIPAY',
   MANUAL_CASH = 'MANUAL_CASH',
   MANUAL_OTHER = 'MANUAL_OTHER'
 }
