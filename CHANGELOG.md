@@ -1,3 +1,11 @@
+## [3.3.0] - 2026-05-17
+
+### 📚 文档
+
+- docs(devGuide): subscription prepaid coupon implementation phases
+- docs: payment expiration testing notes and Stripe Omipay manual checklist
+- docs(devGuide): payment platform notes and deployment guides refresh
+
 ## [3.2.0] - 2026-05-05
 
 ### 🔄 版本同步

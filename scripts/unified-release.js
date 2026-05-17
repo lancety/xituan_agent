@@ -430,15 +430,15 @@ class SmartUnifiedReleaseManager {
     console.log(`智能CHANGELOG已更新: ${changelogPath}`);
   }
 
-  // 更新微信小程序版本显示（已集成到 updateVersionTo 方法中）
-  updateWechatVersion(projectPath, version) {
-    // 注意：版本号替换逻辑已经集成到 updateVersionTo 方法中
-    // 该方法会自动在项目文件夹范围内搜索并替换所有旧版本号
-    // 包括 profile.wxml、settings.wxml 等文件中的版本显示
-    
-    // 微信小程序的 app.json 不支持 version、versionName、versionCode 属性
-    // 这些属性是 Android 应用特有的，微信小程序通过微信平台管理版本
-    console.log(`微信小程序版本号已通过通用替换逻辑更新，无需在 app.json 中设置版本属性`);
+  // Sync config/app-version.ts from package.json (profile page + X-Client-Version header).
+  updateWechatVersion(projectPath) {
+    const syncScript = path.join(projectPath, 'scripts', 'sync-version.js');
+    if (!fs.existsSync(syncScript)) {
+      console.warn(`微信小程序 version:sync 脚本不存在，跳过: ${syncScript}`);
+      return;
+    }
+    console.log('同步微信小程序 config/app-version.ts ...');
+    this.exec(`node scripts/sync-version.js`, projectPath);
   }
 
   // 检查项目变更状态
@@ -579,7 +579,7 @@ class SmartUnifiedReleaseManager {
           
           // 特殊处理微信小程序
           if (project.name === 'xituan_wechat_app') {
-            this.updateWechatVersion(project.path, newVersion);
+            this.updateWechatVersion(project.path);
           }
           
           // 获取当前分支名称
@@ -630,7 +630,7 @@ class SmartUnifiedReleaseManager {
           
           // 特殊处理微信小程序
           if (project.name === 'xituan_wechat_app') {
-            this.updateWechatVersion(project.path, newVersion);
+            this.updateWechatVersion(project.path);
           }
           
           // 获取当前分支名称
