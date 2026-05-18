@@ -1,3 +1,13 @@
+## [3.4.0] - 2026-05-18
+
+### 📚 文档
+
+- docs(aws): add OpenIM deployment config and setup scripts
+- docs(devGuide): merchant clients admin API reference
+- docs(devGuide): subscription prepaid coupon implementation phases
+- docs: payment expiration testing notes and Stripe Omipay manual checklist
+- docs(devGuide): payment platform notes and deployment guides refresh
+
 ## [3.3.0] - 2026-05-17
 
 ### 📚 文档
