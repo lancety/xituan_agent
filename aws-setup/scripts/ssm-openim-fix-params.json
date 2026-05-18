@@ -1,0 +1,24 @@
+{
+  "commands": [
+    "grep -q OPENIM_WEB_FRONT_IMAGE /opt/openim/.env || echo OPENIM_WEB_FRONT_IMAGE=openim/openim-web-front:release-v3.8.3 >> /opt/openim/.env",
+    "grep -q OPENIM_ADMIN_FRONT_IMAGE /opt/openim/.env || echo OPENIM_ADMIN_FRONT_IMAGE=openim/openim-admin-front:release-v1.8.4-patch.2 >> /opt/openim/.env",
+    "grep -q OPENIM_WEB_FRONT_PORT /opt/openim/.env || echo OPENIM_WEB_FRONT_PORT=11001 >> /opt/openim/.env",
+    "grep -q OPENIM_ADMIN_FRONT_PORT /opt/openim/.env || echo OPENIM_ADMIN_FRONT_PORT=11002 >> /opt/openim/.env",
+    "grep -q CHAT_API_PORT /opt/openim/.env || echo CHAT_API_PORT=10008 >> /opt/openim/.env",
+    "grep -q ADMIN_API_PORT /opt/openim/.env || echo ADMIN_API_PORT=10009 >> /opt/openim/.env",
+    "grep -q MINIO_PORT /opt/openim/.env || echo MINIO_PORT=10005 >> /opt/openim/.env",
+    "grep -q MINIO_CONSOLE_PORT /opt/openim/.env || echo MINIO_CONSOLE_PORT=10004 >> /opt/openim/.env",
+    "grep -q PROMETHEUS_IMAGE /opt/openim/.env || echo PROMETHEUS_IMAGE=prom/prometheus:v2.51.2 >> /opt/openim/.env",
+    "grep -q PROMETHEUS_PORT /opt/openim/.env || echo PROMETHEUS_PORT=19090 >> /opt/openim/.env",
+    "grep -q ALERTMANAGER_IMAGE /opt/openim/.env || echo ALERTMANAGER_IMAGE=prom/alertmanager:v0.27.0 >> /opt/openim/.env",
+    "grep -q ALERTMANAGER_PORT /opt/openim/.env || echo ALERTMANAGER_PORT=19093 >> /opt/openim/.env",
+    "grep -q GRAFANA_IMAGE /opt/openim/.env || echo GRAFANA_IMAGE=grafana/grafana:11.0.1 >> /opt/openim/.env",
+    "grep -q GRAFANA_PORT /opt/openim/.env || echo GRAFANA_PORT=13000 >> /opt/openim/.env",
+    "grep -q NODE_EXPORTER_IMAGE /opt/openim/.env || echo NODE_EXPORTER_IMAGE=prom/node-exporter:v1.7.0 >> /opt/openim/.env",
+    "grep -q NODE_EXPORTER_PORT /opt/openim/.env || echo NODE_EXPORTER_PORT=19100 >> /opt/openim/.env",
+    "grep -q GRAFANA_URL /opt/openim/.env || echo GRAFANA_URL=http://127.0.0.1:13000 >> /opt/openim/.env",
+    "cd /opt/openim/upstream && /usr/local/bin/docker-compose --env-file ../.env -f docker-compose.yaml up -d",
+    "sleep 15",
+    "docker ps -a"
+  ]
+}

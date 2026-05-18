@@ -1,0 +1,316 @@
+# OpenIM on EC2 + ALB listener rules (im-api / im-ws). Deploy after 02_alb (HTTPS) and 03_security-groups.
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Xituan OpenIM - EC2 Docker Compose + ALB target groups and host-based rules'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues: [development, staging, production]
+
+  VPCId:
+    Type: String
+    Description: VPC ID
+
+  PublicSubnetId:
+    Type: String
+    Description: Public subnet for OpenIM EC2 (same AZ as primary public subnet)
+
+  ALBSecurityGroupId:
+    Type: String
+    Description: ALB security group (ingress to OpenIM ports 10001/10002)
+
+  ECSSecurityGroupId:
+    Type: String
+    Description: ECS security group (optional internal API access to port 10002)
+
+  HTTPSListenerArn:
+    Type: String
+    Description: ARN of ALB HTTPS:443 listener from 02_alb stack
+
+  OpenimApiHostHeader:
+    Type: String
+    Default: im-api.lancety.com
+    Description: Host header on ALB (client-facing domain; may CNAME via im-api.xituan.com.au)
+
+  OpenimWsHostHeader:
+    Type: String
+    Default: im-ws.lancety.com
+    Description: Host header for WebSocket (WeChat socket legal domain)
+
+  InstanceType:
+    Type: String
+    Default: t3.large
+    Description: EC2 instance type (OpenIM compose needs ~8GB RAM)
+
+  KeyName:
+    Type: String
+    Default: ''
+    Description: Optional EC2 key pair for SSH (leave empty to use SSM Session Manager only)
+
+  OpenimSecret:
+    Type: String
+    NoEcho: true
+    Description: OPENIM_SECRET (must match OpenIM server config; not openIM123 in production)
+
+  DataVolumeSizeGb:
+    Type: Number
+    Default: 80
+    MinValue: 40
+    Description: EBS data volume size for Mongo/Kafka/Redis
+
+Conditions:
+  HasKeyName: !Not [!Equals [!Ref KeyName, '']]
+
+Resources:
+  OpenimSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub 'xituan-openim-sg-${Environment}'
+      GroupDescription: OpenIM EC2 - ALB and ECS backend access
+      VpcId: !Ref VPCId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 10001
+          ToPort: 10001
+          SourceSecurityGroupId: !Ref ALBSecurityGroupId
+          Description: WebSocket from ALB
+        - IpProtocol: tcp
+          FromPort: 10002
+          ToPort: 10002
+          SourceSecurityGroupId: !Ref ALBSecurityGroupId
+          Description: OpenIM API from ALB
+        - IpProtocol: tcp
+          FromPort: 10002
+          ToPort: 10002
+          SourceSecurityGroupId: !Ref ECSSecurityGroupId
+          Description: OpenIM API from ECS (internal, no ALB hop)
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub 'xituan-openim-sg-${Environment}'
+
+  OpenimInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Tags:
+        - Key: Name
+          Value: !Sub 'xituan-openim-ec2-role-${Environment}'
+
+  OpenimInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref OpenimInstanceRole
+
+  OpenimInstance:
+    Type: AWS::EC2::Instance
+    DependsOn: OpenimInstanceProfile
+    Properties:
+      ImageId: !Sub '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}'
+      InstanceType: !Ref InstanceType
+      IamInstanceProfile: !Ref OpenimInstanceProfile
+      KeyName: !If [HasKeyName, !Ref KeyName, !Ref AWS::NoValue]
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          GroupSet:
+            - !Ref OpenimSecurityGroup
+          SubnetId: !Ref PublicSubnetId
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 30
+            VolumeType: gp3
+            Encrypted: true
+        - DeviceName: /dev/sdf
+          Ebs:
+            VolumeSize: !Ref DataVolumeSizeGb
+            VolumeType: gp3
+            Encrypted: true
+            DeleteOnTermination: true
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          # OpenIM docker compose bootstrap (Amazon Linux 2023)
+          set -euxo pipefail
+          dnf install -y docker git
+          systemctl enable --now docker
+          mkdir -p /opt/openim/data
+          if ! mountpoint -q /opt/openim/data; then
+            if [ -b /dev/sdf ] && ! blkid /dev/sdf; then
+              mkfs -t xfs /dev/sdf
+            fi
+            if [ -b /dev/sdf ]; then
+              grep -q '/dev/sdf' /etc/fstab || echo '/dev/sdf /opt/openim/data xfs defaults,nofail 0 2' >> /etc/fstab
+              mount -a
+            fi
+          fi
+          curl -fsSL "https://github.com/docker/compose/releases/download/v2.24.7/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose
+          cd /opt/openim
+          if [ ! -d upstream/.git ]; then
+            git clone --depth 1 --branch v3.8 https://github.com/openimsdk/openim-docker.git upstream
+          fi
+          cat > .env <<EOF
+          DATA_DIR=/opt/openim/data/
+          MONGO_IMAGE=mongo:7.0
+          REDIS_IMAGE=redis:7.0.0
+          KAFKA_IMAGE=bitnamilegacy/kafka:3.5.1
+          MINIO_IMAGE=minio/minio:RELEASE.2024-01-11T07-46-16Z
+          ETCD_IMAGE=bitnamilegacy/etcd:3.5.13
+          OPENIM_SERVER_IMAGE=openim/openim-server:v3.8.3-patch.12
+          OPENIM_CHAT_IMAGE=openim/openim-chat:v1.8.4-patch.2
+          MONGO_ADDRESS=mongo:27017
+          MONGO_USERNAME=openIM
+          MONGO_PASSWORD=openIM123
+          KAFKA_ADDRESS=kafka:9094
+          KAFKA_USERNAME=
+          KAFKA_PASSWORD=
+          ETCD_ADDRESS=etcd:2379
+          ETCD_USERNAME=
+          ETCD_PASSWORD=
+          REDIS_ADDRESS=redis:6379
+          REDIS_PASSWORD=openIM123
+          MINIO_EXTERNAL_ADDRESS=http://127.0.0.1:10005
+          MINIO_INTERNAL_ADDRESS=minio:9000
+          MINIO_ACCESS_KEY_ID=root
+          MINIO_SECRET_ACCESS_KEY=openIM123
+          OPENIM_SECRET=${OpenimSecret}
+          OPENIM_API_PORT=10002
+          OPENIM_MSG_GATEWAY_PORT=10001
+          OPENIM_WEB_FRONT_IMAGE=openim/openim-web-front:release-v3.8.3
+          OPENIM_ADMIN_FRONT_IMAGE=openim/openim-admin-front:release-v1.8.4-patch.2
+          OPENIM_WEB_FRONT_PORT=11001
+          OPENIM_ADMIN_FRONT_PORT=11002
+          CHAT_API_PORT=10008
+          ADMIN_API_PORT=10009
+          MINIO_PORT=10005
+          MINIO_CONSOLE_PORT=10004
+          PROMETHEUS_IMAGE=prom/prometheus:v2.51.2
+          PROMETHEUS_PORT=19090
+          ALERTMANAGER_IMAGE=prom/alertmanager:v0.27.0
+          ALERTMANAGER_PORT=19093
+          GRAFANA_IMAGE=grafana/grafana:11.0.1
+          GRAFANA_PORT=13000
+          NODE_EXPORTER_IMAGE=prom/node-exporter:v1.7.0
+          NODE_EXPORTER_PORT=19100
+          GRAFANA_URL=http://127.0.0.1:13000
+          API_URL=http://openim-server:10002
+          LOG_IS_STDOUT=true
+          LOG_LEVEL=4
+          EOF
+          cd /opt/openim/upstream
+          docker-compose --env-file ../.env -f docker-compose.yaml up -d
+          echo "ok" > /var/log/openim-bootstrap.done
+      Tags:
+        - Key: Name
+          Value: !Sub 'xituan-openim-${Environment}'
+
+  ImApiTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub 'xituan-im-api-tg-${Environment}'
+      VpcId: !Ref VPCId
+      Port: 10002
+      Protocol: HTTP
+      TargetType: instance
+      HealthCheckEnabled: true
+      HealthCheckProtocol: HTTP
+      HealthCheckPort: traffic-port
+      HealthCheckPath: /
+      Matcher:
+        HttpCode: '200-499'
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: '30'
+      Targets:
+        - Id: !Ref OpenimInstance
+          Port: 10002
+      Tags:
+        - Key: Name
+          Value: !Sub 'xituan-im-api-tg-${Environment}'
+
+  ImWsTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub 'xituan-im-ws-tg-${Environment}'
+      VpcId: !Ref VPCId
+      Port: 10001
+      Protocol: HTTP
+      TargetType: instance
+      HealthCheckEnabled: true
+      HealthCheckProtocol: HTTP
+      HealthCheckPort: traffic-port
+      HealthCheckPath: /
+      Matcher:
+        HttpCode: '200-499'
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: '30'
+      Targets:
+        - Id: !Ref OpenimInstance
+          Port: 10001
+      Tags:
+        - Key: Name
+          Value: !Sub 'xituan-im-ws-tg-${Environment}'
+
+  OpenimApiListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref HTTPSListenerArn
+      Priority: 10
+      Conditions:
+        - Field: host-header
+          HostHeaderConfig:
+            Values:
+              - !Ref OpenimApiHostHeader
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref ImApiTargetGroup
+
+  OpenimWsListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref HTTPSListenerArn
+      Priority: 11
+      Conditions:
+        - Field: host-header
+          HostHeaderConfig:
+            Values:
+              - !Ref OpenimWsHostHeader
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref ImWsTargetGroup
+
+Outputs:
+  OpenimInstanceId:
+    Description: OpenIM EC2 instance ID
+    Value: !Ref OpenimInstance
+
+  OpenimPrivateIp:
+    Description: OpenIM EC2 private IP (optional internal OPENIM_API_BASE_URL)
+    Value: !GetAtt OpenimInstance.PrivateIp
+
+  ImApiTargetGroupArn:
+    Description: Target group for im-api host rule
+    Value: !Ref ImApiTargetGroup
+
+  ImWsTargetGroupArn:
+    Description: Target group for im-ws host rule
+    Value: !Ref ImWsTargetGroup
+
+  OpenimSecurityGroupId:
+    Description: OpenIM EC2 security group
+    Value: !Ref OpenimSecurityGroup

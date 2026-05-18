@@ -1,0 +1,35 @@
+# Deploy OpenIM EC2 stack (07_openim). Secret: repository secret OPENIM_SECRET (same value as xituan_backend).
+name: Deploy OpenIM (production)
+
+on:
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ap-southeast-2
+
+jobs:
+  deploy-openim:
+    name: OpenIM EC2 + ALB rules
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy OpenIM stack
+        working-directory: aws-setup
+        env:
+          OPENIM_SECRET: ${{ secrets.OPENIM_SECRET }}
+        run: |
+          if [ -z "$OPENIM_SECRET" ]; then
+            echo "::error::Repository secret OPENIM_SECRET is not set"
+            exit 1
+          fi
+          chmod +x deploy-openim.sh
+          ./deploy-openim.sh production

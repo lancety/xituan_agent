@@ -1,0 +1,8 @@
+{
+  "commands": [
+    "docker ps -a --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'",
+    "cd /opt/openim/upstream && /usr/local/bin/docker-compose --env-file ../.env -f docker-compose.yaml ps",
+    "docker logs openim-server --tail 30 2>&1 || true",
+    "docker logs mongo --tail 10 2>&1 || true"
+  ]
+}

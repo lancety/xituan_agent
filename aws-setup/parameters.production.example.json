@@ -5,6 +5,11 @@
     "Comment": "Environment name: production, staging, or development"
   },
   {
+    "ParameterKey": "SkipEcsServicesCfnDeploy",
+    "ParameterValue": "true",
+    "Comment": "true = skip 06_ecs-services in deploy-phase2; ECS env from GitHub Actions deploy.yml"
+  },
+  {
     "ParameterKey": "AWSRegion",
     "ParameterValue": "ap-southeast-2",
     "Comment": "AWS region where resources will be deployed"
@@ -78,6 +83,51 @@
     "ParameterKey": "FargateMemory",
     "ParameterValue": "1024",
     "Comment": "Fargate memory in MB: 512, 1024 (1 GB), 2048 (2 GB), 4096 (4 GB), 8192 (8 GB). Must be compatible with CPU (e.g., 512 CPU + 1024 MB, 1024 CPU + 2048 MB)"
+  },
+  {
+    "ParameterKey": "OpenimApiHostHeader",
+    "ParameterValue": "im-api.lancety.com",
+    "Comment": "ALB listener rule Host (client URL); lancety CNAME may point to im-api.xituan.com.au → ALB"
+  },
+  {
+    "ParameterKey": "OpenimWsHostHeader",
+    "ParameterValue": "im-ws.lancety.com",
+    "Comment": "ALB listener rule for WebSocket; ACM must include this host (or *.lancety.com)"
+  },
+  {
+    "ParameterKey": "OpenimApiPublicUrl",
+    "ParameterValue": "https://im-api.lancety.com",
+    "Comment": "OPENIM_API_PUBLIC_URL for SDK (when using CFN 06 on non-prod only)"
+  },
+  {
+    "ParameterKey": "OpenimWsPublicUrl",
+    "ParameterValue": "wss://im-ws.lancety.com",
+    "Comment": "Backend OPENIM_WS_PUBLIC_URL (WeChat socket合法域名)"
+  },
+  {
+    "ParameterKey": "OpenimApiInternalUrl",
+    "ParameterValue": "",
+    "Comment": "Optional ECS OPENIM_API_BASE_URL override (http://<OpenIM-private-ip>:10002). Leave empty: deploy.yml resolves from xituan-openim-production stack"
+  },
+  {
+    "ParameterKey": "OpenimChatFilesCdnBase",
+    "ParameterValue": "https://images.lancety.com",
+    "Comment": "CDN for im/conversations/... S3 keys"
+  },
+  {
+    "ParameterKey": "OpenimInstanceType",
+    "ParameterValue": "t3.large",
+    "Comment": "OpenIM EC2 instance type"
+  },
+  {
+    "ParameterKey": "OpenimKeyName",
+    "ParameterValue": "",
+    "Comment": "Optional EC2 SSH key; empty = SSM Session Manager only"
+  },
+  {
+    "ParameterKey": "OpenimDataVolumeSizeGb",
+    "ParameterValue": "80",
+    "Comment": "EBS data volume for OpenIM Mongo/Kafka"
   }
 ]
 

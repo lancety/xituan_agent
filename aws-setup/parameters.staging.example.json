@@ -1,0 +1,150 @@
+[
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "staging"
+  },
+  {
+    "ParameterKey": "AWSRegion",
+    "ParameterValue": "ap-southeast-2"
+  },
+  {
+    "ParameterKey": "AWSAccountId",
+    "ParameterValue": "YOUR_AWS_ACCOUNT_ID"
+  },
+  {
+    "ParameterKey": "ProjectName",
+    "ParameterValue": "xituan"
+  },
+  {
+    "ParameterKey": "SkipEcsServicesCfnDeploy",
+    "ParameterValue": "false",
+    "Comment": "staging: false — deploy 06_ecs-services via deploy-phase2.sh with secrets below"
+  },
+  {
+    "ParameterKey": "DBPassword",
+    "ParameterValue": "YOUR_STAGING_DB_PASSWORD"
+  },
+  {
+    "ParameterKey": "DBUsername",
+    "ParameterValue": "xituan_admin"
+  },
+  {
+    "ParameterKey": "DBName",
+    "ParameterValue": "xituan"
+  },
+  {
+    "ParameterKey": "ACMCertificateArn",
+    "ParameterValue": "arn:aws:acm:ap-southeast-2:ACCOUNT:certificate/CERT_ID"
+  },
+  {
+    "ParameterKey": "CORSOrigin",
+    "ParameterValue": "https://staging.xituan.com.au"
+  },
+  {
+    "ParameterKey": "LogLevel",
+    "ParameterValue": "debug"
+  },
+  {
+    "ParameterKey": "SentryEnabled",
+    "ParameterValue": "true"
+  },
+  {
+    "ParameterKey": "EcrImageTag",
+    "ParameterValue": "staging",
+    "Comment": "Match ECR tag pushed by CI for staging branch"
+  },
+  {
+    "ParameterKey": "DatabaseUrl",
+    "ParameterValue": "postgresql://USER:PASS@HOST:5432/xituan"
+  },
+  {
+    "ParameterKey": "JwtSecret",
+    "ParameterValue": "YOUR_STAGING_JWT_SECRET"
+  },
+  {
+    "ParameterKey": "S3Key",
+    "ParameterValue": "YOUR_AWS_ACCESS_KEY"
+  },
+  {
+    "ParameterKey": "S3SecretKey",
+    "ParameterValue": "YOUR_AWS_SECRET_KEY"
+  },
+  {
+    "ParameterKey": "S3Bucket",
+    "ParameterValue": "YOUR_STAGING_BUCKET"
+  },
+  {
+    "ParameterKey": "WechatAppId",
+    "ParameterValue": "YOUR_WECHAT_APP_ID"
+  },
+  {
+    "ParameterKey": "WechatAppSecret",
+    "ParameterValue": "YOUR_WECHAT_APP_SECRET"
+  },
+  {
+    "ParameterKey": "PaymentConfigEncryptionKey",
+    "ParameterValue": "YOUR_PAYMENT_KEY"
+  },
+  {
+    "ParameterKey": "PaymentConfigEncryptionKeyPrevious",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "GoogleMapsApiKey",
+    "ParameterValue": "YOUR_GOOGLE_MAPS_KEY"
+  },
+  {
+    "ParameterKey": "StripeSecretKey",
+    "ParameterValue": "sk_test_..."
+  },
+  {
+    "ParameterKey": "StripePublishableKey",
+    "ParameterValue": "pk_test_..."
+  },
+  {
+    "ParameterKey": "StripeWebhookSecret",
+    "ParameterValue": "whsec_..."
+  },
+  {
+    "ParameterKey": "StripeSubscriptionWebhookSecret",
+    "ParameterValue": "whsec_..."
+  },
+  {
+    "ParameterKey": "OmiMNumber",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "OmiKey",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "MultilingualSortIcu",
+    "ParameterValue": "true"
+  },
+  {
+    "ParameterKey": "ZhHansSortIcuCollation",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "OpenimApiInternalUrl",
+    "ParameterValue": "",
+    "Comment": "Optional http://<openim-private-ip>:10002 after deploy-openim staging"
+  },
+  {
+    "ParameterKey": "OpenimApiPublicUrl",
+    "ParameterValue": "https://im-api-staging.example.com"
+  },
+  {
+    "ParameterKey": "OpenimWsPublicUrl",
+    "ParameterValue": "wss://im-ws-staging.example.com"
+  },
+  {
+    "ParameterKey": "OpenimSecret",
+    "ParameterValue": "YOUR_OPENIM_SECRET",
+    "Comment": "Or set OPENIM_SECRET env when running deploy-openim.sh"
+  },
+  {
+    "ParameterKey": "OpenimChatFilesCdnBase",
+    "ParameterValue": "https://images-staging.lancety.com"
+  }
+]

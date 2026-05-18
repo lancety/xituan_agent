@@ -3,15 +3,16 @@
 # Phase 2: Application - ECS Cluster, ECS Service, and optional DB migration
 set -e
 
+export PYTHONUTF8=1
+export AWS_CLI_FILE_ENCODING=UTF-8
+
 ENVIRONMENT=${1:-production}
 PARAMETER_FILE="parameters.${ENVIRONMENT}.json"
 
-# Use Node.js to parse JSON if jq is not available
 if command -v jq &> /dev/null; then
   AWS_REGION=$(jq -r '.[] | select(.ParameterKey=="AWSRegion") | .ParameterValue' "$PARAMETER_FILE")
   PROJECT_NAME=$(jq -r '.[] | select(.ParameterKey=="ProjectName") | .ParameterValue' "$PARAMETER_FILE")
 else
-  # Fallback to Node.js
   AWS_REGION=$(node -e "const fs=require('fs');const d=JSON.parse(fs.readFileSync('$PARAMETER_FILE','utf8'));console.log(d.find(p=>p.ParameterKey==='AWSRegion')?.ParameterValue||'')")
   PROJECT_NAME=$(node -e "const fs=require('fs');const d=JSON.parse(fs.readFileSync('$PARAMETER_FILE','utf8'));console.log(d.find(p=>p.ParameterKey==='ProjectName')?.ParameterValue||'')")
 fi
@@ -26,7 +27,6 @@ get_output() {
     --query "Stacks[0].Outputs[?OutputKey=='$2'].OutputValue" --output text
 }
 
-# Get parameter value from JSON file (supports both jq and Node.js)
 get_param() {
   local key="$1"
   if command -v jq &> /dev/null; then
@@ -37,7 +37,8 @@ get_param() {
 }
 
 get_param_with_default() {
-  local value=$(get_param "$1" 2>/dev/null)
+  local value
+  value=$(get_param "$1" 2>/dev/null || true)
   echo "${value:-$2}"
 }
 
@@ -47,41 +48,57 @@ VPC_STACK="${PROJECT_NAME}-vpc-${ENVIRONMENT}"
 ALB_STACK="${PROJECT_NAME}-alb-${ENVIRONMENT}"
 SG_STACK="${PROJECT_NAME}-security-groups-${ENVIRONMENT}"
 RDS_STACK="${PROJECT_NAME}-rds-${ENVIRONMENT}"
+ECS_CLUSTER_STACK="${PROJECT_NAME}-ecs-cluster-${ENVIRONMENT}"
+ECS_SERVICES_STACK="${PROJECT_NAME}-ecs-services-${ENVIRONMENT}"
 
-# Resolve outputs
 ECS_SG=$(get_output "$SG_STACK" ECSSecurityGroupId)
 PUB_SUBNET_A=$(get_output "$VPC_STACK" PublicSubnetId)
 RDS_ENDPOINT=$(get_output "$RDS_STACK" RDSInstanceEndpoint)
 RDS_PORT=$(get_output "$RDS_STACK" RDSInstancePort)
-ECS_CLUSTER_STACK="${PROJECT_NAME}-ecs-cluster-${ENVIRONMENT}"
 TARGET_GROUP_ARN=$(get_output "$ALB_STACK" BackendTargetGroupArn)
 
-# 05 ECS Cluster
 step "Deploying 05_ecs-cluster"
 aws cloudformation deploy --template-file 05_ecs-cluster.yaml --stack-name "$ECS_CLUSTER_STACK" \
   --parameter-overrides Environment="$ENVIRONMENT" --region "$AWS_REGION" --capabilities CAPABILITY_IAM
 
 ECS_CLUSTER_NAME=$(get_output "$ECS_CLUSTER_STACK" ECSClusterName)
 
-# 06 ECS Services
-step "Deploying 06_ecs-services"
-# Get Auto Scaling parameters (with defaults if not in parameter file)
-MIN_TASKS=$(get_param_with_default MinTaskCount "1")
-MAX_TASKS=$(get_param_with_default MaxTaskCount "3")
-TARGET_CPU=$(get_param_with_default TargetCPUUtilization "80")
-TARGET_MEM=$(get_param_with_default TargetMemoryUtilization "80")
+SKIP_ECS_CFN=$(get_param_with_default SkipEcsServicesCfnDeploy "false")
+if [ "$SKIP_ECS_CFN" = "true" ] || [ "$SKIP_ECS_CFN" = "True" ]; then
+  warn "SkipEcsServicesCfnDeploy=true — not updating $ECS_SERVICES_STACK."
+  warn "Production: use xituan_backend GitHub Actions deploy.yml for ECS task env + image."
+  log "=== Phase 2 Complete (ECS cluster only) ==="
+  exit 0
+fi
 
-aws cloudformation deploy --template-file 06_ecs-services.yaml --stack-name "${PROJECT_NAME}-ecs-services-${ENVIRONMENT}" \
-  --parameter-overrides Environment="$ENVIRONMENT" ECSClusterName="$ECS_CLUSTER_NAME" ECSSecurityGroupId="$ECS_SG" \
-  PublicSubnetId="$PUB_SUBNET_A" RDSInstanceEndpoint="$RDS_ENDPOINT" RDSInstancePort="$RDS_PORT" \
-  DBUsername="$(get_param DBUsername)" DBPassword="$(get_param DBPassword)" BackendTargetGroupArn="$TARGET_GROUP_ARN" \
-  CORSOrigin="$(get_param CORSOrigin)" LogLevel="$(get_param LogLevel)" SentryEnabled="$(get_param SentryEnabled)" \
-  MinTaskCount="$MIN_TASKS" MaxTaskCount="$MAX_TASKS" TargetCPUUtilization="$TARGET_CPU" TargetMemoryUtilization="$TARGET_MEM" \
+if [ "$ENVIRONMENT" = "staging" ]; then
+  for required in JwtSecret DatabaseUrl S3Key S3SecretKey S3Bucket; do
+    val=$(get_param "$required" 2>/dev/null || true)
+    if [ -z "$val" ]; then
+      echo "staging requires $required in $PARAMETER_FILE (copy from parameters.staging.example.json)"
+      exit 1
+    fi
+  done
+fi
+
+step "Deploying 06_ecs-services (full task env from $PARAMETER_FILE)"
+chmod +x scripts/build-ecs-cfn-overrides.sh
+CFN_OVERRIDES=$(bash scripts/build-ecs-cfn-overrides.sh "$ENVIRONMENT" \
+  "ECSClusterName=$ECS_CLUSTER_NAME" \
+  "ECSSecurityGroupId=$ECS_SG" \
+  "PublicSubnetId=$PUB_SUBNET_A" \
+  "RDSInstanceEndpoint=$RDS_ENDPOINT" \
+  "RDSInstancePort=$RDS_PORT" \
+  "BackendTargetGroupArn=$TARGET_GROUP_ARN" \
+  "Environment=$ENVIRONMENT")
+
+# shellcheck disable=SC2086
+aws cloudformation deploy --template-file 06_ecs-services.yaml --stack-name "$ECS_SERVICES_STACK" \
+  --parameter-overrides $CFN_OVERRIDES \
   --region "$AWS_REGION" --capabilities CAPABILITY_IAM
 
-log "ECS Service deployed"
+log "ECS Service deployed via CloudFormation"
 
-# Optional: run migration via ECS Exec
 if [ "$2" = "--migrate" ]; then
   step "Running migrations via ECS Exec"
   TASK_ARN=$(aws ecs list-tasks --cluster "$ECS_CLUSTER_NAME" --service-name "xituan-backend-service-${ENVIRONMENT}" --region "$AWS_REGION" --query 'taskArns[0]' --output text)
@@ -94,5 +111,3 @@ if [ "$2" = "--migrate" ]; then
 fi
 
 log "=== Phase 2 Complete ==="
-
-

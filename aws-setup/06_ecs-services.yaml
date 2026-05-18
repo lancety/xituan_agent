@@ -1,4 +1,5 @@
-# ECS Services Configuration (with ALB)
+# ECS Services — full backend task env for staging/development via parameters.*.json.
+# Production: set SkipEcsServicesCfnDeploy=true and use GitHub Actions deploy.yml instead.
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Xituan ECS Services with ALB Integration'
 
@@ -7,90 +8,192 @@ Parameters:
     Type: String
     Default: production
     AllowedValues: [development, staging, production]
-    Description: Environment name
 
   ECSClusterName:
     Type: String
-    Description: ECS Cluster Name
 
   ECSSecurityGroupId:
     Type: String
-    Description: ECS Security Group ID
 
   PublicSubnetId:
     Type: String
-    Description: Public Subnet ID
 
   RDSInstanceEndpoint:
     Type: String
-    Description: RDS Instance Endpoint
 
   RDSInstancePort:
     Type: String
-    Description: RDS Instance Port
 
-  # Required: ALB Target Group (to attach ECS service)
   BackendTargetGroupArn:
     Type: String
-    Description: ALB Target Group ARN for backend (port 3050). ALB must be deployed first.
 
   DBUsername:
     Type: String
     Default: xituan_admin
-    Description: Database username
 
   DBPassword:
     Type: String
     NoEcho: true
-    Description: Database password
 
-  # Optional: Additional environment variables
+  DBName:
+    Type: String
+    Default: xituan
+
   CORSOrigin:
     Type: String
     Default: 'https://www.xituan.com'
-    Description: CORS allowed origin
 
   LogLevel:
     Type: String
-    Default: 'warn'
+    Default: warn
     AllowedValues: [debug, info, warn, error]
-    Description: Application log level
 
   SentryEnabled:
     Type: String
     Default: 'true'
     AllowedValues: ['true', 'false']
-    Description: Enable Sentry error tracking
 
-  # Auto Scaling Parameters
+  EcrImageTag:
+    Type: String
+    Default: latest
+    Description: ECR image tag (staging should use staging; production often updated by CI)
+
+  DatabaseUrl:
+    Type: String
+    NoEcho: true
+    Default: ''
+
+  JwtSecret:
+    Type: String
+    NoEcho: true
+    Default: ''
+
+  S3Key:
+    Type: String
+    NoEcho: true
+    Default: ''
+
+  S3SecretKey:
+    Type: String
+    NoEcho: true
+    Default: ''
+
+  S3Bucket:
+    Type: String
+    Default: ''
+
+  WechatAppId:
+    Type: String
+    NoEcho: true
+    Default: ''
+
+  WechatAppSecret:
+    Type: String
+    NoEcho: true
+    Default: ''
+
+  PaymentConfigEncryptionKey:
+    Type: String
+    NoEcho: true
+    Default: ''
+
+  PaymentConfigEncryptionKeyPrevious:
+    Type: String
+    NoEcho: true
+    Default: ''
+
+  GoogleMapsApiKey:
+    Type: String
+    NoEcho: true
+    Default: ''
+
+  StripeSecretKey:
+    Type: String
+    NoEcho: true
+    Default: ''
+
+  StripePublishableKey:
+    Type: String
+    NoEcho: true
+    Default: ''
+
+  StripeWebhookSecret:
+    Type: String
+    NoEcho: true
+    Default: ''
+
+  StripeSubscriptionWebhookSecret:
+    Type: String
+    NoEcho: true
+    Default: ''
+
+  OmiMNumber:
+    Type: String
+    NoEcho: true
+    Default: ''
+
+  OmiKey:
+    Type: String
+    NoEcho: true
+    Default: ''
+
+  MultilingualSortIcu:
+    Type: String
+    Default: ''
+
+  ZhHansSortIcuCollation:
+    Type: String
+    Default: ''
+
+  OpenimApiInternalUrl:
+    Type: String
+    Default: ''
+    Description: ECS OPENIM_API_BASE_URL (e.g. http://10.0.1.195:10002). Empty uses OpenimApiPublicUrl.
+
+  OpenimApiPublicUrl:
+    Type: String
+    Default: ''
+    Description: SDK apiBaseUrl (e.g. https://im-api.lancety.com)
+
+  OpenimWsPublicUrl:
+    Type: String
+    Default: ''
+
+  OpenimSecret:
+    Type: String
+    NoEcho: true
+    Default: ''
+
+  OpenimChatFilesCdnBase:
+    Type: String
+    Default: ''
+
   MinTaskCount:
     Type: Number
     Default: 1
-    Description: Minimum number of tasks for auto scaling
     MinValue: 1
 
   MaxTaskCount:
     Type: Number
     Default: 3
-    Description: Maximum number of tasks for auto scaling
     MinValue: 1
 
   TargetCPUUtilization:
     Type: Number
     Default: 80
-    Description: Target CPU utilization percentage for auto scaling
     MinValue: 1
     MaxValue: 100
 
   TargetMemoryUtilization:
     Type: Number
     Default: 80
-    Description: Target memory utilization percentage for auto scaling
     MinValue: 1
     MaxValue: 100
 
+Conditions:
+  UseOpenimInternalApi: !Not [!Equals [!Ref OpenimApiInternalUrl, '']]
+
 Resources:
-  # ECS Task Execution Role
   ECSTaskExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -107,7 +210,6 @@ Resources:
         - Key: Name
           Value: !Sub 'xituan-ecs-execution-role-${Environment}'
 
-  # ECS Task Role
   ECSTaskRole:
     Type: AWS::IAM::Role
     Properties:
@@ -128,13 +230,12 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - 'ssmmessages:CreateControlChannel'
-                  - 'ssmmessages:CreateDataChannel'
-                  - 'ssmmessages:OpenControlChannel'
-                  - 'ssmmessages:OpenDataChannel'
+                  - ssmmessages:CreateControlChannel
+                  - ssmmessages:CreateDataChannel
+                  - ssmmessages:OpenControlChannel
+                  - ssmmessages:OpenDataChannel
                 Resource: '*'
 
-  # Backend Task Definition
   BackendTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
@@ -148,7 +249,7 @@ Resources:
       TaskRoleArn: !GetAtt ECSTaskRole.Arn
       ContainerDefinitions:
         - Name: backend
-          Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/xituan-backend:latest'
+          Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/xituan-backend:${EcrImageTag}'
           PortMappings:
             - ContainerPort: 3050
               Protocol: tcp
@@ -166,7 +267,9 @@ Resources:
             - Name: DB_PASSWORD
               Value: !Ref DBPassword
             - Name: DB_NAME
-              Value: xituan
+              Value: !Ref DBName
+            - Name: DATABASE_URL
+              Value: !Ref DatabaseUrl
             - Name: CORS_ORIGIN
               Value: !Ref CORSOrigin
             - Name: LOG_LEVEL
@@ -181,6 +284,53 @@ Resources:
               Value: '0.1'
             - Name: S3_REGION
               Value: !Ref AWS::Region
+            - Name: S3_KEY
+              Value: !Ref S3Key
+            - Name: S3_SECRET_KEY
+              Value: !Ref S3SecretKey
+            - Name: S3_BUCKET
+              Value: !Ref S3Bucket
+            - Name: WECHAT_APP_ID
+              Value: !Ref WechatAppId
+            - Name: WECHAT_APP_SECRET
+              Value: !Ref WechatAppSecret
+            - Name: PAYMENT_CONFIG_ENCRYPTION_KEY
+              Value: !Ref PaymentConfigEncryptionKey
+            - Name: PAYMENT_CONFIG_ENCRYPTION_KEY_PREVIOUS
+              Value: !Ref PaymentConfigEncryptionKeyPrevious
+            - Name: GOOGLE_MAPS_API_KEY
+              Value: !Ref GoogleMapsApiKey
+            - Name: JWT_SECRET
+              Value: !Ref JwtSecret
+            - Name: STRIPE_SECRET_KEY
+              Value: !Ref StripeSecretKey
+            - Name: STRIPE_PUBLISHABLE_KEY
+              Value: !Ref StripePublishableKey
+            - Name: STRIPE_WEBHOOK_SECRET
+              Value: !Ref StripeWebhookSecret
+            - Name: STRIPE_SUBSCRIPTION_WEBHOOK_SECRET
+              Value: !Ref StripeSubscriptionWebhookSecret
+            - Name: OMI_M_NUMBER
+              Value: !Ref OmiMNumber
+            - Name: OMI_KEY
+              Value: !Ref OmiKey
+            - Name: MULTILINGUAL_SORT_ICU
+              Value: !Ref MultilingualSortIcu
+            - Name: ZH_HANS_SORT_ICU_COLLATION
+              Value: !Ref ZhHansSortIcuCollation
+            - Name: OPENIM_API_BASE_URL
+              Value: !If
+                - UseOpenimInternalApi
+                - !Ref OpenimApiInternalUrl
+                - !Ref OpenimApiPublicUrl
+            - Name: OPENIM_API_PUBLIC_URL
+              Value: !Ref OpenimApiPublicUrl
+            - Name: OPENIM_WS_PUBLIC_URL
+              Value: !Ref OpenimWsPublicUrl
+            - Name: OPENIM_SECRET
+              Value: !Ref OpenimSecret
+            - Name: OPENIM_CHAT_FILES_CDN_BASE
+              Value: !Ref OpenimChatFilesCdnBase
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -189,14 +339,12 @@ Resources:
               awslogs-stream-prefix: backend
           Essential: true
 
-  # CloudWatch Log Group
   BackendLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub '/ecs/xituan-backend-${Environment}'
       RetentionInDays: 7
 
-  # Backend Service
   BackendService:
     Type: AWS::ECS::Service
     Properties:
@@ -217,7 +365,7 @@ Resources:
           Subnets:
             - !Ref PublicSubnetId
           AssignPublicIp: ENABLED
-      HealthCheckGracePeriodSeconds: 60
+      HealthCheckGracePeriodSeconds: 120
       DeploymentConfiguration:
         MaximumPercent: 200
         MinimumHealthyPercent: 50
@@ -228,7 +376,6 @@ Resources:
         - Key: Name
           Value: !Sub 'xituan-backend-service-${Environment}'
 
-  # Auto Scaling - Scalable Target
   BackendScalableTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     Properties:
@@ -240,7 +387,6 @@ Resources:
       ServiceNamespace: ecs
     DependsOn: BackendService
 
-  # Auto Scaling - CPU Target Tracking Policy
   BackendCPUScalingPolicy:
     Type: AWS::ApplicationAutoScaling::ScalingPolicy
     Properties:
@@ -254,7 +400,6 @@ Resources:
         ScaleInCooldown: 60
         ScaleOutCooldown: 60
 
-  # Auto Scaling - Memory Target Tracking Policy
   BackendMemoryScalingPolicy:
     Type: AWS::ApplicationAutoScaling::ScalingPolicy
     Properties:
@@ -272,21 +417,7 @@ Outputs:
   BackendServiceName:
     Description: Backend Service Name
     Value: !Ref BackendService
-    Export:
-      Name: !Sub '${AWS::StackName}-Backend-Service-Name'
 
   BackendTaskDefinitionArn:
     Description: Backend Task Definition ARN
     Value: !Ref BackendTaskDefinition
-    Export:
-      Name: !Sub '${AWS::StackName}-Backend-Task-Definition-ARN'
-
-  PostDeploymentSteps:
-    Description: |
-      Next Steps:
-      1. Build and push Docker image to ECR: docker build, docker push
-      2. Update ECS service with new task definition (via GitHub Actions or manually)
-      3. Run database migrations: npm run migrate:prod (via ECS execute-command)
-      4. Verify service health: Check ALB health checks and CloudWatch Logs
-      5. Configure Route53 DNS to point to ALB DNS name
-    Value: 'See description for post-deployment steps'

@@ -57,6 +57,9 @@ Resources:
       Scheme: internet-facing
       Type: application
       IpAddressType: ipv4
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds
+          Value: '300'
       SecurityGroups:
         - !Ref ALBSecurityGroup
       Subnets:
@@ -143,5 +146,12 @@ Outputs:
     Value: !Ref ALBSecurityGroup
     Export:
       Name: !Sub '${AWS::StackName}-ALB-SG-ID'
+
+  HTTPSListenerArn:
+    Condition: UseHTTPS
+    Description: HTTPS listener ARN (for OpenIM listener rules stack)
+    Value: !Ref HTTPSListener
+    Export:
+      Name: !Sub '${AWS::StackName}-HTTPS-Listener-ARN'
 
 
