@@ -31,7 +31,7 @@ const cfnKeys = new Set([
   'StripeSubscriptionWebhookSecret','OmiMNumber','OmiKey',
   'MultilingualSortIcu','ZhHansSortIcuCollation',
   'OpenimApiInternalUrl','OpenimApiPublicUrl','OpenimWsPublicUrl',
-  'OpenimSecret','OpenimChatFilesCdnBase',
+  'OpenimSecret',
   'MinTaskCount','MaxTaskCount','TargetCPUUtilization','TargetMemoryUtilization'
 ]);
 const skip = new Set(['SkipEcsServicesCfnDeploy','AWSRegion','AWSAccountId','ProjectName',

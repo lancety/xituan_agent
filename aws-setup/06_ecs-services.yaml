@@ -164,10 +164,6 @@ Parameters:
     NoEcho: true
     Default: ''
 
-  OpenimChatFilesCdnBase:
-    Type: String
-    Default: ''
-
   MinTaskCount:
     Type: Number
     Default: 1
@@ -329,8 +325,6 @@ Resources:
               Value: !Ref OpenimWsPublicUrl
             - Name: OPENIM_SECRET
               Value: !Ref OpenimSecret
-            - Name: OPENIM_CHAT_FILES_CDN_BASE
-              Value: !Ref OpenimChatFilesCdnBase
           LogConfiguration:
             LogDriver: awslogs
             Options:

@@ -142,9 +142,5 @@
     "ParameterKey": "OpenimSecret",
     "ParameterValue": "YOUR_OPENIM_SECRET",
     "Comment": "Or set OPENIM_SECRET env when running deploy-openim.sh"
-  },
-  {
-    "ParameterKey": "OpenimChatFilesCdnBase",
-    "ParameterValue": "https://images-staging.lancety.com"
   }
 ]

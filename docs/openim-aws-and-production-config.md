@@ -43,9 +43,10 @@
 | `OPENIM_API_BASE_URL` | 服务端调 OpenIM REST；**并**下发给 SDK 的 `apiBaseUrl` | `http://127.0.0.1:10002` | `https://im-api.<public-host>` |
 | `OPENIM_WS_PUBLIC_URL` | 下发给 SDK 的 WebSocket | `ws://127.0.0.1:10001` | `wss://im-ws.<public-host>` |
 | `OPENIM_SECRET` | 与 OpenIM 栈 `OPENIM_SECRET` 一致 | `openIM123`（仅 dev） | **强随机**，与 compose `.env` 同步 |
-| `OPENIM_CHAT_FILES_CDN_BASE` | 聊天附件 CDN 前缀（S3 key → URL） | dev 可用 backend 或占位 | 生产 CloudFront，如 `https://images.lancety.com` 或独立 `chat-files` 分发 |
 
-未配置四项时：`openimConfigUtil.isOpenimConfigured()` 为 false，OpenIM 相关 API 返回 **503**。
+附件公开 URL **不**使用环境变量：由 `openimAttachmentCdnUtil` 按 MIME 选择 `site-domain.ts` 的 `wechatImages`（图片）或 `wechatContent`（文档）。
+
+未配置上述三项时：`openimConfigUtil.isOpenimConfigured()` 为 false，OpenIM 相关 API 返回 **503**。
 
 参考模板：`deploy/openim/xituan-backend.env.example`、`deploy/openim/README.md`。
 
@@ -186,13 +187,13 @@ OpenIM 业务 API 路径前缀：`/openim/customer-merchant/*`（已挂在同一
 
 - 路径：`im/conversations/{conversationId}/attachments/...`（`openimAttachmentS3Util`）
 - **不要** 走 OpenIM 内置 MinIO 给业务附件
-- `OPENIM_CHAT_FILES_CDN_BASE` 应对应 CloudFront 能访问该 bucket 前缀的域名
+- 确保 `wechatImages` / `wechatContent` CloudFront 均能访问 bucket 下 `im/conversations/...` 前缀（图片走 images 变换，文档走 content 原样）
 
 ## 9. 数据库与发布顺序建议
 
 1. 在 production Postgres 执行 `1710000000315_openim_foundation.sql`（走既有 migration 流程，**不要** 改 `migrations_stable` 除非人工 promote）
 2. 部署 OpenIM EC2 栈并验收 `get_admin_token`
-3. 更新 ECS Backend 环境变量四个 `OPENIM_*`
+3. 更新 ECS Backend 环境变量 `OPENIM_API_*` / `OPENIM_WS_PUBLIC_URL` / `OPENIM_SECRET`
 4. 配置 DNS + ALB + ACM
 5. 更新微信 socket/request 域名
 6. 发版小程序 / CMS（无需改 OpenIM URL 常量，除非改备案域）

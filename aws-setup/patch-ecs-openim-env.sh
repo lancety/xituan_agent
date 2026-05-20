@@ -43,7 +43,6 @@ if [ -z "$OPENIM_INTERNAL" ]; then
 fi
 
 OPENIM_WS="$(get_param OpenimWsPublicUrl)"
-OPENIM_CDN="$(get_param OpenimChatFilesCdnBase)"
 
 if [ -z "${OPENIM_SECRET:-}" ]; then
   echo "Set OPENIM_SECRET env (same GitHub Actions secret as xituan_backend deploy.yml)"
@@ -68,10 +67,11 @@ const upsert = {
   OPENIM_API_BASE_URL: process.argv[2],
   OPENIM_API_PUBLIC_URL: process.argv[3],
   OPENIM_WS_PUBLIC_URL: process.argv[4],
-  OPENIM_SECRET: process.argv[5],
-  OPENIM_CHAT_FILES_CDN_BASE: process.argv[6]
+  OPENIM_SECRET: process.argv[5]
 };
-const env = td.containerDefinitions[0].environment || [];
+const env = (td.containerDefinitions[0].environment || []).filter(
+  (e) => e.name !== 'OPENIM_CHAT_FILES_CDN_BASE'
+);
 for (const [name, value] of Object.entries(upsert)) {
   const i = env.findIndex((e) => e.name === name);
   if (i >= 0) env[i].value = value;
@@ -82,7 +82,7 @@ for (const k of ['taskDefinitionArn','revision','status','requiresAttributes','c
   delete td[k];
 }
 fs.writeFileSync(process.argv[1], JSON.stringify(td));
-" "$TMP_JSON" "$OPENIM_INTERNAL" "$(get_param OpenimApiPublicUrl)" "$OPENIM_WS" "$OPENIM_SECRET" "$OPENIM_CDN"
+" "$TMP_JSON" "$OPENIM_INTERNAL" "$(get_param OpenimApiPublicUrl)" "$OPENIM_WS" "$OPENIM_SECRET"
 
 # AWS CLI on Windows needs file://D:/... not file:///d/...
 if command -v pwd >/dev/null 2>&1 && pwd -W >/dev/null 2>&1; then

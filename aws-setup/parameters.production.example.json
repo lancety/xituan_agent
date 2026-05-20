@@ -110,11 +110,6 @@
     "Comment": "Optional ECS OPENIM_API_BASE_URL override (http://<OpenIM-private-ip>:10002). Leave empty: deploy.yml resolves from xituan-openim-production stack"
   },
   {
-    "ParameterKey": "OpenimChatFilesCdnBase",
-    "ParameterValue": "https://images.lancety.com",
-    "Comment": "CDN for im/conversations/... S3 keys"
-  },
-  {
     "ParameterKey": "OpenimInstanceType",
     "ParameterValue": "t3.large",
     "Comment": "OpenIM EC2 instance type"
