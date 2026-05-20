@@ -1,3 +1,10 @@
+## [3.5.0] - 2026-05-20
+
+### 📚 文档
+
+- docs(aws): add OpenIM deployment config and setup scripts
+- docs(devGuide): merchant clients admin API reference
+
 ## [3.4.0] - 2026-05-18
 
 ### 📚 文档
