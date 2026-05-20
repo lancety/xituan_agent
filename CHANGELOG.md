@@ -1,3 +1,9 @@
+## [3.5.2] - 2026-05-20
+
+### 🔧 构建/配置
+
+- chore(aws-setup): update ECS OpenIM env patch script
+
 ## [3.5.1] - 2026-05-20
 
 ### 🔄 版本同步
