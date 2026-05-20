@@ -69,8 +69,10 @@ const upsert = {
   OPENIM_WS_PUBLIC_URL: process.argv[4],
   OPENIM_SECRET: process.argv[5]
 };
+// Strip removed env vars from legacy ECS task definitions (IM URLs use siteDomain, not OPENIM_CHAT_FILES_CDN_BASE).
+const removedEnvNames = new Set(['OPENIM_CHAT_FILES_CDN_BASE']);
 const env = (td.containerDefinitions[0].environment || []).filter(
-  (e) => e.name !== 'OPENIM_CHAT_FILES_CDN_BASE'
+  (e) => !removedEnvNames.has(e.name)
 );
 for (const [name, value] of Object.entries(upsert)) {
   const i = env.findIndex((e) => e.name === name);
