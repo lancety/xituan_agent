@@ -1,3 +1,10 @@
+## [3.6.0] - 2026-05-21
+
+### 🔧 构建/配置
+
+- chore(aws-setup): update ECS deploy parameters and unified release script
+- chore(aws-setup): update ECS OpenIM env patch script
+
 ## [3.5.2] - 2026-05-20
 
 ### 🔧 构建/配置
