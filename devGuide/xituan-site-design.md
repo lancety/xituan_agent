@@ -48,7 +48,7 @@ Use next-intl with nested JSON preset. Full spec: `Web-UI-Text-i18n-Solution.md`
 | Home | `/`, `/search` | No | ConsumerLayout |
 | Merchant | `/merchant/:merchantId`, `/merchant/:merchantId/offers`, `/merchant/:merchantId/preorder`, `/merchant/:merchantId/products` | No | MerchantLayout |
 | Product/Activity detail | `/products/:productId`, `/offers/:offerId`, `/preorder-promote/:id` | No | MerchantLayout |
-| User | `/user/orders`, `/user/orders/:orderId`, `/user/payment/:orderId`, `/user/profile`, `/user/addresses` | Yes | UserLayout |
+| User | `/user/orders`, `/user/orders/:orderId`, `/user/payment/:orderId`, `/user/profile`, `/user/addresses`, `/user/messages` (`?conversationId=`), `/user/messages/new` | Yes | UserLayout |
 | Checkout | `/checkout/regular`, `/checkout/offer`, `/checkout/preorder` | Yes (at submit) | CheckoutLayout |
 | Content | `/news/:id`, `/contact`, `/user-agreement` | No | ConsumerLayout |
 
@@ -94,15 +94,17 @@ Layout follows common e-commerce patterns (e.g. Taobao/JD); block order can diff
 
 ### 4.2 MerchantLayout
 
-- **Header**: merchant logo, name, merchant-type badge, rating (optional), "进店" (shop home), "客服" (customer service, WeChat)
+- **Header**: merchant logo, name, merchant-type badge, rating (optional), "进店" (shop home), "客服" (OpenIM customer–merchant chat)
 - Main content (products, offers, preorder lists or detail)
 - Used for: merchant homepage, merchant lists, product/offer/preorder detail (with merchant context)
 
 ### 4.3 UserLayout
 
-- User-specific header
+- User-specific header (theme, language, quick menu); **no** "消息" item in the 220px sidebar (messages are reached via mobile bottom nav / top bar badge, not the user sidebar).
 - Main content
-- Used for: orders, payment, profile, addresses
+- Used for: orders, payment, profile, addresses, **messages** (OpenIM)
+- **Mobile consumer nav** (when applicable): home, cart, **messages** (replaces orders tab), profile — unread badge on messages.
+- **Mobile top bar** (logged-in): messages icon with badge (replaces address shortcut on consumer header).
 
 ### 4.4 CheckoutLayout
 
@@ -147,7 +149,8 @@ Current template docs (site):
 - Merchant type badge
 - Rating / metrics (optional)
 - **进店** → merchant homepage
-- **客服** → WeChat customer service (for now)
+- **客服** → OpenIM customer–merchant chat (`merchantOpenimChatSiteUtil`); desktop header button + mobile merchant/product bottom nav
+- **关注** → not in current site scope
 
 ---
 
@@ -285,24 +288,35 @@ Use left border or tag badge per card type; avoid margin/border-radius conflicts
 
 ---
 
-## 11. Frontend Specifications
+## 11. Consumer OpenIM messaging (Site)
 
-### 11.1 Typography
+- **Backend**: same consumer APIs as WeChat mini program — `/api/openim/customer-merchant/*`, `/api/openim/merchant-push/*`; token `platformId: WEB`.
+- **Messages hub** (`/user/messages`): tabs **客服** (customer–merchant) and **推广** (merchant push); desktop split view (list + chat panel), mobile list then room.
+- **Chat**: attachments (upload, drag/drop, paste on desktop), location picker, context cards (product/order links), entry hint from product/order deep links (`entryEntityType` / `entryEntityId` query on `/user/messages/new` or room URL).
+- **Entry points**: merchant header **客服**; mobile merchant/product **客服**; order detail **联系客服**; product detail passes product context card hint.
+- **Profile**: platform WeChat “客服” row removed; technical support shows **tech@xituan.com.au** (static).
+- **UI**: Ant Design used for OpenIM chat components only; theme colors via `globals.css` variables.
+
+---
+
+## 12. Frontend Specifications
+
+### 12.1 Typography
 
 - Minimum font size site-wide: **12px**.
 
-### 11.2 Content loading
+### 12.2 Content loading
 
 - Use **scroll-based lazy loading** for long lists (products, offers, preorder, merchants, news).
 - Implement via Intersection Observer or Ant Design List `onScroll` loading.
 
-### 11.3 Ant Design
+### 12.3 Ant Design
 
 - Use Ant Design components.
 - Avoid reusing Ant Design class names for custom styles.
 - Use custom prefix (e.g. `xituan-site-`, `xs-`) for custom classes.
 
-### 11.4 xituan_codebase reuse
+### 12.4 xituan_codebase reuse
 
 - Reuse types, utils, and shared components where applicable.
 - Do not reuse CMS-specific or layout-specific components that don't fit site structure.

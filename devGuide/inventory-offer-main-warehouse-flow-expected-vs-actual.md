@@ -19,7 +19,9 @@
 - `xituan_backend/src/domains/inventory/services/inventory-management.service.ts` — `reserveStockForOrder` / `confirmStockOnPayment` / `releaseOrderStock` / `updateInventoryOnPayment` / `restoreInventoryOnRefund`
 - `xituan_backend/src/domains/inventory/services/stock-updater.service.ts` — `updateStockByMode`
 - `xituan_backend/src/domains/offer/services/offer-product.service.ts` — 创建/更新团购行、主仓上限校验
-- `xituan_backend/src/domains/inventory/services/inventory-cron.service.ts` — `returnStockFromExpiredOffer` 等
+- `xituan_backend/src/domains/inventory/services/inventory-cron.service.ts` — 过期**订单**定时处理（无活动过期自动清仓）
+- `xituan_backend/src/domains/offer/services/offer.service.ts` — `clearOfferInventoryToMain`（CMS 手动清仓）
+- `xituan_backend/src/domains/preorder-promotes/services/admin-preorder-promotes.service.ts` — 预购手动清仓
 
 ---
 
@@ -33,8 +35,9 @@
 2. **活动期间（下单预留、支付确认、取消释放、退款恢复）**  
    **只**在 `merchant.offer_products` 上按既有 `stock / reserved_stock / total_stock` 规则变动；**不再**对同一笔团购销量重复扣减 `merchant.products`。
 
-3. **活动结束（截单 / 过期等由业务定义的触发点）**  
-   将活动内**剩余应归还主仓**的数量从 `offer_products` 返还到 `merchant.products`（与步骤 1 对称）。
+3. **活动结束后的剩余库存**  
+   **当前实现**：商户在 CMS 点击「清仓」→ `POST /admin/offers/:id/clear-inventory`（或预购对应 API），将剩余活动可售补回主仓并设 `inventory_cleared`。活动 `end_date` 过后**不会**由定时任务自动返还。  
+   **目标模型（§5 Todo）**：若引入创建时主仓划拨，清仓/结束逻辑需与步骤 1 严格对账。
 
 4. **配置校验**  
    划拨量不应超过当时主仓可用（可与现有「团购初始库存不能超过产品库存」类校验衔接或替换为显式划拨语义）。
@@ -61,10 +64,12 @@
 
 - 对每个订单行：先 `restoreProductInventory`（有限主仓则加回 **products**），再 `restoreModeSpecificInventory`（OFFER 则恢复 **offer_products**）。与支付对称。
 
-### 3.5 活动过期清理（`returnStockFromExpiredOffer`）
+### 3.5 活动结束 / 过期与库存（当前实现）
 
-- 将 `offer_products` 中 `stock > 0` 的剩余量 `UPDATE` 加回 `merchant.products.stock` / `total_stock`，并清零对应 `offer_products.stock`。
-- 若从未在创建时从主仓扣出，该加回可能与账实不符；若支付阶段已扣主仓，又与「仅活动内消耗」期望冲突，需整体 redesign 时一并算清。
+- **无 cron 自动清仓**：`inventory-cron.service.ts` 仅调度「过期订单」与「团购开团后批量 capture」；已移除历史上的每 2 小时 `handleExpiredOffers` / `handleExpiredPreorderPromotes` 扫描。
+- **活动是否过期**：由 `offers.end_date`（及 `is_released`）判断；CMS 列表用 `offerListRowUtil.computeLifecycleStatus` 展示「已过期」，**不写**单独的 DB 过期状态字段。
+- **剩余活动库存回主仓**：仅商户手动 `OfferService.clearOfferInventoryToMain` / 预购 `clearPreorderInventoryToMain`，设置 `inventory_cleared = true`；活动商品库存变更会将该标志置回 `false`。
+- 若未来实现 §2 步骤 1 的创建时主仓划拨，清仓 API 需与划拨账对称；并评估 `reserved_stock` 在清仓时是否必须归零。
 
 ---
 
@@ -82,9 +87,9 @@
 1. **定义唯一真相**：在 devGuide 中冻结「OFFER 主仓仅划拨/回收、订单只动 offer_products」的状态机（含无限库存 `-1`、归档/删除活动行）。
 2. **创建/更新团购行时主仓划拨**：在事务内实现 `products` 减量 + `offer_products` 增量（或等价字段），与删除行/改量减少时的**退回主仓**对称；替换或收紧现有「仅比较不上账」逻辑。
 3. **支付/退款路径**：对 `order.mode === OFFER`（及若一致的 PREORDER）跳过或条件化 `updateProductInventory` / `restoreProductInventory`，避免订单级双扣；核对 `inventory_transactions` 的 `mode` 记录是否仍满足审计需求。
-4. **过期返还**：使 `returnStockFromExpiredOffer`（及任何手动结束活动逻辑）与步骤 2 的划拨严格对账；评估 `reserved_stock` 在返还时是否必须归零或单独处理。
+4. **清仓与划拨对账**：使 `clearOfferInventoryToMain` / 预购清仓与步骤 2 的划拨严格对账；评估 `reserved_stock` 在清仓时是否必须归零或单独处理（**不再**恢复 cron 自动过期返还）。
 5. **订单创建校验**：核对 `OrderService.createOrderItems` 等对 `products.stock` 的检查在 OFFER 下是否应改为仅校验 `offer_products`（避免错误拦截）。
-6. **测试**：更新 `tests/unit/inventory/inventory-management.unit.test.ts`、`tests/integration/inventory/inventory-management.integration.test.ts`、支付 webhook 相关用例，覆盖划拨 → 预留 → 确认 → 退款 → 过期返还全链。
+6. **测试**：更新 `tests/unit/inventory/inventory-management.unit.test.ts`、`tests/integration/inventory/inventory-management.integration.test.ts`、支付 webhook 相关用例，覆盖划拨 → 预留 → 确认 → 退款 → **手动清仓**全链（`inventory-cron` 仅测过期订单）。
 7. **文档收敛**：更新 `order-system.md`、`offer-stock-system-design.md` 与本文件一致；`.cursor/skills/inventory-stock-model/SKILL.md` 若叙述「借还」需与实现同步。
 
 ---
@@ -95,7 +100,7 @@
 - **true**：商户已执行「清仓回主仓」，剩余活动可售 `offer_products.stock` 已补回 `products`（见 `OfferService.clearOfferInventoryToMain`）。
 - **false**：活动侧库存池仍有效；退款在未清仓且活动行仍存在时回到 `offer_products`。
 - 商户对**活动商品库存**的变更（增删改、批量库存变更等）会将该标志**置回 false**。
-- 过期任务不再自动把活动库存加回主仓（见 `inventory-cron.service.ts` `returnStockFromExpiredOffer`）。
+- **无**定时任务在活动 `end_date` 后自动回主仓；`inventory-cron` 不扫描过期 Offer/预购。清仓见 §3.5。
 - **订单项活动行已删除**：退款时 `offer_products` 行不存在 → 回主仓（见 `restoreInventoryOnRefund` 中 `OFFER_LINE_REMOVED`）。
 
 ## 7. 修订记录
@@ -104,3 +109,4 @@
 |------|------|
 | 2026-04-15 | 初版：整理文档索引、期望 vs 实际、工程 Todo |
 | 2026-04-15 | 增加 `inventory_cleared`、清仓 API、退款分支与 CMS 展示 |
+| 2026-05-22 | §3.5 与 §6：移除过期活动 cron；活动结束库存仅手动清仓 |
