@@ -123,6 +123,36 @@
     "ParameterKey": "OpenimDataVolumeSizeGb",
     "ParameterValue": "80",
     "Comment": "EBS data volume for OpenIM Mongo/Kafka"
+  },
+  {
+    "ParameterKey": "MailEnabled",
+    "ParameterValue": "true",
+    "Comment": "Production ECS: set via xituan_backend .github/workflows/deploy.yml GitHub Secrets (not CFN when SkipEcsServicesCfnDeploy=true)"
+  },
+  {
+    "ParameterKey": "MailFrom",
+    "ParameterValue": "noreply@xituan.com.au",
+    "Comment": "GitHub secret MAIL_FROM"
+  },
+  {
+    "ParameterKey": "MailReplyTo",
+    "ParameterValue": "service@xituan.com.au",
+    "Comment": "GitHub secret MAIL_REPLY_TO"
+  },
+  {
+    "ParameterKey": "PlatformNotifyEmails",
+    "ParameterValue": "merchant@xituan.com.au",
+    "Comment": "GitHub secret PLATFORM_NOTIFY_EMAILS"
+  },
+  {
+    "ParameterKey": "MerchantContactEmail",
+    "ParameterValue": "",
+    "Comment": "Optional GitHub secret MERCHANT_CONTACT_EMAIL"
+  },
+  {
+    "ParameterKey": "AwsSesRegion",
+    "ParameterValue": "ap-southeast-2",
+    "Comment": "Optional GitHub secret AWS_SES_REGION; empty falls back to S3_REGION in app"
   }
 ]
 

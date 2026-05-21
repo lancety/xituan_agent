@@ -430,14 +430,14 @@ class SmartUnifiedReleaseManager {
     console.log(`智能CHANGELOG已更新: ${changelogPath}`);
   }
 
-  // Sync config/app-version.ts from package.json (profile page + X-Client-Version header).
-  updateWechatVersion(projectPath) {
+  // Sync config/app-version.ts from package.json (profile page; wechat also uses X-Client-Version).
+  syncAppVersion(projectPath, projectLabel) {
     const syncScript = path.join(projectPath, 'scripts', 'sync-version.js');
     if (!fs.existsSync(syncScript)) {
-      console.warn(`微信小程序 version:sync 脚本不存在，跳过: ${syncScript}`);
+      console.warn(`${projectLabel} version:sync 脚本不存在，跳过: ${syncScript}`);
       return;
     }
-    console.log('同步微信小程序 config/app-version.ts ...');
+    console.log(`同步 ${projectLabel} config/app-version.ts ...`);
     this.exec(`node scripts/sync-version.js`, projectPath);
   }
 
@@ -577,9 +577,12 @@ class SmartUnifiedReleaseManager {
           // 生成智能CHANGELOG
           this.generateSmartChangelog(project.path, newVersion, hasChanges, oldVersion);
           
-          // 特殊处理微信小程序
+          // Sync profile display version (wechat + site config/app-version.ts)
           if (project.name === 'xituan_wechat_app') {
-            this.updateWechatVersion(project.path);
+            this.syncAppVersion(project.path, '微信小程序');
+          }
+          if (project.name === 'xituan_site') {
+            this.syncAppVersion(project.path, '站点');
           }
           
           // 获取当前分支名称
@@ -628,9 +631,12 @@ class SmartUnifiedReleaseManager {
           // 生成智能CHANGELOG
           this.generateSmartChangelog(project.path, newVersion, hasChanges, oldVersion);
           
-          // 特殊处理微信小程序
+          // Sync profile display version (wechat + site config/app-version.ts)
           if (project.name === 'xituan_wechat_app') {
-            this.updateWechatVersion(project.path);
+            this.syncAppVersion(project.path, '微信小程序');
+          }
+          if (project.name === 'xituan_site') {
+            this.syncAppVersion(project.path, '站点');
           }
           
           // 获取当前分支名称

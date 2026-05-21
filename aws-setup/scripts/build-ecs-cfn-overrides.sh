@@ -32,6 +32,8 @@ const cfnKeys = new Set([
   'MultilingualSortIcu','ZhHansSortIcuCollation',
   'OpenimApiInternalUrl','OpenimApiPublicUrl','OpenimWsPublicUrl',
   'OpenimSecret',
+  'MailEnabled','MailFrom','MailReplyTo','PlatformNotifyEmails',
+  'MerchantContactEmail','AwsSesRegion',
   'MinTaskCount','MaxTaskCount','TargetCPUUtilization','TargetMemoryUtilization'
 ]);
 const skip = new Set(['SkipEcsServicesCfnDeploy','AWSRegion','AWSAccountId','ProjectName',

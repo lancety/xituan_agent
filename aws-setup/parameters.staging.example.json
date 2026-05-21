@@ -142,5 +142,33 @@
     "ParameterKey": "OpenimSecret",
     "ParameterValue": "YOUR_OPENIM_SECRET",
     "Comment": "Or set OPENIM_SECRET env when running deploy-openim.sh"
+  },
+  {
+    "ParameterKey": "MailEnabled",
+    "ParameterValue": "true",
+    "Comment": "Business notification email (SES; IAM via S3_KEY/S3_SECRET_KEY)"
+  },
+  {
+    "ParameterKey": "MailFrom",
+    "ParameterValue": "noreply@xituan.com.au"
+  },
+  {
+    "ParameterKey": "MailReplyTo",
+    "ParameterValue": "service@xituan.com.au"
+  },
+  {
+    "ParameterKey": "PlatformNotifyEmails",
+    "ParameterValue": "merchant@xituan.com.au",
+    "Comment": "Platform inbox + default merchant Reply-To"
+  },
+  {
+    "ParameterKey": "MerchantContactEmail",
+    "ParameterValue": "",
+    "Comment": "Optional; empty = first PlatformNotifyEmails"
+  },
+  {
+    "ParameterKey": "AwsSesRegion",
+    "ParameterValue": "ap-southeast-2",
+    "Comment": "Empty = stack region"
   }
 ]

@@ -164,6 +164,35 @@ Parameters:
     NoEcho: true
     Default: ''
 
+  MailEnabled:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+    Description: Enable business notification email via SES (uses S3_KEY/S3_SECRET_KEY)
+
+  MailFrom:
+    Type: String
+    Default: 'noreply@xituan.com.au'
+
+  MailReplyTo:
+    Type: String
+    Default: 'service@xituan.com.au'
+
+  PlatformNotifyEmails:
+    Type: String
+    Default: ''
+    Description: Comma-separated platform inbox (merchant applications, etc.)
+
+  MerchantContactEmail:
+    Type: String
+    Default: ''
+    Description: Optional merchant Reply-To; defaults to first PlatformNotifyEmails
+
+  AwsSesRegion:
+    Type: String
+    Default: ''
+    Description: SES region; empty uses stack region (same as S3_REGION)
+
   MinTaskCount:
     Type: Number
     Default: 1
@@ -188,6 +217,7 @@ Parameters:
 
 Conditions:
   UseOpenimInternalApi: !Not [!Equals [!Ref OpenimApiInternalUrl, '']]
+  UseCustomSesRegion: !Not [!Equals [!Ref AwsSesRegion, '']]
 
 Resources:
   ECSTaskExecutionRole:
@@ -325,6 +355,21 @@ Resources:
               Value: !Ref OpenimWsPublicUrl
             - Name: OPENIM_SECRET
               Value: !Ref OpenimSecret
+            - Name: MAIL_ENABLED
+              Value: !Ref MailEnabled
+            - Name: MAIL_FROM
+              Value: !Ref MailFrom
+            - Name: MAIL_REPLY_TO
+              Value: !Ref MailReplyTo
+            - Name: PLATFORM_NOTIFY_EMAILS
+              Value: !Ref PlatformNotifyEmails
+            - Name: MERCHANT_CONTACT_EMAIL
+              Value: !Ref MerchantContactEmail
+            - Name: AWS_SES_REGION
+              Value: !If
+                - UseCustomSesRegion
+                - !Ref AwsSesRegion
+                - !Ref AWS::Region
           LogConfiguration:
             LogDriver: awslogs
             Options:
