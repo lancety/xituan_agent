@@ -1,3 +1,13 @@
+## [3.6.1] - 2026-05-22
+
+### 📚 文档
+
+- docs(devGuide): update inventory flow and site design guides
+
+### 🔧 构建/配置
+
+- chore(aws-setup): update ECS deploy parameters and unified release script
+
 ## [3.6.0] - 2026-05-21
 
 ### 🔧 构建/配置
