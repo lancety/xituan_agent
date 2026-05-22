@@ -1,3 +1,9 @@
+## [3.6.2] - 2026-05-22
+
+### 📚 文档
+
+- docs(devGuide): update inventory flow and site design guides
+
 ## [3.6.1] - 2026-05-22
 
 ### 📚 文档
