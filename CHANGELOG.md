@@ -1,3 +1,9 @@
+## [3.6.3] - 2026-05-23
+
+### 📚 文档
+
+- docs: add email notification preferences and marketing digest guides
+
 ## [3.6.2] - 2026-05-22
 
 ### 📚 文档
