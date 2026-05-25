@@ -70,5 +70,18 @@ LOG_IS_STDOUT=true
 LOG_LEVEL=4
 EOF
 cd /opt/openim/upstream
-docker-compose --env-file ../.env -f docker-compose.yaml up -d
+cat > docker-compose.override.yaml <<'OVERRIDE'
+# xituan OpenIM EC2: optional services excluded from default `docker compose up -d`.
+services:
+  openim-chat:
+    restart: "no"
+    profiles: ["full-stack"]
+  openim-web-front:
+    restart: "no"
+    profiles: ["full-stack"]
+  openim-admin-front:
+    restart: "no"
+    profiles: ["full-stack"]
+OVERRIDE
+docker-compose --env-file ../.env -f docker-compose.yaml up -d mongo redis kafka etcd minio openim-server
 echo "ok" > /var/log/openim-bootstrap.done

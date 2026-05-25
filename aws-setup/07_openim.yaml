@@ -40,8 +40,8 @@ Parameters:
 
   InstanceType:
     Type: String
-    Default: t3.large
-    Description: EC2 instance type (OpenIM compose needs ~8GB RAM)
+    Default: t3.medium
+    Description: EC2 instance type (trimmed compose; mongo/redis/kafka on host ~2-3GiB RAM)
 
   KeyName:
     Type: String
@@ -212,7 +212,20 @@ Resources:
           LOG_LEVEL=4
           EOF
           cd /opt/openim/upstream
-          docker-compose --env-file ../.env -f docker-compose.yaml up -d
+          cat > docker-compose.override.yaml <<'OVERRIDE'
+          # xituan OpenIM EC2: optional services excluded from default `docker compose up -d`.
+          services:
+            openim-chat:
+              restart: "no"
+              profiles: ["full-stack"]
+            openim-web-front:
+              restart: "no"
+              profiles: ["full-stack"]
+            openim-admin-front:
+              restart: "no"
+              profiles: ["full-stack"]
+          OVERRIDE
+          docker-compose --env-file ../.env -f docker-compose.yaml up -d mongo redis kafka etcd minio openim-server
           echo "ok" > /var/log/openim-bootstrap.done
       Tags:
         - Key: Name

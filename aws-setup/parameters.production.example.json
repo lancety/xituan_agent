@@ -111,7 +111,7 @@
   },
   {
     "ParameterKey": "OpenimInstanceType",
-    "ParameterValue": "t3.large",
+    "ParameterValue": "t3.medium",
     "Comment": "OpenIM EC2 instance type"
   },
   {

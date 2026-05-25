@@ -11,6 +11,7 @@
 |------|------|
 | 未定稿调研 / 讨论记录 | 放在 **`xituan_agent/docs/`**（或团队约定的 `docs/`） |
 | 已定稿方案、实施计划、接口契约 | 放在 **`xituan_agent/devGuide/`** |
+| **编写 devGuide 的流程与去重** | 遵循 **`.cursor/skills/devguide-documentation/SKILL.md`**（中文、选目录、扫重复、更新引用） |
 | **跨项目规范/契约**（如 metadata JSON 形状表） | 放在 **`xituan_agent/devStandard/`**；运行时共用 **代码** 放 **`xituan_codebase`** |
 | 不要随意新建 `.md`** | 除非用户或任务明确要求 |
 | 与用户对话语言 | 工作区规则：**中文**（chat） |

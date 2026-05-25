@@ -444,10 +444,15 @@ if (!product) {
 1. **读写分离**
    - 创建 Read Replica
    - 应用层路由读写
+   - **升级备忘**：触发条件、路由规则、成本见 `devGuide/backend-protection-layers-and-scale-notes.md` §5
 
-2. **RDS Proxy**
-   - 连接池管理
-   - 自动故障转移
+2. **RDS Proxy / PgBouncer**
+   - 连接池管理、限制打到 PG 的真实连接数
+   - **原理与选型**：见 `devGuide/backend-protection-layers-and-scale-notes.md` §3
+
+3. **RDS 参数随实例升级调整**
+   - `max_connections`、`statement_timeout`、`idle_in_transaction_session_timeout` 等
+   - **按实例档位对照表**：见 `devGuide/backend-protection-layers-and-scale-notes.md` §4
 
 ---
 

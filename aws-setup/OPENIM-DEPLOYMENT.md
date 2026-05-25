@@ -65,7 +65,17 @@ OpenIM EC2：`OPENIM_SECRET` 环境变量 / GitHub Secret。ECS OpenIM：`Openim
 
 - 登录 EC2：`aws ssm start-session --target <OpenimInstanceId>`
 - 查看 compose：`cd /opt/openim/upstream && docker-compose ps`
+- **核心栈模式（推荐）**：SSM 执行 `openim-ec2-trim-services.sh`（写入 `docker-compose.override.yaml`，reboot 后默认不启 chat/web/admin；**minio 必须保留**——`openim-server` 启动检查依赖 `minio:9000`）
+- 仅启核心栈：`bash scripts/openim-ec2-start-core.sh`
+- 临时恢复全栈：`cd /opt/openim/upstream && docker-compose --env-file ../.env -f docker-compose.yaml --profile full-stack up -d`
 - 升级镜像：改 UserData 或 SSM 进机后拉取新 tag 并 `docker-compose up -d`（后续可做 AMI/CodeDeploy）
+
+### 缩实例型（t3.large → t3.medium）
+
+1. SSM 登录后执行 `openim-ec2-trim-services.sh`，验收 IM（token、发消息、历史）。
+2. **EC2 控制台**：Stop 实例 → Actions → Instance settings → Change instance type → `t3.medium` → Start。
+3. 启动后执行一次 `openim-ec2-trim-services.sh` 安装 override（之后 reboot 默认只启核心栈）。
+4. 本地 `parameters.production.json` 中 `OpenimInstanceType` 改为 `t3.medium`（避免日后 CFN 新实例仍用 large）。
 
 ## 本地开发（不变）
 

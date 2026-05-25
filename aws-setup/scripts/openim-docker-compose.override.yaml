@@ -1,0 +1,12 @@
+# xituan OpenIM EC2: optional services excluded from default `docker compose up -d`.
+# To start them: docker-compose --profile full-stack up -d
+services:
+  openim-chat:
+    restart: "no"
+    profiles: ["full-stack"]
+  openim-web-front:
+    restart: "no"
+    profiles: ["full-stack"]
+  openim-admin-front:
+    restart: "no"
+    profiles: ["full-stack"]
