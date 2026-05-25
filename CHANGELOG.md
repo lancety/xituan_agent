@@ -1,3 +1,10 @@
+## [3.6.4] - 2026-05-25
+
+### 📚 文档
+
+- docs(devGuide): add redis/valkey guides and openim deployment scripts
+- docs: add email notification preferences and marketing digest guides
+
 ## [3.6.3] - 2026-05-23
 
 ### 📚 文档
