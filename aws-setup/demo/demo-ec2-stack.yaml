@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Xituan demo sandbox — single EC2 (backend + PostgreSQL), Elastic IP, optional PG admin ingress.
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: demo
+  InstanceType:
+    Type: String
+    Default: t3.small
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: SSH key pair for the demo EC2 instance
+  AdminCidr:
+    Type: String
+    Default: 0.0.0.0/0
+    Description: CIDR allowed to reach PostgreSQL 5432 for maintenance (restrict in production demo ops)
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  SubnetId:
+    Type: AWS::EC2::Subnet::Id
+  AmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id
+
+Resources:
+  DemoInstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Demo EC2 — HTTPS, SSH, optional PG from AdminCidr
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref AdminCidr
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: !Ref AdminCidr
+
+  DemoInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref AmiId
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      SubnetId: !Ref SubnetId
+      SecurityGroupIds:
+        - !Ref DemoInstanceSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub 'xituan-${EnvironmentName}-app'
+
+  DemoElasticIp:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      InstanceId: !Ref DemoInstance
+
+Outputs:
+  DemoInstanceId:
+    Value: !Ref DemoInstance
+  DemoPublicIp:
+    Value: !Ref DemoElasticIp
+  DemoSecurityGroupId:
+    Value: !Ref DemoInstanceSecurityGroup
