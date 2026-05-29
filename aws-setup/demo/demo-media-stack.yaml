@@ -1,0 +1,136 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  Xituan demo media - S3 bucket and content CloudFront (direct S3). SIH v7 stack
+  is deployed separately in us-east-1 (xituan-demo-serverlessImageHandler).
+
+Parameters:
+  BucketName:
+    Type: String
+    Default: xituan-demo
+    AllowedPattern: '^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$'
+    Description: S3 bucket for demo uploads (must be globally unique).
+  ContentAcmCertificateArn:
+    Type: String
+    Description: ACM certificate ARN in us-east-1 covering content CloudFront aliases.
+  ContentAliases:
+    Type: CommaDelimitedList
+    Description: Alternate domain names for content CloudFront.
+  CorsAllowedOrigins:
+    Type: CommaDelimitedList
+    Default: >-
+      https://demo.xituan.com.au,https://cms-demo.xituan.com.au,https://platform-demo.xituan.com.au,http://localhost:3005,http://localhost:3010,http://localhost:3020
+    Description: S3 CORS AllowedOrigins for CMS/site uploads.
+
+Resources:
+  MediaBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Ref BucketName
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+              - PUT
+              - POST
+              - DELETE
+              - HEAD
+            AllowedOrigins: !Ref CorsAllowedOrigins
+            ExposedHeaders:
+              - ETag
+            MaxAge: 3600
+      Tags:
+        - Key: Environment
+          Value: demo
+        - Key: Project
+          Value: xituan
+
+  ContentOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub '${AWS::StackName}-content-oac'
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  ContentDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: !Sub '${AWS::StackName} content CDN (direct S3, no transforms)'
+        Aliases: !Ref ContentAliases
+        ViewerCertificate:
+          AcmCertificateArn: !Ref ContentAcmCertificateArn
+          MinimumProtocolVersion: TLSv1.2_2021
+          SslSupportMethod: sni-only
+        DefaultCacheBehavior:
+          TargetOriginId: ContentS3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+          Compress: true
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          OriginRequestPolicyId: 88a5eaf4-2fd4-4709-b370-b4c650ea3fcf
+        Origins:
+          - Id: ContentS3Origin
+            DomainName: !GetAtt MediaBucket.RegionalDomainName
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+            OriginAccessControlId: !GetAtt ContentOriginAccessControl.Id
+        PriceClass: PriceClass_All
+        HttpVersion: http2and3
+      Tags:
+        - Key: Environment
+          Value: demo
+        - Key: Project
+          Value: xituan
+
+  ContentBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    DependsOn: ContentDistribution
+    Properties:
+      Bucket: !Ref MediaBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowCloudFrontContentOAC
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub '${MediaBucket.Arn}/*'
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${ContentDistribution}'
+
+Outputs:
+  BucketName:
+    Value: !Ref MediaBucket
+    Description: Demo S3 bucket for backend S3_BUCKET env.
+  BucketArn:
+    Value: !GetAtt MediaBucket.Arn
+  ContentDistributionId:
+    Value: !Ref ContentDistribution
+  ContentDistributionDomainName:
+    Value: !GetAtt ContentDistribution.DomainName
+  ContentAliases:
+    Value: !Join [',', !Ref ContentAliases]

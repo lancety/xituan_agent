@@ -1,0 +1,34 @@
+[
+  {
+    "ParameterKey": "BucketName",
+    "ParameterValue": "xituan-demo"
+  },
+  {
+    "ParameterKey": "ContentAcmCertificateArn",
+    "ParameterValue": "arn:aws:acm:us-east-1:594332420383:certificate/67d4bb81-8175-4e5d-ab42-7ead1714d2e5"
+  },
+  {
+    "ParameterKey": "ContentAliases",
+    "ParameterValue": "content-demo.xituan.com.au"
+  },
+  {
+    "ParameterKey": "CorsAllowedOrigins",
+    "ParameterValue": "https://demo.xituan.com.au,https://cms-demo.xituan.com.au,https://platform-demo.xituan.com.au,http://localhost:3005,http://localhost:3010,http://localhost:3020"
+  },
+  {
+    "ParameterKey": "DeployImageHandlerDemoUi",
+    "ParameterValue": "No"
+  },
+  {
+    "ParameterKey": "ImageHandlerLogRetentionDays",
+    "ParameterValue": "30"
+  },
+  {
+    "ParameterKey": "ImageHandlerCorsEnabled",
+    "ParameterValue": "Yes"
+  },
+  {
+    "ParameterKey": "ImageHandlerCorsOrigin",
+    "ParameterValue": "*"
+  }
+]

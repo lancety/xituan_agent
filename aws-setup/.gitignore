@@ -1,2 +1,11 @@
 parameters.production.json
 parameters.staging.json
+parameters.demo-media.json
+parameters.demo-sih.json
+demo-sih-v7.template.json
+ssm-*.json
+health-out.json
+caddy-debug.json
+cf-config.json
+cf-config-new.json
+.lambda-env.json

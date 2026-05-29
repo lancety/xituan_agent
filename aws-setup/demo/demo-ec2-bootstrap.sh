@@ -53,12 +53,18 @@ systemctl enable caddy
 
 if [ ! -f /etc/caddy/Caddyfile ] || ! grep -q 'backend-demo.xituan.com.au' /etc/caddy/Caddyfile 2>/dev/null; then
   cat >/etc/caddy/Caddyfile <<'CADDY'
+{
+	email service@xituan.com.au
+}
+
 backend-demo.xituan.com.au {
+	encode gzip
 	reverse_proxy 127.0.0.1:3050
 }
 CADDY
   systemctl reload caddy || systemctl restart caddy
 fi
+log "Caddy: ensure DNS A backend-demo.xituan.com.au points to this host before first HTTPS request"
 
 log "=== PostgreSQL ==="
 systemctl enable postgresql
