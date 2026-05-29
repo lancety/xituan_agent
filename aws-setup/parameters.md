@@ -12,14 +12,14 @@
 - DBUsername / DBPassword / DBName
 - DBInstanceClass / DBAllocatedStorage / EnableRDSPublicAccess（⚠️ 开启后需在 RDS 安全组添加本地 IP）
 - ACMCertificateArn
-- CORSOrigin / LogLevel / SentryEnabled
+- LogLevel / SentryEnabled
 - FargateCpu / FargateMemory（1 vCPU = 1024 units；512=0.5 vCPU）
 
 ## 使用
 ```bash
 # Phase 1（基础设施）
 ./deploy-phase1.sh production
-# 设置 GitHub Secrets：DB_HOST、DB_PORT、DB_USER、DB_PASSWORD
+# 设置 GitHub Secrets：DATABASE_URL（及 deploy.yml 其余运行时密钥）
 # 推送代码触发 GitHub Actions 构建镜像
 
 # Phase 2（应用层）
@@ -28,7 +28,7 @@
 
 ## 注意
 - 密码不能包含 @ " / 空格
-- 镜像构建不依赖 DB_HOST，运行时由 ECS 注入
+- 镜像构建不依赖 DATABASE_URL，运行时由 ECS / GitHub Actions 注入 DATABASE_URL
 
 
 

@@ -42,8 +42,6 @@ if [ -z "$OPENIM_INTERNAL" ]; then
   fi
 fi
 
-OPENIM_WS="$(get_param OpenimWsPublicUrl)"
-
 if [ -z "${OPENIM_SECRET:-}" ]; then
   echo "Set OPENIM_SECRET env (same GitHub Actions secret as xituan_backend deploy.yml)"
   exit 1
@@ -65,12 +63,14 @@ const fs = require('fs');
 const td = JSON.parse(fs.readFileSync(process.argv[1], 'utf8'));
 const upsert = {
   OPENIM_API_BASE_URL: process.argv[2],
-  OPENIM_API_PUBLIC_URL: process.argv[3],
-  OPENIM_WS_PUBLIC_URL: process.argv[4],
-  OPENIM_SECRET: process.argv[5]
+  OPENIM_SECRET: process.argv[3]
 };
-// Strip removed env vars from legacy ECS task definitions (IM URLs use siteDomain, not OPENIM_CHAT_FILES_CDN_BASE).
-const removedEnvNames = new Set(['OPENIM_CHAT_FILES_CDN_BASE']);
+// Strip legacy env vars (client IM URLs use siteDomain.imAPI / imWS only).
+const removedEnvNames = new Set([
+  'OPENIM_CHAT_FILES_CDN_BASE',
+  'OPENIM_API_PUBLIC_URL',
+  'OPENIM_WS_PUBLIC_URL'
+]);
 const env = (td.containerDefinitions[0].environment || []).filter(
   (e) => !removedEnvNames.has(e.name)
 );
@@ -84,7 +84,7 @@ for (const k of ['taskDefinitionArn','revision','status','requiresAttributes','c
   delete td[k];
 }
 fs.writeFileSync(process.argv[1], JSON.stringify(td));
-" "$TMP_JSON" "$OPENIM_INTERNAL" "$(get_param OpenimApiPublicUrl)" "$OPENIM_WS" "$OPENIM_SECRET"
+" "$TMP_JSON" "$OPENIM_INTERNAL" "$OPENIM_SECRET"
 
 # AWS CLI on Windows needs file://D:/... not file:///d/...
 if command -v pwd >/dev/null 2>&1 && pwd -W >/dev/null 2>&1; then

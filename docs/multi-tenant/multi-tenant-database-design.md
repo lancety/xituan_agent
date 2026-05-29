@@ -355,7 +355,7 @@ export const merchantMiddleware = async (
   next: NextFunction
 ): Promise<void> => {
   // 从多种方式识别商户
-  // 1. 子域名: merchant001.xituan.com
+  // 1. 子域名: merchant001.xituan.com.au
   // 2. 路径: /api/merchant/merchant001/...
   // 3. Header: X-Merchant-Code
   // 4. JWT Token 中的 merchant_id

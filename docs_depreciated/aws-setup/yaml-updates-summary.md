@@ -77,7 +77,7 @@ aws cloudformation deploy ... --parameter-overrides EnablePublicAccess=false
 **要求**：`BackendTargetGroupArn` 是必需参数，ALB 必须在 ECS 服务之前部署
 
 **新增参数**：
-- `CORSOrigin`: CORS 允许的源（默认 `https://www.xituan.com`）
+- `CORSOrigin`: CORS 允许的源（默认 `https://www.xituan.com.au`）
 - `LogLevel`: 日志级别（默认 `warn`，可选：`debug`, `info`, `warn`, `error`）
 - `SentryEnabled`: 是否启用 Sentry（默认 `true`）
 

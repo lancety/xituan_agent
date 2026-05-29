@@ -60,11 +60,6 @@
     "Comment": "RDS allocated storage in GB (min: 20, max: 100)"
   },
   {
-    "ParameterKey": "CORSOrigin",
-    "ParameterValue": "https://www.xituan.com",
-    "Comment": "CORS allowed origin for backend API"
-  },
-  {
     "ParameterKey": "LogLevel",
     "ParameterValue": "warn",
     "Comment": "Application log level: debug, info, warn, error"
@@ -97,12 +92,12 @@
   {
     "ParameterKey": "OpenimApiPublicUrl",
     "ParameterValue": "https://im-api.lancety.com",
-    "Comment": "OPENIM_API_PUBLIC_URL for SDK (when using CFN 06 on non-prod only)"
+    "Comment": "Fallback OPENIM_API_BASE_URL when OpenimApiInternalUrl empty (staging CFN only; SDK uses siteDomain.imAPI)"
   },
   {
     "ParameterKey": "OpenimWsPublicUrl",
     "ParameterValue": "wss://im-ws.lancety.com",
-    "Comment": "Backend OPENIM_WS_PUBLIC_URL (WeChat socket合法域名)"
+    "Comment": "Legacy CFN param; client WS uses siteDomain.imWS — not injected as container env"
   },
   {
     "ParameterKey": "OpenimApiInternalUrl",

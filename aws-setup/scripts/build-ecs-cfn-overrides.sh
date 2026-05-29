@@ -23,7 +23,7 @@ const params = JSON.parse(fs.readFileSync('parameters.' + env + '.json', 'utf8')
 const cfnKeys = new Set([
   'Environment','ECSClusterName','ECSSecurityGroupId','PublicSubnetId',
   'RDSInstanceEndpoint','RDSInstancePort','BackendTargetGroupArn',
-  'DBUsername','DBPassword','DBName','CORSOrigin','LogLevel','SentryEnabled',
+  'DBUsername','DBPassword','DBName','LogLevel','SentryEnabled',
   'EcrImageTag','DatabaseUrl','JwtSecret','S3Key','S3SecretKey','S3Bucket',
   'WechatAppId','WechatAppSecret','PaymentConfigEncryptionKey',
   'PaymentConfigEncryptionKeyPrevious','GoogleMapsApiKey',

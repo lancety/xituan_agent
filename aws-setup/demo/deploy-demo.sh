@@ -5,7 +5,10 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STACK_NAME="${STACK_NAME:-xituan-demo-ec2}"
 TEMPLATE="${SCRIPT_DIR}/demo-ec2-stack.yaml"
-PARAMS_FILE="${PARAMS_FILE:-${SCRIPT_DIR}/parameters.demo.example.json}"
+PARAMS_FILE="${PARAMS_FILE:-${SCRIPT_DIR}/parameters.demo.json}"
+if [[ ! -f "${PARAMS_FILE}" ]]; then
+  PARAMS_FILE="${SCRIPT_DIR}/parameters.demo.example.json"
+fi
 
 if [[ ! -f "${PARAMS_FILE}" ]]; then
   echo "Missing parameters file: ${PARAMS_FILE}" >&2

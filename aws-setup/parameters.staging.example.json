@@ -37,10 +37,6 @@
     "ParameterValue": "arn:aws:acm:ap-southeast-2:ACCOUNT:certificate/CERT_ID"
   },
   {
-    "ParameterKey": "CORSOrigin",
-    "ParameterValue": "https://staging.xituan.com.au"
-  },
-  {
     "ParameterKey": "LogLevel",
     "ParameterValue": "debug"
   },

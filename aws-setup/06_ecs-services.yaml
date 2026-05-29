@@ -39,10 +39,6 @@ Parameters:
     Type: String
     Default: xituan
 
-  CORSOrigin:
-    Type: String
-    Default: 'https://www.xituan.com'
-
   LogLevel:
     Type: String
     Default: warn
@@ -284,20 +280,8 @@ Resources:
               Value: !Ref Environment
             - Name: PORT
               Value: '3050'
-            - Name: DB_HOST
-              Value: !Ref RDSInstanceEndpoint
-            - Name: DB_PORT
-              Value: !Ref RDSInstancePort
-            - Name: DB_USER
-              Value: !Ref DBUsername
-            - Name: DB_PASSWORD
-              Value: !Ref DBPassword
-            - Name: DB_NAME
-              Value: !Ref DBName
             - Name: DATABASE_URL
               Value: !Ref DatabaseUrl
-            - Name: CORS_ORIGIN
-              Value: !Ref CORSOrigin
             - Name: LOG_LEVEL
               Value: !Ref LogLevel
             - Name: SWAGGER_ENABLED
@@ -349,10 +333,6 @@ Resources:
                 - UseOpenimInternalApi
                 - !Ref OpenimApiInternalUrl
                 - !Ref OpenimApiPublicUrl
-            - Name: OPENIM_API_PUBLIC_URL
-              Value: !Ref OpenimApiPublicUrl
-            - Name: OPENIM_WS_PUBLIC_URL
-              Value: !Ref OpenimWsPublicUrl
             - Name: OPENIM_SECRET
               Value: !Ref OpenimSecret
             - Name: MAIL_ENABLED

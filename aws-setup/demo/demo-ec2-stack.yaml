@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Xituan demo sandbox — single EC2 (backend + PostgreSQL), Elastic IP, optional PG admin ingress.
+Description: Xituan demo sandbox - single EC2 (backend + PostgreSQL), Elastic IP, SSM, optional PG admin ingress.
 
 Parameters:
   EnvironmentName:
@@ -9,8 +9,9 @@ Parameters:
     Type: String
     Default: t3.small
   KeyName:
-    Type: AWS::EC2::KeyPair::KeyName
-    Description: SSH key pair for the demo EC2 instance
+    Type: String
+    Default: ''
+    Description: Optional SSH key pair (leave empty to use SSM Session Manager only)
   AdminCidr:
     Type: String
     Default: 0.0.0.0/0
@@ -23,11 +24,36 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id
 
+Conditions:
+  HasKeyName: !Not [!Equals [!Ref KeyName, '']]
+
 Resources:
+  DemoInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Tags:
+        - Key: Name
+          Value: !Sub 'xituan-${EnvironmentName}-ec2-role'
+
+  DemoInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref DemoInstanceRole
+
   DemoInstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Demo EC2 — HTTPS, SSH, optional PG from AdminCidr
+      GroupDescription: Demo EC2 - HTTPS, SSH, optional PG from AdminCidr
       VpcId: !Ref VpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -45,16 +71,36 @@ Resources:
 
   DemoInstance:
     Type: AWS::EC2::Instance
+    DependsOn: DemoInstanceProfile
     Properties:
       ImageId: !Ref AmiId
       InstanceType: !Ref InstanceType
-      KeyName: !Ref KeyName
+      KeyName: !If [HasKeyName, !Ref KeyName, !Ref AWS::NoValue]
+      IamInstanceProfile: !Ref DemoInstanceProfile
       SubnetId: !Ref SubnetId
       SecurityGroupIds:
         - !Ref DemoInstanceSecurityGroup
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 30
+            VolumeType: gp3
+            Encrypted: true
+            DeleteOnTermination: true
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -euxo pipefail
+          if command -v apt-get >/dev/null 2>&1; then
+            export DEBIAN_FRONTEND=noninteractive
+            apt-get update
+            apt-get install -y amazon-ssm-agent
+            systemctl enable amazon-ssm-agent
+            systemctl restart amazon-ssm-agent
+          fi
       Tags:
         - Key: Name
-          Value: !Sub 'xituan-${EnvironmentName}-app'
+          Value: xituan-backend-demo
 
   DemoElasticIp:
     Type: AWS::EC2::EIP
@@ -69,3 +115,5 @@ Outputs:
     Value: !Ref DemoElasticIp
   DemoSecurityGroupId:
     Value: !Ref DemoInstanceSecurityGroup
+  DemoInstanceRoleArn:
+    Value: !GetAtt DemoInstanceRole.Arn

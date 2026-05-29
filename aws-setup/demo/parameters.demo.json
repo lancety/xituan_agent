@@ -1,0 +1,8 @@
+[
+  { "ParameterKey": "EnvironmentName", "ParameterValue": "demo" },
+  { "ParameterKey": "InstanceType", "ParameterValue": "t3.small" },
+  { "ParameterKey": "KeyName", "ParameterValue": "" },
+  { "ParameterKey": "AdminCidr", "ParameterValue": "0.0.0.0/0" },
+  { "ParameterKey": "VpcId", "ParameterValue": "vpc-029beb687927c471e" },
+  { "ParameterKey": "SubnetId", "ParameterValue": "subnet-080ef0dffc0c4ceef" }
+]
