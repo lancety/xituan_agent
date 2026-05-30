@@ -1,3 +1,12 @@
+## [3.7.0] - 2026-05-30
+
+### 📚 文档
+
+- docs(aws-setup): demo EC2 stack updates and demo media CDN deploy scripts
+- docs(aws): add demo EC2 bootstrap scripts and update demo deployment config
+- docs(aws): add demo EC2 CloudFormation stack and deploy script
+- docs(devGuide): add redis/valkey guides and openim deployment scripts
+
 ## [3.6.4] - 2026-05-25
 
 ### 📚 文档
