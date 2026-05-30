@@ -31,12 +31,22 @@ Parameters:
   OpenimApiHostHeader:
     Type: String
     Default: im-api.lancety.com
-    Description: Host header on ALB (client-facing domain; may CNAME via im-api.xituan.com.au)
+    Description: Primary ALB host (WeChat 备案 / lancety); paired with OpenimApiHostHeaderAlias for CMS/Web
+
+  OpenimApiHostHeaderAlias:
+    Type: String
+    Default: im-api.xituan.com.au
+    Description: Second ALB host for CMS/Web SDK (siteDomain.imAPI); same target group as OpenimApiHostHeader
 
   OpenimWsHostHeader:
     Type: String
     Default: im-ws.lancety.com
-    Description: Host header for WebSocket (WeChat socket legal domain)
+    Description: Primary WebSocket host (WeChat socket legal domain)
+
+  OpenimWsHostHeaderAlias:
+    Type: String
+    Default: im-ws.xituan.com.au
+    Description: Second WebSocket host for CMS/Web SDK (siteDomain.imWS); same target group as OpenimWsHostHeader
 
   InstanceType:
     Type: String
@@ -289,6 +299,7 @@ Resources:
           HostHeaderConfig:
             Values:
               - !Ref OpenimApiHostHeader
+              - !Ref OpenimApiHostHeaderAlias
       Actions:
         - Type: forward
           TargetGroupArn: !Ref ImApiTargetGroup
@@ -303,6 +314,7 @@ Resources:
           HostHeaderConfig:
             Values:
               - !Ref OpenimWsHostHeader
+              - !Ref OpenimWsHostHeaderAlias
       Actions:
         - Type: forward
           TargetGroupArn: !Ref ImWsTargetGroup

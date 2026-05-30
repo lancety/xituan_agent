@@ -44,7 +44,9 @@ OpenIM EC2：`OPENIM_SECRET` 环境变量 / GitHub Secret。ECS OpenIM：`Openim
 - EC2（Amazon Linux 2023）+ 数据盘：UserData 安装 Docker、clone `openimsdk/openim-docker` v3.8、启动 compose
 - 安全组：ALB → 10001/10002；ECS → 10002（内网调 API 可选）
 - Target Group：`im-api` → 10002，`im-ws` → 10001
-- **Listener Rules**（优先级 10/11）：按 Host 转发到上述 TG（**不再需控制台手配**）
+- **Listener Rules**（优先级 10/11）：每个 rule 含 **两个 Host**（lancety + xituan.com.au alias），转发到上述 TG
+  - API：`OpenimApiHostHeader` + `OpenimApiHostHeaderAlias`（默认 `im-api.lancety.com` + `im-api.xituan.com.au`）
+  - WS：`OpenimWsHostHeader` + `OpenimWsHostHeaderAlias`（默认 `im-ws.lancety.com` + `im-ws.xituan.com.au`）
 
 ### `02_alb.yaml`（已更新）
 

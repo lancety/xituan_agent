@@ -82,12 +82,22 @@
   {
     "ParameterKey": "OpenimApiHostHeader",
     "ParameterValue": "im-api.lancety.com",
-    "Comment": "ALB listener rule Host (client URL); lancety CNAME may point to im-api.xituan.com.au → ALB"
+    "Comment": "ALB listener rule Host (WeChat 备案 / lancety)"
+  },
+  {
+    "ParameterKey": "OpenimApiHostHeaderAlias",
+    "ParameterValue": "im-api.xituan.com.au",
+    "Comment": "Second ALB host for CMS/Web (siteDomain.imAPI); same im-api target group"
   },
   {
     "ParameterKey": "OpenimWsHostHeader",
     "ParameterValue": "im-ws.lancety.com",
-    "Comment": "ALB listener rule for WebSocket; ACM must include this host (or *.lancety.com)"
+    "Comment": "ALB WebSocket host (WeChat socket legal domain)"
+  },
+  {
+    "ParameterKey": "OpenimWsHostHeaderAlias",
+    "ParameterValue": "im-ws.xituan.com.au",
+    "Comment": "Second WebSocket host for CMS/Web (siteDomain.imWS); same im-ws target group"
   },
   {
     "ParameterKey": "OpenimApiPublicUrl",

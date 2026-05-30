@@ -27,6 +27,35 @@ get_param() {
   fi
 }
 
+# Avoid empty --parameter-overrides wiping CFN defaults when parameters JSON lacks new keys.
+resolve_openim_host_alias() {
+  local param_key="$1"
+  local fallback="$2"
+  local value
+  value="$(get_param "$param_key")"
+  if [ -n "$value" ] && [ "$value" != "null" ]; then
+    echo "$value"
+    return
+  fi
+  echo "$fallback"
+}
+
+resolve_openim_api_host_alias() {
+  case "$ENVIRONMENT" in
+    staging) resolve_openim_host_alias OpenimApiHostHeaderAlias "im-api-staging.xituan.com.au" ;;
+    demo) resolve_openim_host_alias OpenimApiHostHeaderAlias "im-api-demo.xituan.com.au" ;;
+    *) resolve_openim_host_alias OpenimApiHostHeaderAlias "im-api.xituan.com.au" ;;
+  esac
+}
+
+resolve_openim_ws_host_alias() {
+  case "$ENVIRONMENT" in
+    staging) resolve_openim_host_alias OpenimWsHostHeaderAlias "im-ws-staging.xituan.com.au" ;;
+    demo) resolve_openim_host_alias OpenimWsHostHeaderAlias "im-ws-demo.xituan.com.au" ;;
+    *) resolve_openim_host_alias OpenimWsHostHeaderAlias "im-ws.xituan.com.au" ;;
+  esac
+}
+
 get_output() {
   aws cloudformation describe-stacks --stack-name "$1" --region "$AWS_REGION" \
     --query "Stacks[0].Outputs[?OutputKey=='$2'].OutputValue" --output text
@@ -89,7 +118,9 @@ aws cloudformation deploy --template-file 07_openim.yaml --stack-name "$OPENIM_S
     ECSSecurityGroupId="$ECS_SG" \
     HTTPSListenerArn="$HTTPS_LISTENER_ARN" \
     OpenimApiHostHeader="$(get_param OpenimApiHostHeader)" \
+    OpenimApiHostHeaderAlias="$(resolve_openim_api_host_alias)" \
     OpenimWsHostHeader="$(get_param OpenimWsHostHeader)" \
+    OpenimWsHostHeaderAlias="$(resolve_openim_ws_host_alias)" \
     InstanceType="$(get_param OpenimInstanceType)" \
     KeyName="$(get_param OpenimKeyName 2>/dev/null || echo '')" \
     OpenimSecret="$OPENIM_SECRET" \
