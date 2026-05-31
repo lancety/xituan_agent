@@ -1,0 +1,89 @@
+[
+    {
+        "Action": null,
+        "LogicalId": "BackEndSolutionMetricsBilledDurationMemorySizeQuery39F16D58",
+        "Type": "AWS::Logs::QueryDefinition",
+        "Replacement": null,
+        "Details": []
+    },
+    {
+        "Action": null,
+        "LogicalId": "BackEndSolutionMetricsEventbridgeRuleToLambdaEventsRule05009025",
+        "Type": "AWS::Events::Rule",
+        "Replacement": null,
+        "Details": []
+    },
+    {
+        "Action": null,
+        "LogicalId": "BackEndSolutionMetricsLambdaToSqsToLambdalambdatosqsqueue60A92083",
+        "Type": "AWS::SQS::Queue",
+        "Replacement": null,
+        "Details": []
+    },
+    {
+        "Action": null,
+        "LogicalId": "BackEndSolutionMetricsLambdaToSqsToLambdalambdatosqsqueuePolicy5B9B4D7F",
+        "Type": "AWS::SQS::QueuePolicy",
+        "Replacement": null,
+        "Details": []
+    },
+    {
+        "Action": null,
+        "LogicalId": "BackEndSolutionMetricsMetricsLambdaAwsEventsLambdaInvokePermission1328BC090",
+        "Type": "AWS::Lambda::Permission",
+        "Replacement": null,
+        "Details": []
+    },
+    {
+        "Action": null,
+        "LogicalId": "BackEndSolutionMetricsMetricsLambdaF4FA4AF7",
+        "Type": "AWS::Lambda::Function",
+        "Replacement": null,
+        "Details": []
+    },
+    {
+        "Action": null,
+        "LogicalId": "BackEndSolutionMetricsMetricsLambdaServiceRoleDefaultPolicyEBDDA47A",
+        "Type": "AWS::IAM::Policy",
+        "Replacement": null,
+        "Details": []
+    },
+    {
+        "Action": null,
+        "LogicalId": "BackEndSolutionMetricsMetricsLambdaServiceRoleF4BC77CD",
+        "Type": "AWS::IAM::Role",
+        "Replacement": null,
+        "Details": []
+    },
+    {
+        "Action": null,
+        "LogicalId": "BackEndSolutionMetricsMetricsLambdaSqsEventSourceServerlessImageHandlerStackBackEndSolutionMetricsLambdaToSqsToLambdalambdatosqsqueue55784E120E34BEBC",
+        "Type": "AWS::Lambda::EventSourceMapping",
+        "Replacement": null,
+        "Details": []
+    },
+    {
+        "Action": null,
+        "LogicalId": "BackEndSolutionMetricsRequestInfoQueryB4BC2094",
+        "Type": "AWS::Logs::QueryDefinition",
+        "Replacement": null,
+        "Details": []
+    },
+    {
+        "Action": null,
+        "LogicalId": "CommonResourcesCustomResourcesCustomResourceAnonymousMetric51363F57",
+        "Type": "AWS::CloudFormation::CustomResource",
+        "Replacement": "Conditional",
+        "Details": [
+            {
+                "Target": {
+                    "Attribute": "Properties",
+                    "Name": "AnonymousData",
+                    "RequiresRecreation": "Conditionally"
+                },
+                "Evaluation": "Static",
+                "ChangeSource": "DirectModification"
+            }
+        ]
+    }
+]

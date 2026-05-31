@@ -1,3 +1,9 @@
+## [3.7.2] - 2026-05-31
+
+### 📚 文档
+
+- docs(aws-setup): update OpenIM deployment config and scripts
+
 ## [3.7.1] - 2026-05-30
 
 ### 📚 文档

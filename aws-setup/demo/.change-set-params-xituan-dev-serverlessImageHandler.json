@@ -1,0 +1,70 @@
+[
+  {
+    "ParameterKey": "EnableDefaultFallbackImageParameter",
+    "ParameterValue": "No"
+  },
+  {
+    "ParameterKey": "FallbackImageS3KeyParameter",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "CloudFrontPriceClassParameter",
+    "ParameterValue": "PriceClass_All"
+  },
+  {
+    "ParameterKey": "SecretsManagerKeyParameter",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "EnableSignatureParameter",
+    "ParameterValue": "No"
+  },
+  {
+    "ParameterKey": "CorsEnabledParameter",
+    "ParameterValue": "Yes"
+  },
+  {
+    "ParameterKey": "AutoWebPParameter",
+    "ParameterValue": "Yes"
+  },
+  {
+    "ParameterKey": "UseExistingCloudFrontDistributionParameter",
+    "ParameterValue": "No"
+  },
+  {
+    "ParameterKey": "ExistingCloudFrontDistributionIdParameter",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "FallbackImageS3BucketParameter",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "SecretsManagerSecretParameter",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "LogRetentionPeriodParameter",
+    "ParameterValue": "180"
+  },
+  {
+    "ParameterKey": "CorsOriginParameter",
+    "ParameterValue": "*"
+  },
+  {
+    "ParameterKey": "EnableS3ObjectLambdaParameter",
+    "ParameterValue": "No"
+  },
+  {
+    "ParameterKey": "OriginShieldRegionParameter",
+    "ParameterValue": "Disabled"
+  },
+  {
+    "ParameterKey": "SourceBucketsParameter",
+    "ParameterValue": "xituan-dev"
+  },
+  {
+    "ParameterKey": "DeployDemoUIParameter",
+    "ParameterValue": "No"
+  }
+]
