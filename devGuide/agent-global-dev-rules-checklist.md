@@ -11,6 +11,7 @@
 |------|------|
 | 未定稿调研 / 讨论记录 | 放在 **`xituan_agent/docs/`**（或团队约定的 `docs/`） |
 | 已定稿方案、实施计划、接口契约 | 放在 **`xituan_agent/devGuide/`** |
+| **分阶段部署 / 部署后待清理尾项** | **`xituan_agent/devGuide/post-deploy-ledger/`**（[`registry.md`](post-deploy-ledger/registry.md) 巡检）；见 **§11** |
 | **编写 devGuide 的流程与去重** | 遵循 **`.cursor/skills/devguide-documentation/SKILL.md`**（中文、选目录、扫重复、更新引用） |
 | **跨项目规范/契约**（如 metadata JSON 形状表） | 放在 **`xituan_agent/devStandard/`**；运行时共用 **代码** 放 **`xituan_codebase`** |
 | 不要随意新建 `.md`** | 除非用户或任务明确要求 |
@@ -99,6 +100,26 @@
 
 - **`metadata_audit_log` 全量写入** 与 **CMS「最近变更」**：**后置**到 Phase 3 核心闭环之后（见分阶段计划）。
 - **乐观锁**：绑定/任务等并发敏感表使用 **行级 `version`**（或等价）；`UPDATE … WHERE id=? AND version=?`，成功则递增；失败则提示刷新（见分阶段计划「Phase 3 已确认决策」）。
+
+---
+
+## 11. 分阶段部署与 Post-Deploy 尾项（方案设计 / 实施计划 **必做**）
+
+凡改动 **可能破坏当前生产环境**（已发布客户端、集成方、批 job、报表），且 **无法与所有 consumer 同批全量** 上线时：
+
+| 阶段 | 要求 |
+|------|------|
+| **方案设计 & 实施计划** | 拆 **Phase 1（增量、兼容）** 与 **Phase N（清理、破坏性）**；写清 Gate（可验证放行条件） |
+| **Phase 1 编码前** | 在 **`xituan_agent/devGuide/post-deploy-ledger/`** 建 entry + 更新 **`registry.md`**；plan / devGuide 链到 entry |
+| **Phase 1 部署后** | **生产确认** 正常；更新 entry 为 `active` / `blocked`；**禁止** 在未过 Gate 时执行清理 migration / 删 API |
+| **持续追踪** | 口令 **「检查 post-deploy」** → 打开 **`post-deploy-ledger/registry.md`**（活跃表应为 0 才表示无债务） |
+| **空闲或专项清理** | Gate 满足 → 实施 Phase N → 部署 → entry `done`、registry 归档 |
+
+**权威流程：** [`devGuide/post-deploy-ledger/README.md`](post-deploy-ledger/README.md)  
+**AI / 设计细则：** [`.cursor/skills/post-deploy-ledger/SKILL.md`](../.cursor/skills/post-deploy-ledger/SKILL.md)  
+**Coding 原则：** [`.cursor/rules/ai-coding-principles.mdc`](../.cursor/rules/ai-coding-principles.mdc) — Post-deploy phased deployment
+
+典型：删 API/列、改已发布客户端依赖的响应字段、backend 先于 WeChat 审核、临时双写/兼容层。
 
 ---
 
