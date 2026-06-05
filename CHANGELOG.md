@@ -1,3 +1,10 @@
+## [3.7.3] - 2026-06-05
+
+### 📚 文档
+
+- docs(devGuide): post-deploy ledger and checklist updates
+- docs(aws-setup): update OpenIM deployment config and scripts
+
 ## [3.7.2] - 2026-05-31
 
 ### 📚 文档
