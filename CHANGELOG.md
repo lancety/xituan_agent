@@ -1,3 +1,9 @@
+## [3.7.4] - 2026-06-06
+
+### 📚 文档
+
+- docs(devGuide): post-deploy ledger and checklist updates
+
 ## [3.7.3] - 2026-06-05
 
 ### 📚 文档
