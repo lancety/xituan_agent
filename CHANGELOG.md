@@ -1,3 +1,9 @@
+## [3.7.5] - 2026-06-07
+
+### 📚 文档
+
+- docs(post-deploy): register order activity scopes ledger entry
+
 ## [3.7.4] - 2026-06-06
 
 ### 📚 文档
