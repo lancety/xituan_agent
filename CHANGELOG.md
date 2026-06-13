@@ -1,3 +1,10 @@
+## [3.7.6] - 2026-06-13
+
+### 📚 文档
+
+- docs(openim): add chat room inverted scroll design guide
+- docs(post-deploy): register order activity scopes ledger entry
+
 ## [3.7.5] - 2026-06-07
 
 ### 📚 文档
