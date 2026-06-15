@@ -1,6 +1,6 @@
 # 微信小程序分包 Bootstrap 契约（wechat-main-constants）
 
-Last updated: 2026-06-13
+Last updated: 2026-06-15
 
 ## 背景
 
@@ -42,7 +42,8 @@ Last updated: 2026-06-13
 cd xituan_wechat_app
 npm run sync:wechat-main-constants   # 从 codebase 子模块复制到 lib/wechat-main-constants/
 npm run verify:wechat-main-constants # 校验 drift（lint 前置步骤）
-npm run lint                         # verify + ESLint 四条 local 规则
+npm run lint                         # verify + ESLint 五条 local 规则
+npm run check:subpackage-imports     # verify + 分包/codebase 四条（不含 no-bootstrap-module-init）
 ```
 
 生成文件带 `AUTO-GENERATED` 头；路径与 codebase **相对路径一致**（如 `lib/wechat-main-constants/typing_entity/order.enum.ts`）。
@@ -58,6 +59,7 @@ manifest 增删后须 `npm run sync:wechat-main-constants` 以更新 anchor。
 
 | 规则 | 作用 |
 |------|------|
+| `no-sync-subpackage-import` | 禁止主包（pages/components/lib/utils 等）**value import** 分包根目录（`packageIm`、`packageTrade`、`packageMerchant`、`packageSubPages`、`packageUtil`）；须走 `*-host.util.ts` + `require.async` |
 | `no-sync-submodules-codebase-import` | 禁止 value import `submodules/xituan_codebase`（白名单除外） |
 | `prefer-wechat-main-constants` | manifest 内模块必须从 `lib/wechat-main-constants/` value import |
 | `no-bootstrap-module-init` | 禁止在 Component/Page `data`、`properties.value`、program-level pageConfig 读 bootstrap |
@@ -71,7 +73,7 @@ GitHub 仅做版本管理；**编译 / 预览 / 上传**前由 `project.config.j
 
 | 钩子 | 开发者工具「本地设置」填写的命令（Windows） | 检查内容 |
 |------|---------------------------------------------|----------|
-| 编译前预处理 | `call scripts\before-compile.cmd` | verify（6 文件 drift） |
+| 编译前预处理 | `call scripts\before-compile.cmd` | `check:subpackage-imports`（verify + 分包 import ESLint） |
 | 预览前预处理 | `call scripts\before-upload.cmd` | lint 全量 |
 | 上传前预处理 | `call scripts\before-upload.cmd` | lint 全量 |
 
@@ -111,6 +113,7 @@ Commit 示例：`chore(wechat): sync wechat-main-constants after codebase bump`
 
 | 违规模式 | 修复 |
 |----------|------|
+| 主包 `import ... from '../../packageIm/...'` | 改 `im-package-host.util`（或对应 `*-host.util.ts`）+ `require.async` |
 | `data: { x: codebaseBootstrapAccessUtil.epXxx.Y }` | 改 import `lib/wechat-main-constants/...` |
 | 模块顶层 `const MAP = { [codebaseBootstrapAccessUtil.epXxx.A]: ... }` | 改用 constants import，或惰性 getter |
 | 手抄 enum 与 codebase 重复 | 删手抄文件，manifest + sync |
