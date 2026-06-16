@@ -70,5 +70,5 @@ C 端（`packageTrade`）订单**结算页**与**订单详情页**仍各自内�
 ## Links
 
 - 主包组件：`xituan_wechat_app/components/order-item-list-section/`
-- 构建 util：`xituan_wechat_app/utils/order-detail-item-list.wechat.util.ts`
+- 构建 util：`xituan_wechat_app/packageUtil/utils/order-detail-item-list.wechat.util.ts`（经 `packageUtilHostUtil.orderDetailItemList` 异步加载）
 - 商户端参考：`xituan_wechat_app/packageMerchant/components/merchant-panel-order-detail/`
