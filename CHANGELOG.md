@@ -1,3 +1,13 @@
+## [3.8.0] - 2026-06-18
+
+### 📚 文档
+
+- docs(post-deploy): update wechat C order item list section ledger
+- docs(post-deploy): register wechat C order item list section ledger
+- docs(devGuide): update wechat subpackage bootstrap contract
+- docs(devGuide): wechat bootstrap gate and subpackage contract
+- docs(openim): add chat room inverted scroll design guide
+
 ## [3.7.6] - 2026-06-13
 
 ### 📚 文档
