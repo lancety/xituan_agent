@@ -1,3 +1,13 @@
+## [3.8.1] - 2026-06-21
+
+### 📚 文档
+
+- docs(post-deploy): register order terminal status inventory ledger
+- docs(post-deploy): update wechat C order item list section ledger
+- docs(post-deploy): register wechat C order item list section ledger
+- docs(devGuide): update wechat subpackage bootstrap contract
+- docs(devGuide): wechat bootstrap gate and subpackage contract
+
 ## [3.8.0] - 2026-06-18
 
 ### 📚 文档
