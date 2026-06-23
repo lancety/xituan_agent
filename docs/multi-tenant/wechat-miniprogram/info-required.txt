@@ -4,23 +4,23 @@ Fill in the placeholders in the two templates. You need to provide:
 
 --- 
 1. COMPANY (for both documents)
-   - [Company legal name]          e.g. Xituan Pty Ltd
-   - [ACN]                          (9 digits, from ASIC)
-   - [ABN]                          (11 digits, from ATO/ABR)
-   - [Registered address]           full address as on ASIC/ABR
-   - [Optional: letterhead]         if you have a logo/letterhead, use it when printing to sign
+   - [Company legal name]           Xituan Pty Ltd
+   - [ACN]                          675254896     
+   - [ABN]                          33675254896
+   - [Registered address]           29 Norfolk ST Killara
+   - [Optional: letterhead]         
 
 ---
 2. SIGNATORY (person who will sign both documents)
-   - [Full name]                    e.g. Zhang San
-   - [Title]                        e.g. Director, or Company Secretary
-   - [Email]                        platform contact email (for Consumer Protection Policy – support contact)
+   - [Full name]                    LuLin Zhang
+   - [Title]                        Director
+   - [Email]                        lulin@xituan.com.au
 
 ---
 3. PLATFORM (optional, for tailoring the Consumer Protection Policy)
-   - [Platform / app name]          e.g. Xituan Mini Program, or your brand name
-   - [Support email]                for customer complaints/disputes (can be same as above)
-   - [Change-of-mind refunds]       Yes or No – does your platform allow refunds when the customer simply changes mind? (e.g. "Yes, within 7 days if unopened")
+   - [Platform / app name]          Xituan
+   - [Support email]                service@xituan.com.au
+   - [Change-of-mind refunds]       food product not allow, other case depends on merchant's specific rule
 
 ---
 4. YOU ALREADY HAVE (you obtain these yourself, not from us)
