@@ -1,3 +1,81 @@
+## [3.8.2] - 2026-07-15
+
+### ✨ 新功能
+
+- feat: new feature invesitgations
+- financial feature
+- feat: list item + modal solution
+- feat: DDNS for dev;  rds doc updated
+- feat: barcode
+- feat: printTemp system; templateBatchPrinter refactor;
+
+### 🐛 修复
+
+- fix: docs
+- fix: renamed offer description words
+- fix - make image content orientation
+- fix: invoice, summary, gst , price related refactor
+- fix: moved docs form backend project
+- fix: query analysis
+- fix: ecs scaling config added; db optimization guide added;
+- release version bug fix
+- bug fix
+- fix submodule and stay on master
+- bug fix
+
+### 📚 文档
+
+- docs(wechat): update miniprogram required info
+- docs(post-deploy): register order terminal status inventory ledger
+- docs(post-deploy): update wechat C order item list section ledger
+- docs(post-deploy): register wechat C order item list section ledger
+- docs(devGuide): update wechat subpackage bootstrap contract
+- docs(devGuide): wechat bootstrap gate and subpackage contract
+- docs(openim): add chat room inverted scroll design guide
+- docs(post-deploy): register order activity scopes ledger entry
+- docs(devGuide): post-deploy ledger and checklist updates
+- docs(aws-setup): update OpenIM deployment config and scripts
+- docs(aws-setup): demo EC2 stack updates and demo media CDN deploy scripts
+- docs(aws): add demo EC2 bootstrap scripts and update demo deployment config
+- docs(aws): add demo EC2 CloudFormation stack and deploy script
+- docs(devGuide): add redis/valkey guides and openim deployment scripts
+- docs: add email notification preferences and marketing digest guides
+- docs(devGuide): update inventory flow and site design guides
+- docs(aws): add OpenIM deployment config and setup scripts
+- docs(devGuide): merchant clients admin API reference
+- docs(devGuide): subscription prepaid coupon implementation phases
+- docs: payment expiration testing notes and Stripe Omipay manual checklist
+- docs(devGuide): payment platform notes and deployment guides refresh
+- docs(devGuide): sync workspace updates
+- docs(devGuide): metadata visibility facet facade plan and updates
+- docs(devGuide): update metadata migration implementation notes
+- docs(devGuide): add logistics tracking phased integration plan
+- docs(devGuide): add todo folder convention README
+- docs(devGuide): offer inventory flow notes and stock model updates
+- docs(devGuide): monitoring, webhooks, Stripe, Airwallex, tunnel
+- payment status, payment record status clean up refund solution docs airwallex webhook samples
+- aws-setup docs
+- aws setup docs
+- final order payment commit design docs
+
+### 🔧 构建/配置
+
+- chore(aws-setup): update ECS deploy parameters and unified release script
+- chore(aws-setup): update ECS OpenIM env patch script
+
+### 📝 其他
+
+- barcode, partner-supply-list, responsive-table, airwallex, layout documentation
+- permission additional dev guide; merchant, inventory dev guide;
+- multi merchants
+- task: md added
+- balance_sheet process tool
+- alb + ecs fargate + rds postgresql formation deployment solution
+- md added, save
+- updates
+- improved version script
+- init
+
 ## [3.8.1] - 2026-06-21
 
 ### 📚 文档
