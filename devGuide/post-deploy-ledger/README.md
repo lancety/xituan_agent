@@ -1,6 +1,6 @@
 # Post-Deploy Ledger（部署尾项登记册）
 
-Last updated: 2026-06-02
+Last updated: 2026-07-25
 
 > **日常巡检口令：「检查 post-deploy」**（或问「还有没有部署后要补的？」）  
 > → 打开 [`registry.md`](./registry.md)，看 **活跃** 表中 `active` / `blocked` 行数是否为 **0**。  
