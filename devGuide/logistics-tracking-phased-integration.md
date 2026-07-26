@@ -1,5 +1,7 @@
 # Logistics tracking — phased integration plan
 
+> Related design: consumer-facing tracking here aligns with the merchant dispatch/booking flow in [`../docs/delivery/unified-dispatch-pipeline-design.md`](../docs/delivery/unified-dispatch-pipeline-design.md) (section 13: tracking webhooks, manual carrier tracking URLs, cancellation boundaries).
+
 ## Purpose
 
 Define how the platform exposes shipment tracking to end customers while keeping **early phases low-integration** (manual data + official carrier pages) and leaving a clear path to **per-carrier APIs** and optional **merchant-owned credentials (BYOK)** later.

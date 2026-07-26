@@ -1,5 +1,8 @@
 # 配送服务商集成方案（Uber Direct + Sendle）
 
+> 方向已变更（历史参考）：本方案（Uber Direct + Sendle、下单自动选商、平台垫付/合批取件）已不再作为当前实现方向，仅供历史参考。
+> 当前寄件方向以 [`unified-dispatch-pipeline-design.md`](./unified-dispatch-pipeline-design.md) 为准（商户 BYOK、CMS 打包台、AusPost/DoorDash/GoPeople/manual、不合批取件、不弹支付窗）。
+
 ## 📋 概述
 
 本方案实现 Uber Direct 和 Sendle 双配送服务商集成，根据平台设置、配送距离、订单模式和产品特性自动选择配送方案：
