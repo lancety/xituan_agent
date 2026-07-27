@@ -1,3 +1,15 @@
+## [3.8.3] - 2026-07-27
+
+### 📚 文档
+
+- docs(delivery): add unified dispatch pipeline design
+- docs(post-deploy): add merchant panel shipping refund ledger entry
+- docs(wechat): update miniprogram required info
+
+### 🔧 构建/配置
+
+- chore: remove one-shot partial release helper scripts
+
 ## [3.8.2] - 2026-07-15
 
 ### ✨ 新功能
