@@ -116,7 +116,7 @@
   },
   {
     "ParameterKey": "OpenimInstanceType",
-    "ParameterValue": "t3.medium",
+    "ParameterValue": "t3a.medium",
     "Comment": "OpenIM EC2 instance type"
   },
   {
@@ -126,8 +126,8 @@
   },
   {
     "ParameterKey": "OpenimDataVolumeSizeGb",
-    "ParameterValue": "80",
-    "Comment": "EBS data volume for OpenIM Mongo/Kafka"
+    "ParameterValue": "20",
+    "Comment": "EBS data volume for OpenIM Mongo/Kafka (cannot shrink in-place; recreate/migrate to change)"
   },
   {
     "ParameterKey": "MailEnabled",

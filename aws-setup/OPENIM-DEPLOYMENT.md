@@ -72,12 +72,13 @@ OpenIM EC2：`OPENIM_SECRET` 环境变量 / GitHub Secret。ECS OpenIM：`Openim
 - 临时恢复全栈：`cd /opt/openim/upstream && docker-compose --env-file ../.env -f docker-compose.yaml --profile full-stack up -d`
 - 升级镜像：改 UserData 或 SSM 进机后拉取新 tag 并 `docker-compose up -d`（后续可做 AMI/CodeDeploy）
 
-### 缩实例型（t3.large → t3.medium）
+### 缩实例型 / 数据盘（现行：t3a.medium + 20GB）
 
-1. SSM 登录后执行 `openim-ec2-trim-services.sh`，验收 IM（token、发消息、历史）。
-2. **EC2 控制台**：Stop 实例 → Actions → Instance settings → Change instance type → `t3.medium` → Start。
-3. 启动后执行一次 `openim-ec2-trim-services.sh` 安装 override（之后 reboot 默认只启核心栈）。
-4. 本地 `parameters.production.json` 中 `OpenimInstanceType` 改为 `t3.medium`（避免日后 CFN 新实例仍用 large）。
+生产已手工调整为 **`t3a.medium`** + 数据盘 **20GB**（旧 80GB 盘可保留数日作回滚后删除）。EBS **不能在线缩小**，换盘需停服拷数据；`fstab` 已改为 UUID 挂载。
+
+1. 确认核心栈 / trim override 正常，验收 IM（token、发消息、历史）。
+2. 本地 `parameters.production.json`：`OpenimInstanceType=t3a.medium`，`OpenimDataVolumeSizeGb=20`。
+3. **勿对已换盘的实例盲目 `deploy-openim.sh`**：CFN 若判定需替换 EC2，会丢掉当前盘上的数据。仅新建环境或明确接受重建时再部署。
 
 ## 本地开发（不变）
 

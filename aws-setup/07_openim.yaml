@@ -50,8 +50,8 @@ Parameters:
 
   InstanceType:
     Type: String
-    Default: t3.medium
-    Description: EC2 instance type (trimmed compose; mongo/redis/kafka on host ~2-3GiB RAM)
+    Default: t3a.medium
+    Description: EC2 instance type (trimmed compose; mongo/redis/kafka on host ~2-3GiB RAM; t3a ~10% cheaper than t3)
 
   KeyName:
     Type: String
@@ -65,8 +65,8 @@ Parameters:
 
   DataVolumeSizeGb:
     Type: Number
-    Default: 80
-    MinValue: 40
+    Default: 20
+    MinValue: 20
     Description: EBS data volume size for Mongo/Kafka/Redis
 
 Conditions:
