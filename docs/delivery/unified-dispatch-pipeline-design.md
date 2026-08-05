@@ -1,18 +1,21 @@
 # 统一寄件流水线设计（Unified Dispatch Pipeline）
 
 > 状态：设计（未实现）。本文件为方向定稿的设计文档，供后续拆分实现计划使用。
-> Last updated: 2026-08-03（回退错误 P1 代码实施；更新 A 新建发货 UX：按订单独立打包台 + 列表外唯一 carrier）
+> Last updated: 2026-08-04（P1 开放项收口：ready/回填不改状态/tracking 可改/重量规则/入口范围）
 > 范围：商户在 CMS 侧对已支付订单进行「打包 → 选承运商 → 询价 → 确认下单 → 落库 → 打印」的统一履约寄件流程。
 > 业务地域：仅澳大利亚国内。
 >
 > **术语（强制）：** 全文与后续沟通一律用 **carrier（承运商）**，不再使用 vendor。  
-> **`manual_entry` 是创建模式**（手填某 carrier + tracking），**不是**名为 `manual` 的 carrier code。
-> **实施状态：** P1 代码实施已回退；以下为设计定稿，待按本文件重新实施。
+> **`manual_entry` 是创建模式**（手填某 carrier + tracking），**不是**名为 `manual` 的 carrier code。  
+> **`csv_export` 是创建模式**（导出承运商导入文件，站外建单后回填 tracking），也不是 carrier code。  
+> **实施状态：** P1 代码实施已回退；DB migration `0337` 已在部分环境执行；`0338` 增补 MyPost CSV carrier 种子。待按本文件重新实施。
 
 相关文档：
 
 - 旧方案（方向已变更，仅历史参考）：[`delivery-service-integration-plan.md`](./delivery-service-integration-plan.md)
 - 轨迹分阶段思路：[`../../devGuide/logistics-tracking-phased-integration.md`](../../devGuide/logistics-tracking-phased-integration.md)
+- AusPost MyPost Business CSV 导入说明：[Sending parcels online — CSV upload](https://auspost.com.au/business/shipping/mypost-business/sending-parcels-online-csv-upload)
+- MyPost 订单导入入口：[order-import](https://auspost.com.au/mypost-business/orders/order-import)
 
 ---
 
@@ -47,8 +50,9 @@
 | **默认包裹** | 每个进入本批的订单的 **第一票**，不能为空。 |
 | **附加包裹** | 从默认包裹拆分出的第 2+ 票（大件分箱用）。 |
 | **批次 batch** | 一次 CMS「确认」会话；含 1..N 个包裹；同一次确认锁定 **一个** carrier。注意：batch ≠ 快递员合取。 |
-| **carrier** | 承运商标识，落库于 `shipments.carrier`：内置 key（如 `australia_post`、`dhl`，见 `epShipmentCarrier`）或商户自定义名；API 集成 carrier 另有目录 code（如 `auspost` / `auspost_express` / `doordash` / `gopeople`），与运单上的 `carrier` 对齐或映射。 |
-| **create_mode** | 创建方式：`api`（走 carrier adapter 询价/下单）或 `manual_entry`（手选/手填 carrier + tracking_number，跳过 Quote）。**无** `carrier=manual`。 |
+| **carrier** | 承运商标识，落库于 `shipments.carrier`：内置 key（如 `australia_post`、`dhl`，见 `epShipmentCarrier`）或商户自定义名；API/CSV 集成另有目录 `code`（如 `auspost_mypost_business` / `auspost` / `doordash`），与运单上的 `carrier` 对齐或映射。 |
+| **create_mode** | 创建方式：`api`（adapter 询价/下单）、`manual_entry`（手选/手填 carrier + tracking，跳过 Quote）、`csv_export`（导出承运商导入文件；站外建单后回填 tracking）。**无** `carrier=manual`。 |
+| **booking_mode**（目录字段） | `dispatch_carriers.booking_mode`：`api` / `csv_export`；决定该目录行在打包台选中后走哪条 Confirm 路径。 |
 
 ---
 
@@ -223,10 +227,10 @@ flowchart LR
 |-------|----------|----------|------------|
 | BuildParcels | 打包台：`orderIds[]` + 勾选 / 包裹分配 | `parcelDrafts[]`（每票：orderId、lines[sourceLineId+qty]、weight、shipTo） | 否 |
 | SelectCarrier | 列表外单 carrier + 商户凭证引用 | carrierCapabilities | 否 |
-| QuotePreview | parcels + 箱型 | quoteLines（sender / receiver / price / pickup） | `manual_entry` 跳过 |
-| ConfirmBook | quoteId + idempotencyKey | bookingResult（external ids、tracking、label） | 无显式支付（一期所有 carrier 都不弹支付窗） |
-| PersistShipment | confirmed + external ids | shipmentIds[] + batchId | 否（手工也要落库） |
-| PrintLabel | shipmentIds | labelAssets / printTemplateJob | carrier 无标签则走本地打印模板 |
+| QuotePreview | parcels + 箱型 | quoteLines（sender / receiver / price / pickup） | `manual_entry` / `csv_export` 跳过 |
+| ConfirmBook | quoteId + idempotencyKey | bookingResult 或 **CSV export artifact** | 无显式支付窗；`csv_export` 不调邮局 API |
+| PersistShipment | confirmed + external ids | shipmentIds[] + batchId | 否（手工 / CSV 也要落库；CSV 可先无 tracking） |
+| PrintLabel | shipmentIds | labelAssets / printTemplateJob | 无 API 标签则本地模板；CSV 标签在 MyPost 站打印 |
 
 > 一期不做 BookingOptions 里的 `batchPickupN` / `hireHoursH`（跨单合取）。预约取货时间作为 per-booking 可选字段保留。
 
@@ -234,51 +238,124 @@ flowchart LR
 
 ## 8. 承运商范围与能力矩阵
 
-集成目录中的 API carrier（日后按阶段开放）：
+集成目录中的 carrier：
 
-- `auspost`（MyPost Business 标准，约 1–3 天）
-- `auspost_express`（Express，约 1 个工作日 / 次日）
-- `doordash`（当日短半径；Drive On-Demand）
-- `gopeople`（当日；含雇司机按时段与多单能力，但合取功能搁置）
+| code | 名称 / 用途 | booking_mode | 阶段 |
+|------|-------------|--------------|------|
+| **`auspost_mypost_business`** | Australia Post **MyPost Business（CSV）** — 无 eCommerce Partner 前的过渡 | `csv_export` | **P1 可上线** |
+| `auspost` | MyPost Business / Partners **API** 标准件（约 1–3 天） | `api` | Partner 通过后（原 P2） |
+| `auspost_express` | 同上 Express | `api` | Partner 通过后 |
+| `doordash` | DoorDash Drive On-Demand | `api` | P3 |
+| `gopeople` | GoPeople | `api` | P4 |
 
-另：**`create_mode=manual_entry`** — 不绑定上述目录 code；商户选择/填写 **具体 carrier**（`epShipmentCarrier` 或自定义名）+ **tracking_number** 落库。无平台承诺时效；跳过 Quote/API 下单。
+另：**`create_mode=manual_entry`** — 不绑定上述目录 code；任意具体 carrier + tracking 手填落库。
 
-**选 API carrier 即选固定时效**——不另建抽象 `serviceClass` 状态机。
+**选目录 carrier 即选时效/产品意图**（CSV 路径下 PP/EXP 在包裹级 `Item Delivery Service` 字段表达，见 §8.4）。
 
-| Capability | manual_entry | auspost | auspost_express | doordash | gopeople |
-|------------|--------------|---------|-----------------|----------|----------|
-| quoteApi（询价） | no | yes | yes | yes | yes |
-| explicitPayUi（显式支付窗） | no | no | no | no | no |
-| carrierLabelPdf（承运商标签） | no | yes | yes | 待对接确认 | 待对接确认 |
-| customPrintTemplate（本地模板备用） | yes | fallback | fallback | fallback | fallback |
-| trackingWebhook（轨迹/异常推送） | n/a | 必做 | 必做 | 必做 | 必做 |
-| trackingUrlTemplate（手动查件外链） | 可选 | 可选 | 可选 | 可选 | 可选 |
-| cancellableAfterHandover（交寄后可平台取消） | no | no | no | no | no |
-
-探测脚本参考：`xituan_backend/scripts/doordash-quote-test.ts`、`gopeople-quote-test.ts`、`sherpa-quote-test.ts`、`zoom2u-quote-test.ts`（Sherpa/Zoom2u 仅比价探测，**非**正式集成 carrier）。
+| Capability | manual_entry | auspost_mypost_business (CSV) | auspost / auspost_express (API) | doordash | gopeople |
+|------------|--------------|-------------------------------|----------------------------------|----------|----------|
+| quoteApi | no | no | yes | yes | yes |
+| csvExport | no | **yes** | no | no | no |
+| explicitPayUi | no | no（站外 MyPost 扣款） | no | no | no |
+| carrierLabelPdf | no | no（标签在 MyPost 站打） | yes | 待对接 | 待对接 |
+| customPrintTemplate | yes | 可选装箱单 | fallback | fallback | fallback |
+| trackingWebhook | n/a | n/a（手工回填） | 必做 | 必做 | 必做 |
+| trackingFillbackUi | 创建时填 | **确认后回填** | 下单回写 | 下单回写 | 下单回写 |
 
 ### 8.1 Adapter 与目录边界
 
 ```text
-domains/dispatch/          # orchestrator + batch 实体（新）
-domains/shipment/          # 现有票模型演进（Persist 写这里）
-carriers/auspost-mpb/      # auspost + auspost_express 共享 MPB 对接
+domains/dispatch/
+domains/shipment/
+carriers/auspost-mypost-csv/   # booking_mode=csv_export（导出 Domestic CSV）
+carriers/auspost-mpb/          # Partners API（日后）
 carriers/doordash/
 carriers/gopeople/
-carriers/manual-entry/     # create_mode=manual_entry（非 carrier code）
+carriers/manual-entry/
 ```
 
-统一 port（仅实现该 create_mode / carrier 声明的 capability）：
+统一 port（按 capability 实现）：
 
 ```text
-validateConnection | getQuotes | createBooking | getLabel | cancel | track
+validateConnection | getQuotes | createBooking | exportImportFile | getLabel | cancel | track
 ```
 
-Admin/CMS API 挂在现有 admin 认证体系下（与 `/api/admin/shipments` 同级或扩展）。
+`exportImportFile`：仅 `csv_export` carrier；输出符合 AusPost Domestic 模板表头的 **CSV**（官方流程：模板可先当 XLSX 编辑，上传前存为 CSV；西团直接导出 CSV 即可）。
+
+### 8.4 MyPost Business CSV 路径（已确认 2026-08-04）
+
+**动机：** 在未取得 AusPost eCommerce / Developer Portal Shipping 权限前，不能走 Partners Token API；商户仍可用自有 [MyPost Business](https://auspost.com.au/mypost-business/orders/order-import) 账户批量导入。
+
+**官方依据：**
+
+- 导入页：<https://auspost.com.au/mypost-business/orders/order-import>
+- 字段与流程：[Sending parcels online — CSV upload](https://auspost.com.au/business/shipping/mypost-business/sending-parcels-online-csv-upload)（Domestic CSV guide；本期仅国内）
+
+**端到端：**
+
+```mermaid
+flowchart LR
+  pack[A打包_每单独立包裹]
+  pick[选_auspost_mypost_business]
+  persist[落库票_无或空tracking]
+  export[导出Domestic_CSV]
+  upload[商户上传MyPost]
+  label[MyPost打标交寄]
+  fillback[CMS回填tracking]
+  pack --> pick --> persist --> export --> upload --> label --> fillback
+```
+
+| 步骤 | 西团 | 商户 / MyPost |
+|------|------|----------------|
+| 1 | A：按订单分箱；列表外选 **`auspost_mypost_business`** | — |
+| 2 | 包裹级填 packaging：`Item Packaging Type`（OWN_PACKAGING / AP_SATCHEL_* / AP_BOX_*）+ `Item Delivery Service`（**PP** / **EXP**）+ 重量；OWN_PACKAGING 时填 LWH(cm) | — |
+| 3 | Confirm：`create_mode=csv_export`；**先落库**每张票 + `shipment_lines` + batch；`status=ready`，tracking 可空 | — |
+| 4 | 按已落库票导出 Domestic CSV（一行一票）；附加信息见下 | 在 order-import 上传 CSV |
+| 5 | — | MyPost 内支付/打标/交寄 |
+| 6 | **回填 / 修正 tracking** 挂同一 `shipments.id`（只改运单号，不改 lines；**不**自动改 `status`） | 从 MyPost 复制运单号 |
+
+**打包信息与回填的关联（强制）：**
+
+- Confirm 时就必须写出完整的 `merchant.shipments` + `merchant.shipment_lines`。**禁止**「只导出 CSV、等回填单号再建票」。
+- 回填 / 修正：入参 `shipmentId` + `tracking_number`；**不重新分箱**；**随时可改正**已填运单号；填完 **不**自动变为 `shipped`（保持 `ready`，直至商户另操作或日后规则）。
+- CSV 与票对应：`Additional Label Information 1` **优先满足官方长度/用途**（≤50）；内容优先 `shipment_number`，空间允许再拼订单号（实现期定具体拼接，保证可对账）。
+- **批量粘贴回填**：若交互可行则做（例如按 `shipment_number` / 标签附加信息多行粘贴匹配）；否则逐票填写。
+- tracking 仍空时：B / 订单可展示「已打包，待回填运单号」及行明细。
+
+**重量与导出前校验（已确认 2026-08-04）：**
+
+- 产品有重量 → 按包裹内 lines **自动汇总**为默认 kg；**无论是否有产品总重，均允许手改**包裹重量。
+- OWN_PACKAGING：LWH 必填（手填或后续产品尺寸汇总）；点导出 / Confirm 前 **validate**，缺重量或缺条件尺寸则拦提交并 `lineErrors`。
+- 商品主数据缺重不阻塞进入打包台，但导出前必须有有效包裹重量。
+
+**包裹级声明默认值（已确认）：**
+
+- `Item Dangerous Goods Flag`、`Schedule 8 or medicinal cannabis`、`Signature on Delivery` 等：每个包裹**手动点选**；默认 **全否（NO）**。
+
+**与 `manual_entry` 区别：** CSV 路径是**结构化导出**；落库 carrier 固定映射 `epShipmentCarrier.AUSTRALIA_POST`。
+
+**与未来 `auspost` API 关系：** Partner 开通后，同批 UI 可切换到 `auspost` / `auspost_express`（`booking_mode=api`）；CSV 目录行可保留给未开 API 的商户，或日后标记 deprecated。
+
+**Domestic 必填字段（导出映射要点）：**
+
+| AusPost 列 | 西团来源 |
+|------------|----------|
+| Send From Name / Address / Suburb / State / Postcode | 发货门店 snapshot |
+| Deliver To Name / Address / Suburb / State / Postcode | 订单收件 snapshot |
+| Item Packaging Type | 包裹 packaging |
+| Item Delivery Service | 包裹 PP / EXP |
+| Item weight（kg） | 有产品重量则自动汇总；可手改；导出前必填校验 |
+| *Item length/width/height（cm） | OWN_PACKAGING 时必填；导出前校验 |
+| Additional Label Information 1 | ≤50；优先 `shipment_number`，可拼订单号（对账） |
+| Item Dangerous Goods Flag 等 | 每票手选；默认 NO |
+
+本期**不做** International 模板。上传前注意：Excel 可能吃掉邮编/手机前导 0，导出时按**文本**写出。
+
+探测脚本参考：`xituan_backend/scripts/doordash-quote-test.ts`、`gopeople-quote-test.ts`、`sherpa-quote-test.ts`、`zoom2u-quote-test.ts`（Sherpa/Zoom2u 仅比价探测，**非**正式集成 carrier）。
 
 ### 8.2 DoorDash 选用门控（已确认 2026-07-31）
 
-打包台 **仅当全部条件满足** 才展示 / 允许选 `doordash`；否则走 `auspost` / `auspost_express` / 其它：
+打包台 **仅当全部条件满足** 才展示 / 允许选 `doordash`；否则走 `auspost_mypost_business`（CSV）/ 日后 `auspost` API / 其它：
 
 | 门控 | 规则 |
 |------|------|
@@ -345,12 +422,13 @@ Admin/CMS API 挂在现有 admin 认证体系下（与 `/api/admin/shipments` �
 
 | 字段 | 说明 |
 |------|------|
-| `id` / `code` | 集成 carrier：`auspost` / `auspost_express` / `doordash` / `gopeople` / `uber_direct`…（**不含** `manual`） |
+| `id` / `code` | 含 `auspost_mypost_business`（CSV）、`auspost` / `auspost_express`（API）、`doordash` / `gopeople`…（**不含** `manual`） |
 | `name` | 展示名 |
+| `booking_mode` | `api` \| `csv_export`（见 §8.4） |
 | `supports_multi_pickup` | 是否支持一收多发 |
 | `multi_pickup_limit_default` | `1` 单发；正整数上限；`-1` 不限 |
 | `pricing_model` | `weight` / `box_size` / `max_weight_or_cubic` / `auspost_packaging_choice`… |
-| `service_codes` | jsonb，如 `["gobundle","gosameday","govip"]` |
+| `service_codes` | jsonb，如 `["gobundle","gosameday","govip"]` 或 CSV 路径 `["PP","EXP"]` |
 | `merchant_credential_slots` | jsonb：本 carrier 商户侧哪几列必填 + UI label（见映射表） |
 | `platform_credential_slots` | jsonb：平台侧必填列（无则空） |
 
@@ -379,7 +457,8 @@ Admin/CMS API 挂在现有 admin 认证体系下（与 `/api/admin/shipments` �
 
 | 场景 | `client_id` | `api_key` | `auth_token` |
 |------|-------------|-----------|--------------|
-| **商户 · AusPost MPB** | — | — | Partners token |
+| **商户 · AusPost MPB API** | — | — | Partners token |
+| **商户 · AusPost MyPost CSV** | 三列皆空（站外账号；无需西团存 token） | | |
 | **商户 · GoPeople** | — | — | Bearer API token |
 | **商户 · Uber Direct** | OAuth `client_id` | OAuth `client_secret` | `customer_id` |
 | **商户 · DoorDash D1** | `external_business_id` | `external_store_id` | — |
@@ -686,9 +765,9 @@ merchant/{merchantId}/orders/{orderId}/{orderId}__{trackingId}.pdf
 
 ## 16. 实现分期
 
-> 顺序（已确认 2026-08-02）：**P1 通用管道 + `manual_entry` → P2 AusPost 实装 → P3 DoorDash → P4 GoPeople**。  
-> 等待澳邮 eCommerce Partner 期间：**不实现 AusPost 实时询价/下单/轨迹**；只留 adapter 接口与能力位。  
-> 术语：**carrier**（不用 vendor）；**manual_entry = 创建模式**，不是 carrier code。
+> 顺序（已确认 2026-08-04）：**P1 通用管道 + `manual_entry` + `auspost_mypost_business`（CSV）→ P2 AusPost Partners API 实装 → P3 DoorDash → P4 GoPeople**。  
+> 等待澳邮 eCommerce Partner 期间：**不实现** AusPost 实时询价/下单/轨迹 API；用 **CSV 导出 + 手工回填**（§8.4）。  
+> 术语：**carrier**（不用 vendor）；`manual_entry` / `csv_export` = **创建模式**，不是 carrier code。
 
 ### 16.0 兼容性原则（全阶段共用）
 
@@ -696,69 +775,68 @@ merchant/{merchantId}/orders/{orderId}/{orderId}__{trackingId}.pdf
 
 | 层 | 约定 |
 |----|------|
-| 业务流 | 固定阶段：`BuildParcels` → `SelectCarrier` → `QuotePreview` → `ConfirmBook` → `PersistShipment` → `PrintLabel` / `GetTracking`；`manual_entry` 跳过 Quote |
-| 统一 I/O | Orchestrator 入参/出参 DTO 稳定；adapter port：`validate_connection` / `get_quotes` / `create_booking` / `get_label` / `get_tracking` / `cancel` |
-| 阶段内定制 | API carrier 在阶段内实现映射细节；不得另起一套创建流 |
-| Carrier 特有 UI | **先**列表外选定唯一 carrier；再在各订单卡的**包裹级**挂 packaging 子面板（如 AusPost flat-rate vs 自备箱）；`manual_entry` 用列表外通用面板；输出归一为 `CarrierQuoteBookParams` |
-| 轨迹查询预留 | 统一 `get_tracking`（status、events[]、carrier_tracking_url…）；P1 多为外链 + 空事件 |
+| 业务流 | 固定阶段：`BuildParcels` → `SelectCarrier` → `QuotePreview` → `ConfirmBook` → `PersistShipment` → `PrintLabel` / `GetTracking`；`manual_entry` / `csv_export` 跳过 Quote |
+| 统一 I/O | Orchestrator DTO 稳定；port 含 `export_import_file`（仅 csv_export） |
+| 阶段内定制 | 不得另起一套创建流；CSV 在 Confirm 产出文件，Persist 仍写 shipments |
+| Carrier 特有 UI | 列表外唯一 carrier；包裹级 packaging（CSV：箱型 + PP/EXP）；回填 tracking 在 B |
+| 轨迹查询预留 | 统一 `get_tracking`；P1 CSV/manual 多为外链 + 空事件 |
 
-### 16.1 一阶段详细计划（Phase 1 — 已拍板 2026-08-02）
+### 16.1 一阶段详细计划（Phase 1 — 含 MyPost CSV）
 
-**目标：** A 创建（含全量分箱）与 B 历史展示拆开；可上线路径仅 **`create_mode=manual_entry`**（具体 carrier + tracking_number）；统一管道/API/adapter 骨架；AusPost 等 stub。CMS 用新 A/B；微信仍走旧 shipment API。
+**目标：** A/B 拆分；可上线路径：① `manual_entry`；② **`auspost_mypost_business` + `create_mode=csv_export`**（导出 Domestic CSV → MyPost 导入 → 回填 tracking）。Partners API 仍 stub。微信旧 API 暂留。
 
-**P1 不做：** 产品重量尺寸/常备箱（→ P2）；AusPost/DD/GP **实装**；微信改版；标签 S3；票作废重录；名为 `manual` 的 carrier code。
+**P1 不做：** 产品主数据重量尺寸表改造可与 CSV 手填重量并存（CSV 必填重量时可在包裹级手填，不强制改商品表）；AusPost/DD/GP **API 实装**；International CSV；票作废重录；`carrier=manual`。
 
 | # | 拍板 |
 |---|------|
 | 1 | A **全量**分箱：默认非空 + `>`/`>>` + 多选订单 |
-| 2 | 产品物理量 + 常备箱 **挪 P2** |
-| 3 | 建 `dispatch_carriers` / 平台凭证 / 商户凭证表；可预置 auspost 等；探活 stub；**无 manual 种子行** |
-| 4 | `dispatch_batches` + shipments **`batch_id` 可空**；manual_entry 可无 batch 或单票一批 |
-| 5 | CMS **新 A/B 替换**创建/历史；旧 admin/微信 shipment API 暂留 |
-| 6 | B 中 READY/SHIPPED **不可改** tracking；作废+重录 P1 不做 |
-| 7 | 落库始终是 **具体 carrier + tracking_number**（`epShipmentCarrier` 或自定义）；**没有** `carrier=manual` / `carrier_code=manual` |
-| 8 | **A UX（2026-08-03）：** 批量入口常驻；每单独立产品池/包裹；列表外唯一 carrier；单订单同 layout（见 §3.1） |
+| 2 | 产品物理量一等列 + 常备箱 **主路径挪 P2**；CSV/手填允许包裹级重量修正 |
+| 3 | carrier 三表；种子含 **`auspost_mypost_business`（csv_export）**；探活 stub；无 manual 种子行；**0338 暂不强制执行**（开发机按需） |
+| 4 | `batch_id` 可空 |
+| 5 | CMS 新 A/B 挂 **订单列表 + 活动订单详情**；**暂不替换**旧 `ShipmentEditorModal`（供货单等仍可用） |
+| 6 | CSV 确认后 `status=ready`；回填 tracking **不改 status**；tracking **随时可修正**；产品归属不可改 |
+| 7 | 落库具体 carrier（CSV → `australia_post`）；无 `carrier=manual` |
+| 8 | A UX：批量常驻；每单独立池；列表外唯一 carrier；单订单同 layout |
+| 9 | MyPost CSV：先落库票+lines → 导出 → 回填同 id（§8.4） |
+| 10 | **P1 可选 carrier（2026-08-04）：** 仅 `manual_entry` + `auspost_mypost_business` |
+| 11 | **重量：** 有产品重则自动算；均可手改；导出前 validate |
+| 12 | **声明项：** 每包裹手选，默认全否 |
+| 13 | **回填：** 能批量粘贴则做；附加信息先满足官方再便利 |
+| 14 | **文案：** 「已打包，待回填运单号」等由实现定（中英） |
 
 #### P1-A 目录与增量库
 
 | # | 交付 | 要点 |
 |---|------|------|
-| A1 | Carrier 三表 | 种子：集成 carrier 行（auspost…）默认不对商户开 API；**不**建 manual carrier 行 |
-| A2 | shipments 增量 | `batch_id` 可空；可选 `create_mode` 列或由「无 external id」推断；`label_s3_key` 可空预留 |
-| A3 | `dispatch_batches` | 可选；manual_entry 单票可不建或建一批 |
+| A1 | Carrier 三表 + `booking_mode` | `0337` + `0338`：插入 `auspost_mypost_business`；API 行 `booking_mode=api` |
+| A2 | shipments 增量 | 已有；`create_mode` 可写 `csv_export` |
+| A3 | `dispatch_batches` | CSV 一批多票共享 batch，便于一次导出 |
 
 #### P1-B 管道与统一 API
 
 | # | 交付 | 要点 |
 |---|------|------|
-| B1 | Orchestrator + Port | 阶段齐全；**manual_entry adapter** 完整；API carrier stub |
-| B2 | 创建 API | A：分箱 + `create_mode=manual_entry` + carrier + tracking → 确认落库；幂等、qty、`lineErrors` |
-| B3 | 查询 API | B / 订单：列表详情 carrier+tracking；`get_tracking` 形状预留（外链 + events=[]） |
-| B4 | 订单状态 | 不新增状态；沿用 sync；`fulfillmentProgress` 派生字段 |
+| B1 | Orchestrator + Port | manual_entry + **auspost-mypost-csv**（exportImportFile）；API stub |
+| B2 | 创建 API | manual_entry 确认；csv_export 确认落库并返回/可下载 CSV |
+| B2b | 回填 API | 按 shipmentId 写/改 tracking（随时可修正；不改 status / lines） |
+| B3 | 查询 / tracking 形状 | 外链 + events=[] |
+| B4 | 订单状态 sync | 沿用现有 |
 
 #### P1-C CMS A / B
 
 | # | 交付 | 要点 |
 |---|------|------|
-| C1 | A 创建打包台 | **按订单卡隔离**产品池与包裹；统一 layout（单订单=列表仅 1 卡）；列表外**唯一** carrier；默认非空 + `>`/`>>`（订单内）；批量入口**常驻**；P1 仅 manual_entry 面板 |
-| C2 | 子面板框架 | 选中 carrier 后，**包裹级**挂 packaging（P1 可先占位；AusPost flat-rate / 自备箱 → P2） |
-| C3 | B 已发浏览 | 左列表右详情；carrier + tracking；外链；不可改；轨迹空态占位 |
-| C4 | 订单入口 | 「批量创建包裹」常驻 + 勾选进入 A；详情「新建发货」→ A；「已发包裹」→ B |
+| C1 | A 打包台 | §3.1；列表外仅 **manual_entry + auspost_mypost_business** |
+| C2 | 包裹 packaging | CSV：箱型 + PP/EXP + 重量自动/手改 + 声明默认否；导出前 validate |
+| C3 | 导出入口 | 确认后下 CSV；链到 MyPost order-import |
+| C4 | B + 回填 | 行明细只读；tracking 随时可改；支持批量粘贴（能做则做）；回填不改 status |
+| C5 | 入口 | **订单列表** + **活动订单详情**；旧 ShipmentEditorModal 暂留 |
 
 #### P1-D 验收
 
-① A 全量分箱 + manual_entry 落库；② B/订单展示 carrier+tracking；③ 不可改已发；④ `get_tracking` 形状稳定；⑤ API carrier stub 不可用且不挡 manual_entry；⑥ 微信旧录入仍可用。
+① manual_entry 落库；② MyPost CSV 导出字段符合 Domestic guide；③ 回填 tracking 后 B/订单可见；④ 不依赖 Partner；⑤ 微信旧录入仍可用。
 
-**DoD：** CMS A/B 拆分可用；仅 manual_entry 可登记真实 carrier+运单号；不依赖澳邮 Partner。
-
-```mermaid
-flowchart TD
-  P1A[P1-A 目录与 batch 增量]
-  P1B[P1-B 管道与 API]
-  P1C[P1-C CMS A全量分箱与 B]
-  P1D[P1-D 验收]
-  P1A --> P1B --> P1C --> P1D
-```
+**DoD：** CMS 可用 manual_entry **或** MyPost CSV 路径完成国内件建票与运单回填；不依赖澳邮 Partner。
 
 ### 16.2 二阶段（Phase 2 — 商品物理量 + AusPost 实装）
 
@@ -793,16 +871,13 @@ flowchart TD
 
 ## 17. 待确认 / 弱开放项
 
-> P1 分箱/A-B/manual_entry/不可改/无 `manual` carrier code 等已拍板，见 §16.1。以下多为 P2+。
+> P1 开放项已于 2026-08-04 收口（见 §16.1 拍板 1–14、§8.4）。以下多为 P2+。
 
-- DoorDash D1 商务 Gate（商户直票/商户付费）；未过则生产隐藏，demo/sandbox 仍保留。
-- 各 carrier `merchant_credential_slots` / `platform_credential_slots` 的 UI label 文案与探活 API（实现期对照官方）。
-- Uber Direct 是否进目录（表结构预留；实施分期另定）。
-- 敏感列加密方案（KMS / 应用层加密）实现期定。
-- `binpackingjs` 放置层（codebase 共享 vs 各 app 各自依赖）→ **P2+**。
-- 常备箱 `maxGrossWeightGrams` 是否启用（`tareGrams` 必填并参与计费）→ **P2**。
-- 各 carrier「不可取消」节点精确映射到官方状态名（实现期对照 API）。
-- Cutoff 黄灯（默认：文案先做，黄灯可选）→ 非 P1。
-- 投递完成 → 订单 `delivered` 的判定规则（依赖各 carrier 轨迹事件）。
-- DoorDash 物件限制清单权威来源与产品字段校验映射。
-- 票作废 + 重录流程（P1 不做；与「已发不可改」配套）。
+- DoorDash D1 商务 Gate；未过则生产隐藏。
+- Partner API 凭证 UI / 探活（P2）。
+- Uber Direct 是否进目录。
+- 敏感列加密方案。
+- `binpackingjs` / 常备箱 `maxGrossWeightGrams` → P2。
+- 票作废 + 重录（P1 不做）。
+- 投递完成 → `delivered` 判定（依赖轨迹）。
+- migration `0338`：开发机按需执行（已拍板暂不强制）。
