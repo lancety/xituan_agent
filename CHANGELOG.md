@@ -1,3 +1,20 @@
+## [3.9.0] - 2026-08-12
+
+### 📚 文档
+
+- docs(delivery): update unified dispatch pipeline design
+- docs: update OpenIM deploy notes and delivery design docs
+- docs(delivery): add unified dispatch pipeline design
+- docs(post-deploy): add merchant panel shipping refund ledger entry
+
+### 🔧 构建/配置
+
+- chore: remove one-shot partial release helper scripts
+
+### 📝 其他
+
+- doc: non -same-day auspost doc
+
 ## [3.8.3] - 2026-07-27
 
 ### 📚 文档
