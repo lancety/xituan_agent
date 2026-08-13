@@ -1,3 +1,14 @@
+## [3.9.1] - 2026-08-13
+
+### 📚 文档
+
+- docs(delivery): update unified dispatch pipeline design
+- docs: update OpenIM deploy notes and delivery design docs
+
+### 📝 其他
+
+- doc: non -same-day auspost doc
+
 ## [3.9.0] - 2026-08-12
 
 ### 📚 文档
