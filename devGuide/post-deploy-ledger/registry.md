@@ -1,6 +1,6 @@
 # Post-Deploy Registry（巡检入口）
 
-Last updated: 2026-07-25
+Last updated: 2026-08-13
 
 **日常巡检：「检查 post-deploy」** — 打开本文件，活跃表行数应为 **0** 表示无待收尾部署债务。非 0 则点击 **Entry** 查看 Gate 与勾选清单。
 
@@ -10,6 +10,7 @@ Last updated: 2026-07-25
 
 | ID | 状态 | 已部署 | 待完成 | Gate 摘要 | 下一动作 | Entry | Last updated |
 |----|------|--------|--------|-----------|----------|-------|--------------|
+| `product-storage-type-columns` | `planned` | — | Phase 1 + Phase N | 全端 Phase 1 全量后再清 jsonb / 退役 schema | 实施并部署 Phase 1 后改 `active` | [entry](./entries/2026-08-product-storage-type-columns.md) | 2026-08-13 |
 | `user-address-last-used-delivery` | `planned` | — | Phase 1 + Phase 3 | WeChat 新版本全量后再 DROP `is_default` | 实施 Phase 1 后改 `blocked` | [entry](./entries/2026-06-user-address-last-used-delivery.md) | 2026-06-02 |
 | `order-activity-scopes` | `planned` | — | Phase 1 + Phase 3 | Phase 1 prod OK; no dual-write/fallback before DROP | 实施 Phase 1 后改 `active` | [entry](./entries/2026-06-order-activity-scopes.md) | 2026-06-07 |
 | `wechat-c-order-item-list-section` | `planned` | — | Phase 1 + Phase 2 | WeChat 含 Phase 1 版本全量后再删 trade 内联列表与冗余组件 | 实施 Phase 1：6 页改用主包 `order-item-list-section` | [entry](./entries/2026-06-wechat-c-order-item-list-section.md) | 2026-06-16 |

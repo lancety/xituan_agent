@@ -298,7 +298,7 @@ CREATE INDEX idx_expires_at ON print_temp_cache(expires_at);
 ### 3. optional_fields 字段结构
 ```json
 [
-  "metadata.storageType",
+  "storageType",
   "metadata.ingredient",
   "salePrice"
 ]
@@ -512,7 +512,7 @@ CREATE TABLE print_temp_cache (
 ```sql
 -- 插入默认分类数据
 INSERT INTO print_temps (id, name, description, category, size_width, size_height, template_data, entity_type, required_fields, optional_fields, created_by) VALUES
-('default_product_label', '默认产品标签', '系统默认产品标签模板', 'product_label', 40, 30, '{}', 'product', '["name", "metadata.barCode"]', '["metadata.storageType", "metadata.ingredient"]', 'system'),
+('default_product_label', '默认产品标签', '系统默认产品标签模板', 'product_label', 40, 30, '{}', 'product', '["name", "metadata.barCode"]', '["storageType", "metadata.ingredient"]', 'system'),
 ('default_invoice_label', '默认发票标签', '系统默认发票标签模板', 'invoice_label', 50, 30, '{}', 'invoice', '["invoiceNumber", "totalAmount"]', '["notes"]', 'system');
 ```
 
