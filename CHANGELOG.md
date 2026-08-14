@@ -1,3 +1,9 @@
+## [3.9.2] - 2026-08-14
+
+### 📚 文档
+
+- docs(devGuide): add product storage type post-deploy ledger and print-temps schema
+
 ## [3.9.1] - 2026-08-13
 
 ### 📚 文档
