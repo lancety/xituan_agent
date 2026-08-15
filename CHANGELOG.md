@@ -1,3 +1,10 @@
+## [3.9.3] - 2026-08-15
+
+### 📚 文档
+
+- docs(devGuide): add non-same-day wechat compat post-deploy ledger
+- docs(devGuide): add product storage type post-deploy ledger and print-temps schema
+
 ## [3.9.2] - 2026-08-14
 
 ### 📚 文档
