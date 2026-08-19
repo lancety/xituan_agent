@@ -1,6 +1,6 @@
 # 微信小程序 Bootstrap Gate（分享冷启动）
 
-Last updated: 2026-06-13
+Last updated: 2026-08-19
 
 ## 背景
 
@@ -25,9 +25,9 @@ Tab 进首页不易复现，因为不会 eager 加载上述模块链。
 | 层 | 做法 |
 |----|------|
 | 尽早 bootstrap | `app.ts` 模块顶层 `void startBootstrap()`；`onLaunch` `await startBootstrap()` |
-| 页面 runtime | `page-mixin` 的 `onLoad` 共用同一 `startBootstrap()`，再调 `onLoadPage` |
+| 页面 runtime | `page-mixin` 的 `onLoad` **和** `onShow` 都先 `whenBootstrapReady()`，再调 `onLoadPage` / `onShowPage` |
 | 组件定义阶段 | `properties` / `data` 默认值用 **`lib/wechat-main-constants/`**（manifest sync 自 codebase），不用 `codebaseBootstrapAccessUtil` |
-| 组件 runtime | 需 `wechatNavSvgUtil` 等 bootstrap 导出的，在 `attached` / observer 里 `await startBootstrap()` 后再读 |
+| 组件 runtime | 需 `svgIconUtil` / `Commerce` / `contentUtil` 等 bootstrap 导出的，在 `attached` / observer / `pageLifetimes.show` 里先 `await whenBootstrapReady()` 或 `startBootstrap().then(...)` 再读。首页用 `hidden` 时平台区与商户区会同时 `attached`，不能依赖 `onLoadPage` 已经跑完 |
 | import 链 | util 模块顶层 bootstrap 改为 **惰性初始化** |
 
 Gate 文件：`lib/codebase-bootstrap-gate.util.ts`（仅 `startBootstrap()`，不含 Page/Component 队列）。
@@ -51,6 +51,9 @@ Gate 文件：`lib/codebase-bootstrap-gate.util.ts`（仅 `startBootstrap()`，�
 已用 wechat-main-constants 的组件：`nav-icon`、`direct-entry-home-btn`、`custom-page-nav`。
 
 守门：`npm run lint`（verify + ESLint local rules）。
+
+- `local/no-bootstrap-module-init`：禁止模块求值 / `properties.value` / `data` 默认值读 bootstrap。
+- `local/no-ungated-bootstrap-in-early-lifecycle`：禁止 `Component` 的 `attached`/`created`/`ready`、`pageLifetimes.show`、`observers` 在未 gate 时读 **runtime** bootstrap（`Commerce`、`contentUtil`、`svgBrand*`、`enSiteImageSize`、`generateAcceptLanguageHeader` 等）。不跟跨文件 util，也不把 `ep*` / `en*` enum 包（除 `enSiteImageSize`）当违规，避免误报。合法写法：同函数内先 `await whenBootstrapReady()` / `ensureReady()`，或 `startBootstrap().then(...)`，或 `if (codebaseRuntimeCacheUtil.isReady()) { ... }`。
 
 ## 验证清单
 
