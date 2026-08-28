@@ -1,3 +1,12 @@
+## [3.10.0] - 2026-08-28
+
+### 📚 文档
+
+- docs(post-deploy): add merchant customer PII restriction ledger entry
+- docs(site): document host-first storefront routing
+- docs: document ungated bootstrap early-lifecycle eslint rule
+- docs(devGuide): add non-same-day wechat compat post-deploy ledger
+
 ## [3.9.3] - 2026-08-15
 
 ### 📚 文档
