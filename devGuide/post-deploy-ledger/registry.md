@@ -1,6 +1,6 @@
 # Post-Deploy Registry（巡检入口）
 
-Last updated: 2026-08-27
+Last updated: 2026-09-01
 
 **日常巡检：「检查 post-deploy」** — 打开本文件，活跃表行数应为 **0** 表示无待收尾部署债务。非 0 则点击 **Entry** 查看 Gate 与勾选清单。
 
@@ -10,6 +10,7 @@ Last updated: 2026-08-27
 
 | ID | 状态 | 已部署 | 待完成 | Gate 摘要 | 下一动作 | Entry | Last updated |
 |----|------|--------|--------|-----------|----------|-------|--------------|
+| `shipping-service-pp-exp-alias` | `planned` | — | Phase 1 + Phase N | WeChat/Site 订单路径只传长名后再删入站 PP/EXP fallback | 实施 Phase 1：长名落库 + normalize 双读；Gate 后单独 PR 删别名 | [entry](./entries/2026-09-shipping-service-pp-exp-alias.md) | 2026-09-01 |
 | `non-same-day-wechat-compat` | `planned` | — | Phase 1 + Phase N | WeChat AusPost 结账版本全量后再删 `allowNonSameDay` | 部署 Phase 1 backend 双路径；旧端超距离回 `DELIVERY_DISTANCE_EXCEEDED` | [entry](./entries/2026-08-non-same-day-wechat-compat.md) | 2026-08-15 |
 | `product-storage-type-columns` | `planned` | — | Phase 1 + Phase N | 全端 Phase 1 全量后再清 jsonb / 退役 schema；CMS 编辑器暂保留这三项 metadata | Phase N 退役 schema 时一并隐藏 CMS metadata 字段 | [entry](./entries/2026-08-product-storage-type-columns.md) | 2026-08-14 |
 | `user-address-last-used-delivery` | `planned` | — | Phase 1 + Phase 3 | WeChat 新版本全量后再 DROP `is_default` | 实施 Phase 1 后改 `blocked` | [entry](./entries/2026-06-user-address-last-used-delivery.md) | 2026-06-02 |
