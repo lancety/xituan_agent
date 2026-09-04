@@ -1,3 +1,12 @@
+## [3.11.0] - 2026-09-04
+
+### 📚 文档
+
+- docs(post-deploy): register shipping-service PP/EXP alias ledger entry
+- docs(post-deploy): add merchant customer PII restriction ledger entry
+- docs(site): document host-first storefront routing
+- docs: document ungated bootstrap early-lifecycle eslint rule
+
 ## [3.10.0] - 2026-08-28
 
 ### 📚 文档
