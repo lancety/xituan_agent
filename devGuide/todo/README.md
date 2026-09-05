@@ -47,6 +47,13 @@ When a feature was **partially deployed** (Phase 1 live, Phase N cleanup pending
 | Gate, dual-write, DROP migration, delete API | [`post-deploy-ledger/entries/`](../post-deploy-ledger/entries/) |
 | How to split phases when designing | [`.cursor/skills/post-deploy-ledger/SKILL.md`](../../.cursor/skills/post-deploy-ledger/SKILL.md) |
 
+## Planned work (future must-do, not Phase N debt)
+
+| Concern | Where |
+|---------|--------|
+| **Scheduled / phased features not yet built** | 口令 **「检查规划」** → [`planned-work/registry.md`](../planned-work/registry.md) |
+| Detail: known facts + expected outcome | [`planned-work/entries/`](../planned-work/entries/) |
+
 Repo `todo/` items for phased cleanup **must link** to the ledger entry — do not duplicate Phase N checklists in both places. Global rule: [`agent-global-dev-rules-checklist.md` §11](../agent-global-dev-rules-checklist.md).
 
 ## English-only in todo files

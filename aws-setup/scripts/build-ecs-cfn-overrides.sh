@@ -31,7 +31,7 @@ const cfnKeys = new Set([
   'StripeSubscriptionWebhookSecret','OmiMNumber','OmiKey',
   'MultilingualSortIcu','ZhHansSortIcuCollation',
   'OpenimApiInternalUrl','OpenimApiPublicUrl','OpenimWsPublicUrl',
-  'OpenimSecret',
+  'OpenimSecret','JobCallbackSecret','JobCallbackSecretPrevious',
   'MailEnabled','MailFrom','MailReplyTo','PlatformNotifyEmails',
   'MerchantContactEmail','AwsSesRegion',
   'MinTaskCount','MaxTaskCount','TargetCPUUtilization','TargetMemoryUtilization'

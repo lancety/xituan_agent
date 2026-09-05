@@ -160,6 +160,18 @@ Parameters:
     NoEcho: true
     Default: ''
 
+  JobCallbackSecret:
+    Type: String
+    NoEcho: true
+    Default: ''
+    Description: HMAC secret for PATCH/GET /api/internal/jobs (JOB_CALLBACK_SECRET)
+
+  JobCallbackSecretPrevious:
+    Type: String
+    NoEcho: true
+    Default: ''
+    Description: Optional previous HMAC secret during rotation (JOB_CALLBACK_SECRET_PREVIOUS)
+
   MailEnabled:
     Type: String
     Default: 'false'
@@ -335,6 +347,10 @@ Resources:
                 - !Ref OpenimApiPublicUrl
             - Name: OPENIM_SECRET
               Value: !Ref OpenimSecret
+            - Name: JOB_CALLBACK_SECRET
+              Value: !Ref JobCallbackSecret
+            - Name: JOB_CALLBACK_SECRET_PREVIOUS
+              Value: !Ref JobCallbackSecretPrevious
             - Name: MAIL_ENABLED
               Value: !Ref MailEnabled
             - Name: MAIL_FROM

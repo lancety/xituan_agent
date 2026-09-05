@@ -49,5 +49,6 @@ Last updated: 2026-09-05
 
 ## 与后续阶段
 
-- **Phase C**：Normalize 写 canonical + `_w64/128/256` 后，大图仍直链 canonical；小图优先 `_w*`，缺档再 SIH 降级。
+- **Phase C1（已落地代码）**：`platform.async_jobs` + dispatcher + HMAC `/api/internal/jobs` — 见 [`async-lambda-jobs-framework.md`](./async-lambda-jobs-framework.md)。**尚未**接上传 / Normalize Lambda。
+- **Phase C2+**：Normalize 写 canonical + `_w64/128/256` 后，大图仍直链 canonical；小图优先 `_w*`，缺档再 SIH 降级。
 - **部署尾项（format 白名单 + Lambda env）**：[`post-deploy-ledger/entries/2026-09-sih-format-allowlist-webp-png.md`](./post-deploy-ledger/entries/2026-09-sih-format-allowlist-webp-png.md) — format 收紧本期不动；**部署 SIH 样本时提醒手动更新 `SIZE_OPTS`**。

@@ -112,3 +112,4 @@ flowchart TD
 - [`.cursor/rules/ai-coding-principles.mdc`](../../../.cursor/rules/ai-coding-principles.mdc) — Post-deploy phased deployment
 - [`.cursor/skills/post-deploy-ledger/SKILL.md`](../../../.cursor/skills/post-deploy-ledger/SKILL.md)
 - [Cross-repo todo 约定](../todo/README.md)
+- [Planned work（规划台账，非 Phase N）](../planned-work/README.md)

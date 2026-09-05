@@ -158,6 +158,16 @@
     "ParameterKey": "AwsSesRegion",
     "ParameterValue": "ap-southeast-2",
     "Comment": "Optional GitHub secret AWS_SES_REGION; empty falls back to S3_REGION in app"
+  },
+  {
+    "ParameterKey": "JobCallbackSecret",
+    "ParameterValue": "",
+    "Comment": "Production: set GitHub secret JOB_CALLBACK_SECRET (deploy.yml). Staging/dev CFN: fill here for 06_ecs-services.yaml"
+  },
+  {
+    "ParameterKey": "JobCallbackSecretPrevious",
+    "ParameterValue": "",
+    "Comment": "Optional GitHub secret JOB_CALLBACK_SECRET_PREVIOUS during rotation; empty = unused"
   }
 ]
 

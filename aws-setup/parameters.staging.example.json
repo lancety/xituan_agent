@@ -166,5 +166,15 @@
     "ParameterKey": "AwsSesRegion",
     "ParameterValue": "ap-southeast-2",
     "Comment": "Empty = stack region"
+  },
+  {
+    "ParameterKey": "JobCallbackSecret",
+    "ParameterValue": "",
+    "Comment": "HMAC for /api/internal/jobs — JOB_CALLBACK_SECRET"
+  },
+  {
+    "ParameterKey": "JobCallbackSecretPrevious",
+    "ParameterValue": "",
+    "Comment": "Optional JOB_CALLBACK_SECRET_PREVIOUS during rotation"
   }
 ]
