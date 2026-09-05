@@ -1,0 +1,165 @@
+# Async IMAGE_NORMALIZE jobs — SQS + DLQ + Lambda (Phase C2).
+# Deploy target: **production only**. Dev / demo use Backend inline Sharp worker
+# (no this stack; empty JOB_SQS_QUEUE_URL → imageNormalizeInlineWorker).
+# Independent of Serverless Image Handler (SIH) stacks.
+# Deploy after packaging lambda/image-normalize/image-normalize.zip (see that README).
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Xituan async IMAGE_NORMALIZE — production SQS + Sharp Lambda (not for demo EC2)'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues: [production]
+    Description: CFN stack is production-only; use Backend inline worker on demo/dev
+
+  MediaBucketName:
+    Type: String
+    Description: Existing merchant media S3 bucket (same as backend S3_BUCKET)
+
+  JobCallbackSecret:
+    Type: String
+    NoEcho: true
+    Description: HMAC secret for job callbacks (same as Backend JOB_CALLBACK_SECRET current)
+
+  CodeS3Bucket:
+    Type: String
+    Default: ''
+    Description: Optional — S3 bucket holding image-normalize.zip; empty uses inline placeholder (update code after deploy)
+
+  CodeS3Key:
+    Type: String
+    Default: ''
+    Description: Optional — S3 key of image-normalize.zip
+
+  LambdaMemoryMb:
+    Type: Number
+    Default: 1024
+    MinValue: 512
+    MaxValue: 3008
+
+  LambdaTimeoutSeconds:
+    Type: Number
+    Default: 60
+    MinValue: 10
+    MaxValue: 300
+
+Conditions:
+  HasCodeObject: !And
+    - !Not [!Equals [!Ref CodeS3Bucket, '']]
+    - !Not [!Equals [!Ref CodeS3Key, '']]
+
+Resources:
+  ImageNormalizeDlq:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub 'xituan-image-normalize-dlq-${Environment}'
+      MessageRetentionPeriod: 1209600
+
+  ImageNormalizeQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub 'xituan-image-normalize-${Environment}'
+      VisibilityTimeout: 120
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt ImageNormalizeDlq.Arn
+        maxReceiveCount: 3
+
+  ImageNormalizeLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/xituan-image-normalize-${Environment}'
+      RetentionInDays: 14
+
+  ImageNormalizeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'xituan-image-normalize-${Environment}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ImageNormalizeAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !GetAtt ImageNormalizeLogGroup.Arn
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                  - sqs:ChangeMessageVisibility
+                Resource: !GetAtt ImageNormalizeQueue.Arn
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:HeadObject
+                  - s3:DeleteObject
+                Resource: !Sub 'arn:aws:s3:::${MediaBucketName}/*'
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource: !Sub 'arn:aws:s3:::${MediaBucketName}'
+
+  ImageNormalizeFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: ImageNormalizeLogGroup
+    Properties:
+      FunctionName: !Sub 'xituan-image-normalize-${Environment}'
+      Runtime: nodejs20.x
+      Handler: handler.handler
+      MemorySize: !Ref LambdaMemoryMb
+      Timeout: !Ref LambdaTimeoutSeconds
+      Role: !GetAtt ImageNormalizeRole.Arn
+      Environment:
+        Variables:
+          JOB_CALLBACK_SECRET: !Ref JobCallbackSecret
+          MEDIA_BUCKET: !Ref MediaBucketName
+      Code: !If
+        - HasCodeObject
+        - S3Bucket: !Ref CodeS3Bucket
+          S3Key: !Ref CodeS3Key
+        - ZipFile: |
+            exports.handler = async () => {
+              throw new Error('Upload image-normalize.zip (see xituan_agent/lambda/image-normalize/README.md)');
+            };
+
+  ImageNormalizeEventSource:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt ImageNormalizeQueue.Arn
+      FunctionName: !Ref ImageNormalizeFunction
+      BatchSize: 1
+      Enabled: true
+
+Outputs:
+  JobQueueUrl:
+    Description: Set Backend env JOB_SQS_QUEUE_URL to this value
+    Value: !Ref ImageNormalizeQueue
+    Export:
+      Name: !Sub 'xituan-image-normalize-queue-url-${Environment}'
+
+  JobQueueArn:
+    Value: !GetAtt ImageNormalizeQueue.Arn
+
+  DlqUrl:
+    Value: !Ref ImageNormalizeDlq
+
+  NormalizeFunctionName:
+    Description: Optional Backend JOB_LAMBDA_FUNCTION_NAME for SYNC_INVOKE
+    Value: !Ref ImageNormalizeFunction
+    Export:
+      Name: !Sub 'xituan-image-normalize-fn-${Environment}'
+
+  NormalizeFunctionArn:
+    Value: !GetAtt ImageNormalizeFunction.Arn

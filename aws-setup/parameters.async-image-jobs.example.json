@@ -1,0 +1,35 @@
+[
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "production",
+    "Comment": "CFN stack is production-only; demo/dev use Backend inline normalize"
+  },
+  {
+    "ParameterKey": "MediaBucketName",
+    "ParameterValue": "YOUR_PRODUCTION_MEDIA_BUCKET",
+    "Comment": "Same bucket as production Backend S3_BUCKET"
+  },
+  {
+    "ParameterKey": "JobCallbackSecret",
+    "ParameterValue": "",
+    "Comment": "Same value as production Backend JOB_CALLBACK_SECRET (current)"
+  },
+  {
+    "ParameterKey": "CodeS3Bucket",
+    "ParameterValue": "",
+    "Comment": "Optional: bucket with image-normalize.zip; empty = placeholder ZipFile until update-function-code"
+  },
+  {
+    "ParameterKey": "CodeS3Key",
+    "ParameterValue": "",
+    "Comment": "e.g. lambda/image-normalize.zip"
+  },
+  {
+    "ParameterKey": "LambdaMemoryMb",
+    "ParameterValue": "1024"
+  },
+  {
+    "ParameterKey": "LambdaTimeoutSeconds",
+    "ParameterValue": "60"
+  }
+]

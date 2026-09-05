@@ -8,8 +8,9 @@ Last updated: 2026-09-05
 | **状态** | `planned` |
 | **当前已部署** | —（format 白名单**本期不动**） |
 | **待完成** | ① 部署 SIH 样本时：**手动更新 Lambda 环境变量 `SIZE_OPTS`**；② Gate 后评估去掉 SIH `jpeg/jpg` |
-| **Gate** | Normalize/回填后主路径多为 `.webp`/`.png` 且 SIH 查询不再依赖 `format=jpeg` |
+| **Gate** | C4 全量预生成完成：业务 DB/展示主 path 仅为 `.webp`/`.png`；SIH 可去掉 `jpeg/jpg`；客户端不再拼 `format=jpeg` |
 | **创建日** | 2026-09-05 |
+| **定案补记** | 2026-09-06：**终态只保留 webp + png**。过渡期 jpg 走 SIH；回填完成后**不应继续支持** jpeg/jpg 作为业务图主格式。 |
 
 ## 背景
 
@@ -18,9 +19,11 @@ Phase A SIH 样本 `validateParams` 中 `ALLOWED_IMAGE_FORMATS` 含 `jpeg` / `jp
 
 浏览器 / 微信对 **显示** webp 已基本够用，但 **白名单收紧** 必须等对象与 URL 契约切完。
 
+**终态契约（已定）：** 目录图 **webp**，logo 等 **png**；**不再**把 jpeg/jpg 当作长期支持的业务扩展名（回填 + Gate 后从 SIH 白名单与文档中移除）。
+
 另：样本 JS 默认尺寸为 `64,128,256,512,1024`；**Lambda 控制台手动环境变量 `SIZE_OPTS` 不会随代码自动变**，部署样本或改契约时必须人工改 env。
 
-**本期明确：不改 format 白名单代码。** 部署样本时再改 `SIZE_OPTS`。
+**本期明确：不改 format 白名单代码。** 部署样本时再改 `SIZE_OPTS`。回填完成后再做 Phase N。
 
 ## Phase 对照
 
@@ -28,13 +31,14 @@ Phase A SIH 样本 `validateParams` 中 `ALLOWED_IMAGE_FORMATS` 含 `jpeg` / `jp
 |-------|------|----------|------|
 | **样本部署（人工）** | 上传 `content.util.sample.*.js`；**手动设 `SIZE_OPTS=64,128,256,512,1024`**（过渡期若需兼容老端请求 2048，可临时追加 `,2048`） | pending | 缩略 SIH 正常；非法尺寸拒绝；大图直链原图 |
 | **现状（format 兼容）** | SIH 样本允许 `jpeg\|jpg\|png\|webp`；客户端按扩展名拼 format | 保持 | 现网 jpg SIH 正常 |
-| **N（format 清理，Gate 后）** | 评估并可能：样本只保留 `webp\|png`；确认无 `format=jpeg` 流量 | pending | Gate 后单独决策与 PR |
+| **N（format 清理，Gate 后）** | SIH 样本 **只保留 `webp\|png`**；去掉 jpeg/jpg；确认无 `format=jpeg` 流量 | pending | **终态：不再支持 jpeg/jpg** |
 
 ## Gate（可验证）
 
-- [ ] IMAGE_NORMALIZE（或等价）主路径新图默认 **webp**（logo 等 **png**）已上线并稳定
-- [ ] 存量回填覆盖主要业务图，或接受剩余 jpg 仅直链、不再走 SIH `format=jpeg`
-- [ ] 抽样 / 日志：SIH 请求中 `format=jpeg` 占比可忽略（或仅旧客户端可接受窗口）
+- [ ] IMAGE_NORMALIZE 新图默认 **webp**（logo 等 **png**）已上线并稳定
+- [ ] C4 全量回填：业务表主 path 已为 `.webp`/`.png`，**不以** `.jpg`/`.jpeg` 作为展示主 path
+- [ ] 抽样 / 日志：SIH 请求中 `format=jpeg` 可忽略（或仅极短兼容窗口）
+- [ ] Phase N：SIH `ALLOWED_IMAGE_FORMATS` **只留 webp|png**；文档与客户端约定同步 — **终态不再支持 jpeg/jpg**
 - [ ] WeChat / Site / CMS 已发版路径与文档一致：大图无 SIH；缩略 format 与扩展名一致
 
 ## 部署后债务（Post-deploy debt）

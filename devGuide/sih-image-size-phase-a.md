@@ -49,6 +49,8 @@ Last updated: 2026-09-05
 
 ## 与后续阶段
 
-- **Phase C1（已落地代码）**：`platform.async_jobs` + dispatcher + HMAC `/api/internal/jobs` — 见 [`async-lambda-jobs-framework.md`](./async-lambda-jobs-framework.md)。**尚未**接上传 / Normalize Lambda。
-- **Phase C2+**：Normalize 写 canonical + `_w64/128/256` 后，大图仍直链 canonical；小图优先 `_w*`，缺档再 SIH 降级。
+- **Phase C1（已落地）**：`platform.async_jobs` + dispatcher + HMAC — [`async-lambda-jobs-framework.md`](./async-lambda-jobs-framework.md)
+- **Phase C2（已落地代码/模板）**：IMAGE_NORMALIZE Lambda + `08_async_image_jobs.yaml`（需人工部署 CFN / 上传 zip）
+- **Phase C3（已接线）**：上传 enqueue + completion 回写 + `_w*` URL 优先 — [`async-lambda-jobs-framework.md`](./async-lambda-jobs-framework.md)
+- **Phase C4**：全量老图本机预生成；**终态仅 webp/png**（回填后不再支持 jpeg/jpg 主路径）— [`async-lambda-jobs-framework.md`](./async-lambda-jobs-framework.md)；SIH format 收紧见 post-deploy `sih-format-allowlist-webp-png`
 - **部署尾项（format 白名单 + Lambda env）**：[`post-deploy-ledger/entries/2026-09-sih-format-allowlist-webp-png.md`](./post-deploy-ledger/entries/2026-09-sih-format-allowlist-webp-png.md) — format 收紧本期不动；**部署 SIH 样本时提醒手动更新 `SIZE_OPTS`**。
