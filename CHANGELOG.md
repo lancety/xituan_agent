@@ -1,3 +1,9 @@
+## [3.11.1] - 2026-09-05
+
+### 📚 文档
+
+- docs(post-deploy): register shipping-service PP/EXP alias ledger entry
+
 ## [3.11.0] - 2026-09-04
 
 ### 📚 文档
