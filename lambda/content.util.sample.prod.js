@@ -45909,7 +45909,7 @@ var QueryParamMapper = class _QueryParamMapper {
   static {
     this.QUERY_PARAM_MAPPING = {
       format: { path: [], key: "toFormat" },
-      fit: { path: ["resize"], key: "fit" },
+      // fit intentionally omitted — client CSS / WeChat mode handles framing (Phase A)
       width: { path: ["resize"], key: "width", transform: zeroStringToNullInt },
       height: { path: ["resize"], key: "height", transform: zeroStringToNullInt },
       rotate: { path: [], key: "rotate", transform: stringToNullInt },
@@ -47128,23 +47128,44 @@ var SecretProvider = class {
 
 function matchSizeOpts(dimension) {
   if (!dimension) return true;
-  
-  const sizeOpts = process.env.SIZE_OPTS 
+
+  // SIH allow-list 64–1024; large preview uses original (no SIH). Env SIZE_OPTS may temporarily add 2048 for legacy clients.
+  const sizeOpts = process.env.SIZE_OPTS
     ? new Set(process.env.SIZE_OPTS.split(',').map(Number))
-    : new Set([64, 128, 256, 512, 1024]); // Default fallback
-  
-  // match size
+    : new Set([64, 128, 256, 512, 1024]); // SIH sizes only; 2048+ = original URL, not SIH
+
   return sizeOpts.has(dimension);
 }
+
+const ALLOWED_IMAGE_FORMATS = new Set(["jpeg", "jpg", "png", "webp"]);
+
+/**
+ * Strip fit (ignored); reject width/height outside SIZE_OPTS; reject unknown format.
+ * Mutates params in place when stripping fit.
+ */
 function validateParams(params) {
-  console.log("params", params)
-  let pass = true;
-  if (params?.width && matchSizeOpts(parseInt(params.width)) == false) {
-    pass = false;
-  } else if (params?.height && matchSizeOpts(parseInt(params.height)) == false) {
-    pass = false;
+  console.log("params", params);
+  if (!params) return true;
+
+  // Ignore fit query — framing is client-side (CSS object-fit / WeChat mode).
+  if (Object.prototype.hasOwnProperty.call(params, "fit")) {
+    delete params.fit;
   }
-  return pass;
+
+  if (params.width && matchSizeOpts(parseInt(params.width, 10)) === false) {
+    return false;
+  }
+  if (params.height && matchSizeOpts(parseInt(params.height, 10)) === false) {
+    return false;
+  }
+  if (params.format != null && params.format !== "") {
+    const fmt = String(params.format).toLowerCase();
+    if (!ALLOWED_IMAGE_FORMATS.has(fmt)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 // ../image-handler/index.ts
