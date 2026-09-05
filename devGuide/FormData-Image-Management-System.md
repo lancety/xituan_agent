@@ -64,7 +64,7 @@ useEffect(() => {
         if (isFullUrl) {
           url = imgPath;
         } else {
-          url = contentUtil.getContentUrlImage(currentEnv, 'images', imgPath, 128, 128);
+          url = contentUtil.getContentUrlImage(currentEnv, 'images', imgPath, enSiteImageSize.s128, enSiteImageSize.s128);
         }
         return {
           uid: imgPath || `${index}`,
@@ -535,3 +535,9 @@ const imageResult = await s3UploadManager.uploadFileToS3(
 6. **类型安全**: 使用 TypeScript 和统一的字段类型集合
 
 通过遵循本指南，可以快速实现任何需要图片管理的实体编辑功能，确保代码质量和用户体验的一致性。
+
+展示 URL 尺寸与 SIH 六档约定见 [`sih-image-size-phase-a.md`](./sih-image-size-phase-a.md)。
+
+## 相关文档
+
+- [`sih-image-size-phase-a.md`](./sih-image-size-phase-a.md) — SIH 允许边长、fit/format、渐进加载与查漏 checklist
