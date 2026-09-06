@@ -92,6 +92,7 @@ function normalizePayload(raw) {
     maxEdge: Number(raw.maxEdge) > 0 ? Number(raw.maxEdge) : DEFAULT_MAX_EDGE,
     quality: Number(raw.quality) > 0 ? Number(raw.quality) : DEFAULT_QUALITY,
     force: Boolean(raw.force),
+    variantsOnly: Boolean(raw.variantsOnly),
   };
   assertPayloadMatchesPolicy(raw, payload);
   return payload;
@@ -168,11 +169,11 @@ async function buildCanonical(input, maxEdge, format, quality) {
 }
 
 async function buildVariant(input, edge, format, quality) {
+  // Fit inside edge×edge: proportional scale, no short-edge crop (not cover).
   let pipeline = sharp(input, { failOn: 'none' })
     .rotate()
     .resize(edge, edge, {
-      fit: 'cover',
-      position: 'centre',
+      fit: 'inside',
       withoutEnlargement: true,
     });
   if (format === 'png') {
@@ -233,8 +234,11 @@ async function processOne(envelope, s3, bucketDefault, secret) {
   const contentType = payload.format === 'png' ? 'image/png' : 'image/webp';
 
   let skipped = false;
+  const variantsOnly = Boolean(payload.variantsOnly);
   if (!payload.force) {
-    const need = [canonicalKey, ...Object.values(variantKeys)];
+    const need = variantsOnly
+      ? Object.values(variantKeys)
+      : [canonicalKey, ...Object.values(variantKeys)];
     const exists = await Promise.all(need.map((k) => objectExists(s3, bucket, k)));
     if (exists.every(Boolean)) {
       skipped = true;
@@ -242,21 +246,31 @@ async function processOne(envelope, s3, bucketDefault, secret) {
   }
 
   if (!skipped) {
+    let inputKey = payload.sourceKey;
+    if (variantsOnly) {
+      const canonicalExists = await objectExists(s3, bucket, canonicalKey);
+      if (canonicalExists) {
+        inputKey = canonicalKey;
+      }
+    }
+
     const getRes = await s3.send(
-      new GetObjectCommand({ Bucket: bucket, Key: payload.sourceKey })
+      new GetObjectCommand({ Bucket: bucket, Key: inputKey })
     );
     const input = await streamToBuffer(getRes.Body);
     if (!input.length) {
-      throw new Error(`Empty source object: ${payload.sourceKey}`);
+      throw new Error(`Empty source object: ${inputKey}`);
     }
 
-    const canonicalBuf = await buildCanonical(
-      input,
-      payload.maxEdge,
-      payload.format,
-      payload.quality
-    );
-    await putBuffer(s3, bucket, canonicalKey, canonicalBuf, contentType);
+    if (!variantsOnly) {
+      const canonicalBuf = await buildCanonical(
+        input,
+        payload.maxEdge,
+        payload.format,
+        payload.quality
+      );
+      await putBuffer(s3, bucket, canonicalKey, canonicalBuf, contentType);
+    }
 
     for (const edge of payload.variants) {
       const key = variantKeys[String(edge)];

@@ -79,7 +79,7 @@ Backend 统一旁路任务：写 `platform.async_jobs` → 按环境投递 → �
 | `sourceKey` | 必填 | 源 S3 key |
 | `bucket` | Backend `S3_BUCKET` / Lambda `MEDIA_BUCKET` | 可覆盖 |
 | `format` | `webp` | logo 用 `png` |
-| `variants` | `[64,128,256]` | cover 正方形 |
+| `variants` | `[64,128,256,512]` | 等比例 fit inside（边长上限，不 crop） |
 | `maxEdge` | `2048` | canonical 最长边，保比例 |
 | `quality` | `80` | |
 | `force` | false | true 时覆盖已存在目标 |

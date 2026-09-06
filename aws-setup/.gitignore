@@ -9,3 +9,6 @@ caddy-debug.json
 cf-config.json
 cf-config-new.json
 .lambda-env.json
+
+# Local CFN deploy artifacts (secrets)
+.deploy-tmp/
