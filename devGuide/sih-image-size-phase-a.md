@@ -12,7 +12,8 @@ Last updated: 2026-09-05
 | 4096 | 仅客户端上传上限（Phase B），不是 SIH 档 |
 | `fit` | **不进 SIH URL**（样本 Lambda 亦忽略）；UI 用 CSS / 微信 `mode` |
 | `format` | 跟源路径扩展名；SIH 样本仅允许 jpeg/png/webp |
-| 渐进加载 | ~512→SIH 64+512；~1024/~2048→SIH 128 缩略 + **原图**大图 |
+| 渐进加载（**Phase A 旧口径，已由 C3/C4 取代**） | ~512→SIH 64+512；~1024/~2048→SIH 128 + 原图 |
+| 渐进加载（**C3+ / `_w512`**） | **`_w64` + `_w512`**（≈512）；≈1024/2048/4096 → `_w128` + **canonical**。前端不调用 SIH；SIH 仅后端工具。共享：`getProgressivePair` |
 
 权威实现：`site-config.enum.ts`、`content.util.ts`、`site-image-display.util.ts`；Site `site-image.util.ts`；微信 `image-preview.wechat.util.ts`。
 
@@ -21,7 +22,7 @@ Last updated: 2026-09-05
 1. 缩略 / 中栏：`getContentUrlImage` + `enSiteImageSize.s64|s128|s256|s512`（必要时 `s1024`）。
 2. 点开大图：`getPreviewImageUrl` / `getOriginalUrl` / 微信 `toPreviewUrl`（**无 SIH**）。
 3. 不要对大图拼 `?width=2048`（现网 SIZE_OPTS 也可能拒；新方案本就不该走 SIH）。
-4. 需要裁切且必须走 SIH：显式传 `fit`（PDF 等）；日常展示不要。
+4. 日常展示不要拼 SIH `fit`。PDF 商户 logo 用预生成 **png canonical** 静态直链，不走 SIH。
 
 ## 客户端上传压缩（Phase B）
 
@@ -52,5 +53,6 @@ Last updated: 2026-09-05
 - **Phase C1（已落地）**：`platform.async_jobs` + dispatcher + HMAC — [`async-lambda-jobs-framework.md`](./async-lambda-jobs-framework.md)
 - **Phase C2（已落地代码/模板）**：IMAGE_NORMALIZE Lambda + `08_async_image_jobs.yaml`（需人工部署 CFN / 上传 zip）
 - **Phase C3（已接线）**：上传 enqueue + completion 回写 + `_w*` URL 优先 — [`async-lambda-jobs-framework.md`](./async-lambda-jobs-framework.md)
-- **Phase C4**：全量老图本机预生成；**终态仅 webp/png**（回填后不再支持 jpeg/jpg 主路径）— [`async-lambda-jobs-framework.md`](./async-lambda-jobs-framework.md)；SIH format 收紧见 post-deploy `sih-format-allowlist-webp-png`
+- **Phase C4**：全量老图本机预生成；**终态仅 webp/png** — 同上；展示渐进为 **`_w64` + `_w512`** / 更大用 canonical；SIH 仅后端工具
+- **域名拆分**：[`media-cdn-sih-domain-split.md`](./media-cdn-sih-domain-split.md) — `media`/`wechatMedia`→S3 展示；`SIH`/`wechatSIH`→现 SIH CF
 - **部署尾项（format 白名单 + Lambda env）**：[`post-deploy-ledger/entries/2026-09-sih-format-allowlist-webp-png.md`](./post-deploy-ledger/entries/2026-09-sih-format-allowlist-webp-png.md) — format 收紧本期不动；**部署 SIH 样本时提醒手动更新 `SIZE_OPTS`**。

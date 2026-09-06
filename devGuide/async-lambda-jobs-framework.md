@@ -37,9 +37,19 @@ Backend 统一旁路任务：写 `platform.async_jobs` → 按环境投递 → �
 | `offer_header_image` / `offer_featured_images` | `offers.header_image` / `featured_images[]` |
 | `preorder_header_image` / `preorder_carousel_images` | `preorder_promotes` 头图/轮播 |
 | `product_preset_preview` | `product_custom_presets.preview_image_path` |
+| `cart_note_images` | 购物车备注图（Site/微信 `upload-images`；`entityId=userId`，可无 merchantId） |
+| `order_note_images` | 下单转移后的订单行备注图（`entityId=orderItemId`） |
+| `user_avatar` | 用户头像（Site/微信；`entityId=userId`，可无 merchantId） |
+| `expense_receipt` | CMS 费用收据图 |
+| `print_temp_image` | CMS 打印模板图（`format: png`；path 常嵌在模板 JSON，completion 可不回写） |
+| `openim_chat_image` | OpenIM 聊天**图片**附件（`im.message_attachments`；跳过 gif；PDF/文件不 enqueue） |
 
-展示（**过渡期**）：`.webp`/`.png` → 优先直链 `_w*`；`.jpg`/`.jpeg` → 仍走 SIH。  
-**不做** 展示层 `onError`→SIH（缺 `_w*` 的短暂 404 可接受；C4 全量预生成后消失，漏网再补预生成）。  
+**覆盖原则（CMS / Site / 小程序 / Platform）：** 凡上传到业务/用户/IM S3 的**图片**均应 `enqueue`。PDF 与其它非图片文件**不**走 IMAGE_NORMALIZE。Platform 当前无图片上传入口，新增时同样接线。
+
+展示（**过渡期**）：`.webp`/`.png` → 优先直链 `_w*`（含 **`_w512`**）；`.jpg`/`.jpeg` → 仍可能走 SIH（**Gate Phase N 清理**）。  
+渐进加载：**`_w64` + `_w512`**（≈512）；更大展示 → `_w128` + **canonical**（暂不补 512–2048 中间档）。契约：`getProgressivePair`。  
+**前端不暴露 SIH**；需要时由后端把 SIH/Sharp 当处理工具。  
+**不做** 展示层 `onError`→SIH。
 **终态（C4 + Gate）：业务图只保留 webp / png**；不再支持 jpeg/jpg 主路径。见 post-deploy [`sih-format-allowlist-webp-png`](./post-deploy-ledger/entries/2026-09-sih-format-allowlist-webp-png.md)。
 
 ## 状态机
@@ -74,7 +84,7 @@ Backend 统一旁路任务：写 `platform.async_jobs` → 按环境投递 → �
 | `quality` | `80` | |
 | `force` | false | true 时覆盖已存在目标 |
 
-命名：源 `…/foo.jpg` → `…/foo.webp` + `…/foo_w64.webp` 等。
+命名：源 `…/foo.jpg` → `…/foo.webp` + `…/foo_w64.webp` / `_w128` / `_w256` / **`_w512`** 等。
 
 成功 `result`：`{ sourceKey, canonicalKey, variants, skipped? }`。
 
@@ -138,5 +148,6 @@ Backend 统一旁路任务：写 `platform.async_jobs` → 按环境投递 → �
 ## 相关文档
 
 - [SIH Phase A/B](./sih-image-size-phase-a.md)
+- [媒体 CDN 与 SIH 域名拆分清单](./media-cdn-sih-domain-split.md)（`media`/`wechatMedia`→S3 展示；`SIH`/`wechatSIH`→后端工具）
 - [Planned work 台账](./planned-work/README.md)
 - [Post-deploy ledger](./post-deploy-ledger/README.md)

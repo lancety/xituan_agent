@@ -64,7 +64,7 @@ useEffect(() => {
         if (isFullUrl) {
           url = imgPath;
         } else {
-          url = contentUtil.getContentUrlImage(currentEnv, 'images', imgPath, enSiteImageSize.s128, enSiteImageSize.s128);
+          url = contentUtil.getContentUrlImage(currentEnv, 'media', imgPath, enSiteImageSize.s128, enSiteImageSize.s128);
         }
         return {
           uid: imgPath || `${index}`,
