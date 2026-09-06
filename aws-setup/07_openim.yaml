@@ -180,7 +180,7 @@ Resources:
           KAFKA_IMAGE=bitnamilegacy/kafka:3.5.1
           MINIO_IMAGE=minio/minio:RELEASE.2024-01-11T07-46-16Z
           ETCD_IMAGE=bitnamilegacy/etcd:3.5.13
-          OPENIM_SERVER_IMAGE=openim/openim-server:v3.11.1-patch.12
+          OPENIM_SERVER_IMAGE=openim/openim-server:v3.12.0-patch.12
           OPENIM_CHAT_IMAGE=openim/openim-chat:v1.8.4-patch.2
           MONGO_ADDRESS=mongo:27017
           MONGO_USERNAME=openIM
@@ -200,7 +200,7 @@ Resources:
           OPENIM_SECRET=${OpenimSecret}
           OPENIM_API_PORT=10002
           OPENIM_MSG_GATEWAY_PORT=10001
-          OPENIM_WEB_FRONT_IMAGE=openim/openim-web-front:release-v3.11.1
+          OPENIM_WEB_FRONT_IMAGE=openim/openim-web-front:release-v3.12.0
           OPENIM_ADMIN_FRONT_IMAGE=openim/openim-admin-front:release-v1.8.4-patch.2
           OPENIM_WEB_FRONT_PORT=11001
           OPENIM_ADMIN_FRONT_PORT=11002

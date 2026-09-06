@@ -1,3 +1,15 @@
+## [3.12.0] - 2026-09-06
+
+### 📚 文档
+
+- docs(devGuide): image normalize policy backfill and Lambda withoutEnlargement
+- docs: lowercase imagesih hostnames in CDN checklist
+- docs: media/imageSIH CDN hostname split checklist
+- docs(agent): IMAGE_NORMALIZE C2/C3 lambda, CFN stub, and backfill planned work.
+- docs(devGuide): async jobs C1 framework, planned-work ledger, JobCallbackSecret CFN
+- docs(devGuide): SIH SIZE_OPTS post-deploy ledger and Phase B notes
+- docs(devGuide): SIH Phase A image size contract and gallery sizes
+
 ## [3.11.1] - 2026-09-05
 
 ### 📚 文档
