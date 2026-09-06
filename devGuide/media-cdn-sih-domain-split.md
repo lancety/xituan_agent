@@ -94,3 +94,4 @@ wechatSIH:   https://imagesih-dev.lancety.com
 - [SIH Phase A / 渐进加载](./sih-image-size-phase-a.md)
 - [Async Lambda / IMAGE_NORMALIZE](./async-lambda-jobs-framework.md)
 - [C4 全量回填](./planned-work/entries/2026-09-image-normalize-full-backfill.md)
+- 按类型预生成尺寸：`IMAGE_NORMALIZE_VARIANT_POLICY`（codebase）；取图用 `getContentUrlImageForKind`；改表 → 预生成/`--prune-orphans` → 再改 UI

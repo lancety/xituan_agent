@@ -2,7 +2,7 @@
   "name": "xituan-image-normalize",
   "version": "1.0.0",
   "private": true,
-  "description": "IMAGE_NORMALIZE Lambda — Sharp canonical + _w64/_w128/_w256, HMAC job callback",
+  "description": "IMAGE_NORMALIZE Lambda — Sharp canonical + _w64/_w128/_w256/_w512, HMAC job callback",
   "main": "handler.js",
   "engines": {
     "node": ">=20"

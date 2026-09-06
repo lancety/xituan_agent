@@ -10,9 +10,69 @@ const crypto = require('crypto');
 const { S3Client, GetObjectCommand, PutObjectCommand, HeadObjectCommand } = require('@aws-sdk/client-s3');
 const sharp = require('sharp');
 
-const DEFAULT_VARIANTS = [64, 128, 256];
+const DEFAULT_VARIANTS = [64, 128, 256, 512];
 const DEFAULT_MAX_EDGE = 2048;
 const DEFAULT_QUALITY = 80;
+
+/**
+ * Keep in sync with xituan_codebase IMAGE_NORMALIZE_VARIANT_POLICY.
+ * Keys = epImageNormalizeBindKind values.
+ */
+const VARIANT_POLICY = {
+  product_images: { variants: [64, 128, 256, 512], format: 'webp' },
+  news_images: { variants: [64, 128, 256, 512], format: 'webp' },
+  merchant_logo: { variants: [64, 128, 256, 512], format: 'png' },
+  merchant_logo_rect: { variants: [64, 128, 256, 512], format: 'png' },
+  offer_header_image: { variants: [64, 128, 256, 512], format: 'webp' },
+  offer_featured_images: { variants: [64, 128, 256, 512], format: 'webp' },
+  preorder_header_image: { variants: [64, 128, 256, 512], format: 'webp' },
+  preorder_carousel_images: { variants: [64, 128, 256, 512], format: 'webp' },
+  product_preset_preview: { variants: [64, 128, 256, 512], format: 'webp' },
+  cart_note_images: { variants: [64, 128, 256, 512], format: 'webp' },
+  order_note_images: { variants: [64, 128, 256, 512], format: 'webp' },
+  user_avatar: { variants: [64, 128, 256, 512], format: 'webp' },
+  expense_receipt: { variants: [256], format: 'webp' },
+  print_temp_image: { variants: [64, 128, 256, 512], format: 'png' },
+  openim_chat_image: { variants: [64, 128, 256, 512], format: 'webp' },
+};
+
+function sortedUnique(edges) {
+  return [...new Set(edges.map((n) => Math.round(Number(n))).filter((n) => n > 0))].sort(
+    (a, b) => a - b
+  );
+}
+
+function edgesEqual(a, b) {
+  const sa = sortedUnique(a);
+  const sb = sortedUnique(b);
+  if (sa.length !== sb.length) {
+    return false;
+  }
+  return sa.every((v, i) => v === sb[i]);
+}
+
+function assertPayloadMatchesPolicy(raw, payload) {
+  const bind = raw && typeof raw.bind === 'object' ? raw.bind : null;
+  const kind = bind && typeof bind.kind === 'string' ? bind.kind : '';
+  if (!kind) {
+    return;
+  }
+  const entry = VARIANT_POLICY[kind];
+  if (!entry) {
+    throw new Error(`[image-normalize-policy] missing Lambda policy for kind=${kind}`);
+  }
+  if (!edgesEqual(payload.variants, entry.variants)) {
+    throw new Error(
+      `[image-normalize-policy] job variants=[${sortedUnique(payload.variants).join(',')}] ` +
+        `do not match policy for kind=${kind} expected=[${entry.variants.join(',')}]`
+    );
+  }
+  if (payload.format !== entry.format) {
+    throw new Error(
+      `[image-normalize-policy] format=${payload.format} does not match policy for kind=${kind} expected=${entry.format}`
+    );
+  }
+}
 
 function normalizePayload(raw) {
   const sourceKey = typeof raw.sourceKey === 'string' ? raw.sourceKey.trim() : '';
@@ -24,7 +84,7 @@ function normalizePayload(raw) {
     Array.isArray(raw.variants) && raw.variants.length > 0
       ? raw.variants.map((n) => Number(n)).filter((n) => Number.isFinite(n) && n > 0)
       : [...DEFAULT_VARIANTS];
-  return {
+  const payload = {
     sourceKey,
     bucket: typeof raw.bucket === 'string' && raw.bucket.trim() ? raw.bucket.trim() : undefined,
     format,
@@ -33,6 +93,8 @@ function normalizePayload(raw) {
     quality: Number(raw.quality) > 0 ? Number(raw.quality) : DEFAULT_QUALITY,
     force: Boolean(raw.force),
   };
+  assertPayloadMatchesPolicy(raw, payload);
+  return payload;
 }
 
 function deriveOutputKeys(sourceKey, format, variants) {
@@ -108,7 +170,11 @@ async function buildCanonical(input, maxEdge, format, quality) {
 async function buildVariant(input, edge, format, quality) {
   let pipeline = sharp(input, { failOn: 'none' })
     .rotate()
-    .resize(edge, edge, { fit: 'cover', position: 'centre' });
+    .resize(edge, edge, {
+      fit: 'cover',
+      position: 'centre',
+      withoutEnlargement: true,
+    });
   if (format === 'png') {
     return pipeline.png().toBuffer();
   }

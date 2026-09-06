@@ -73,7 +73,7 @@ async function runFixture() {
   const payload = normalizePayload({
     sourceKey,
     format: 'webp',
-    variants: [64, 128, 256],
+    variants: [64, 128, 256, 512],
     maxEdge: 2048,
   });
   const { canonicalKey, variantKeys } = deriveOutputKeys(
