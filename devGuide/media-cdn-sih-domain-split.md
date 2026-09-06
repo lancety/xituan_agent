@@ -7,11 +7,11 @@ Last updated: 2026-09-06
 | key | 用途 | DNS 主机（xituan / lancety） | Origin |
 |-----|------|------------------------------|--------|
 | `media` / `wechatMedia` | **前端展示** | **`media[-env].…`**（代码 canonical）；**`images[-env].…` 为同 CF 别名** | **S3** 直读 |
-| `SIH` / `wechatSIH` | **仅后端** SIH | **`imageSIH[-env].…`** | SIH CF → APIGW → Lambda |
+| `SIH` / `wechatSIH` | **仅后端** SIH | **`imagesih[-env].…`** | SIH CF → APIGW → Lambda |
 
 - 前端只拼 `media` / `wechatMedia`，**不带** SIH query，**不引用** `SIH` / `wechatSIH`。
 - 已废弃 siteDomain key：`images` / `wechatImages`（DNS 上 `images-*` 仍可作 `media` 别名）。
-- SIH **不再**挂在 `images-*`；证书与 CF alternate domain 改为 `imageSIH-*`。
+- SIH **不再**挂在 `images-*`；证书与 CF alternate domain 改为 `imagesih-*`。
 
 **不是**：把 `media`/`images`「留给」SIH。静态与 SIH 主机分离。
 
@@ -19,12 +19,12 @@ Last updated: 2026-09-06
 
 | 环境 | 静态（S3） | SIH |
 |------|------------|-----|
-| dev | `media-dev.xituan.com.au` / `media-dev.lancety.com`（`images-dev.*` 别名） | `imageSIH-dev.xituan.com.au` / `imageSIH-dev.lancety.com` |
-| staging | `media-staging.*`（`images-staging.*` 别名） | `imageSIH-staging.*` |
-| demo | `media-demo.*`（`images-demo.*` 别名） | `imageSIH-demo.*` |
-| prod | `media.xituan.com.au` / `media.lancety.com`（`images.*` 别名） | `imageSIH.xituan.com.au` / `imageSIH.lancety.com` |
+| dev | `media-dev.xituan.com.au` / `media-dev.lancety.com`（`images-dev.*` 别名） | `imagesih-dev.xituan.com.au` / `imagesih-dev.lancety.com` |
+| staging | `media-staging.*`（`images-staging.*` 别名） | `imagesih-staging.*` |
+| demo | `media-demo.*`（`images-demo.*` 别名） | `imagesih-demo.*` |
+| prod | `media.xituan.com.au` / `media.lancety.com`（`images.*` 别名） | `imagesih.xituan.com.au` / `imagesih.lancety.com` |
 
-微信合法域名需含 **`media-*`（及过渡期 `images-*`）**；勿把 `imageSIH-*` 配给小程序展示。
+微信合法域名需含 **`media-*`（及过渡期 `images-*`）**；勿把 `imagesih-*` 配给小程序展示。
 
 ## 命名：为何用 `media` 而不是拆 audios/videos
 
@@ -41,7 +41,7 @@ Last updated: 2026-09-06
       → 无 APIGW / 无 SIH Lambda
 
 后端需要即时变换时
-  → imageSIH-*（SIH / wechatSIH）
+  → imagesih-*（SIH / wechatSIH）
       → SIH CF → APIGW → Lambda → S3
 
 PDF 商户 logo：png canonical → getContentUrl(env, 'media', path)
@@ -52,26 +52,26 @@ PDF 商户 logo：png canonical → getContentUrl(env, 'media', path)
 ## DNS / CF 落地
 
 1. [ ] 静态 CF：alternate domain 含 `media-*` + `images-*`（别名），origin = S3，**无** SIH Function
-2. [ ] SIH CF：alternate domain 改为 **`imageSIH-*`**（从旧 `images-*` 迁出）；证书覆盖
+2. [ ] SIH CF：alternate domain 改为 **`imagesih-*`**（从旧 `images-*` 迁出）；证书覆盖
 3. [ ] 微信 download 合法域名更新 `media-*`（lancety）
-4. [ ] 验证：静态无 `x-amz-apigw-id`；`imageSIH` 仍有 SIH 行为
+4. [ ] 验证：静态无 `x-amz-apigw-id`；`imagesih` 仍有 SIH 行为
 
 ### Codebase
 
 - [x] `siteDomain.media` / `wechatMedia` → `https://media…`
-- [x] `siteDomain.SIH` / `wechatSIH` → `https://imageSIH…`
+- [x] `siteDomain.SIH` / `wechatSIH` → `https://imagesih…`
 - [x] 各端展示 key → `media` / `wechatMedia`；PDF 静态直链
 
 ### 发布顺序
 
-1. [ ] DNS/证书：`media-*` + `images-*` 别名 → S3 CF；`imageSIH-*` → SIH CF
+1. [ ] DNS/证书：`media-*` + `images-*` 别名 → S3 CF；`imagesih-*` → SIH CF
 2. [ ] 发 codebase + 客户端/后端
 3. [ ] 微信合法域名加 `media-*`
 4. [ ] 验收
 
 | 风险 | 缓解 |
 |------|------|
-| 代码已指 `media-*` / `imageSIH-*` 但 DNS 未好 | 先配 DNS/证书再发版，或短暂回滚 URL |
+| 代码已指 `media-*` / `imagesih-*` 但 DNS 未好 | 先配 DNS/证书再发版，或短暂回滚 URL |
 | 微信未加 `media-*` | 发版前加合法域名；过渡可保留 `images-*` 别名 |
 
 ---
@@ -81,8 +81,8 @@ PDF 商户 logo：png canonical → getContentUrl(env, 'media', path)
 ```text
 media:       https://media-dev.xituan.com.au
 wechatMedia: https://media-dev.lancety.com
-SIH:         https://imageSIH-dev.xituan.com.au
-wechatSIH:   https://imageSIH-dev.lancety.com
+SIH:         https://imagesih-dev.xituan.com.au
+wechatSIH:   https://imagesih-dev.lancety.com
 ```
 
 （DNS：`images-dev.*` CNAME/别名到与 `media-dev.*` 同一静态 CF。）
