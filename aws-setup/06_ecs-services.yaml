@@ -269,6 +269,23 @@ Resources:
                   - ssmmessages:OpenControlChannel
                   - ssmmessages:OpenDataChannel
                 Resource: '*'
+        # Async job workers (08_async_image_jobs): Backend enqueue + SYNC_INVOKE
+        - PolicyName: async-image-jobs-access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: ImageNormalizeSqsEnqueue
+                Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                  - sqs:GetQueueUrl
+                  - sqs:GetQueueAttributes
+                Resource: !Sub 'arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:xituan-image-normalize-${Environment}'
+              - Sid: ImageNormalizeLambdaSyncInvoke
+                Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:xituan-image-normalize-${Environment}'
 
   BackendTaskDefinition:
     Type: AWS::ECS::TaskDefinition

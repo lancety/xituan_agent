@@ -156,7 +156,7 @@ Outputs:
     Value: !Ref ImageNormalizeDlq
 
   NormalizeFunctionName:
-    Description: Optional Backend JOB_LAMBDA_FUNCTION_NAME for SYNC_INVOKE
+    Description: Informational — Backend derives SYNC_INVOKE name as xituan-image-normalize-${Environment} from NODE_ENV (no JOB_LAMBDA_FUNCTION_NAME)
     Value: !Ref ImageNormalizeFunction
     Export:
       Name: !Sub 'xituan-image-normalize-fn-${Environment}'

@@ -1,6 +1,6 @@
 # Async Lambda Jobs 框架（Phase C1 + C2）
 
-Last updated: 2026-09-05
+Last updated: 2026-09-07
 
 ## 结论
 
@@ -8,26 +8,38 @@ Backend 统一旁路任务：写 `platform.async_jobs` → 按环境投递 → �
 
 | 环境 | IMAGE_NORMALIZE 怎么跑 |
 |------|------------------------|
-| **production** | CFN：SQS → Lambda（Sharp）→ HMAC `PATCH /api/internal/jobs/:jobId` |
-| **dev / demo** | **无 CFN**；`JOB_SQS_QUEUE_URL` 空 → Backend **inline** Sharp（同进程，直接 `JobStatusService`） |
-| 本地手工 | 可选 `local-invoke.js`（agent handler + HMAC），或走 `dispatch` 触发 inline |
+| **production** | CFN：SQS → Lambda（Sharp）→ HMAC `PATCH /api/internal/jobs/:jobId`；**上传 API 默认 SYNC_INVOKE**（按 `NODE_ENV` 拼 `xituan-{slug}-{env}` RequestResponse；dev/demo inline await）+ **waitForTerminal** |
+| **dev / demo** | **无 CFN**；`JOB_SQS_QUEUE_URL` 空 → Backend **inline** Sharp；上传路径 **await run**（同步），异步路径仍 `schedule` |
+| 本地手工 | 可选 `local-invoke.js`（agent handler + HMAC），或走 `dispatch` |
+
+| delivery | 语义 |
+|----------|------|
+| **`SYNC_INVOKE`** | 同步：worker 跑完并完成 status 回调（含 completion hook）后，`dispatch` 才返回；上传默认 |
+| **`ASYNC_QUEUE`** | 异步：投递 SQS / inline `schedule` 后立刻返回（fire-and-forget）；回填等后台路径 |
+
+`dispatch({ waitForTerminal: true })`：无论 delivery，都等到 job 终态（SUCCEEDED/FAILED/DEAD）再返回（上传与 SYNC 一起用）。
 
 | 阶段 | 状态 |
 |------|------|
 | **C1** | 表、dispatcher、HMAC、双 key、投递客户端 |
 | **C2** | payload + Lambda 代码 + **production-only** CFN；dev/demo inline |
-| **C3** | 上传 enqueue（product/news/logo）+ completion 回写 canonical + 删临时；URL 优先 `_w*` |
-| C4+ | 存量回填：**桶内全部业务老图**预生成 canonical + `_w*`（**不再排除**活动头图/轮播、新闻、`noteImages` 等） |
+| **C3** | 上传 enqueue（product/news/logo）+ completion 回写 canonical；**上传默认 sync**；URL 优先 `_w*` |
+| C4+ | 存量回填：**桶内全部业务老图**预生成 canonical + `_w*`（**`mode: 'async'`**，不阻塞 HTTP） |
 
 ## C3 上传接线
 
-上传仍立刻返回**临时/源 path**（写库）→ `imageNormalizeEnqueueUtil` → inline（dev/demo）或 SQS（prod）。
+`imageNormalizeEnqueueUtil`（唯一入口）：
+
+- **默认 `mode: 'sync'`**：`SYNC_INVOKE` + `waitForTerminal` → API 在 `_w*` 写好、completion 跑完后再 `res.json`（前端可立刻打 `_w512`）
+- **`mode: 'async'`**：`ASYNC_QUEUE` fire-and-forget（仅回填 / 明确不需要立刻展示变体的路径）
+
+上传仍先写 **源 path** 入库存 S3 → sync normalize → completion 按需把业务字段换成 `canonicalKey`。
 
 成功后 `imageNormalizeCompletionHook`：
 
 1. 按 `payload.bind` 把业务字段里的 `sourceKey` 换成 `canonicalKey`
 2. **暂不删**临时源（避免误删 `_w*` / 前端仍握着旧 path）；用户删图时用 `removeCatalogImageKeysFromS3` 清兄弟 key
-3. 展示：`getContentUrlImage` 对 64/128/256 + `.webp`/`.png` 直链 `_w*`
+3. 展示：`getContentUrlImage` 对 64/128/256/512 + `.webp`/`.png` 直链 `_w*`
 
 | bind.kind | 实体 |
 |-----------|------|
@@ -94,9 +106,9 @@ Backend 统一旁路任务：写 `platform.async_jobs` → 按环境投递 → �
 |------|------|
 | `JOB_CALLBACK_SECRET` | 生产 Lambda HMAC；inline 不需要 |
 | `JOB_CALLBACK_SECRET_PREVIOUS` | Backend 轮换验签 |
-| `JOB_SQS_QUEUE_URL` | **仅 production**（CFN Output）；dev/demo **留空** |
-| `JOB_IMAGE_NORMALIZE_INLINE` | 可选；`true` 强制 inline；默认=无 queue 时 inline |
-| `JOB_LAMBDA_FUNCTION_NAME` | 可选 `SYNC_INVOKE` |
+| `JOB_SQS_QUEUE_URL` | **仅 production**（CFN Output）；dev/demo **留空**；异步 `ASYNC_QUEUE` 用 |
+| `JOB_IMAGE_NORMALIZE_INLINE` | 可选；`true` 强制 inline（sync/async）；默认=无 queue 时 async inline schedule |
+| `NODE_ENV` | 与 CFN `Environment` 一致（ECS 已注入）。`production`/`staging` → SYNC 调 `xituan-{jobSlug}-{NODE_ENV}`；`development`/`demo` → inline |
 
 ### Demo（单 EC2）
 
@@ -109,7 +121,7 @@ Backend 统一旁路任务：写 `platform.async_jobs` → 按环境投递 → �
 1. 打 Linux zip：[`lambda/image-normalize/README.md`](../lambda/image-normalize/README.md)  
 2. 部署 [`aws-setup/08_async_image_jobs.yaml`](../aws-setup/08_async_image_jobs.yaml)（`Environment=production`）  
 3. Output `JobQueueUrl` → GHA secret `JOB_SQS_QUEUE_URL`  
-4. Lambda 与 Backend 同一 `JOB_CALLBACK_SECRET`
+4. Lambda 与 Backend 同一 `JOB_CALLBACK_SECRET`；Backend `NODE_ENV` = CFN `Environment`（无需再配 Lambda 函数名）
 
 ## 本地联调
 
@@ -129,6 +141,7 @@ Backend 统一旁路任务：写 `platform.async_jobs` → 按环境投递 → �
 | 路径 | 作用 |
 |------|------|
 | `shared/jobs/image-normalize.inline.worker.ts` | dev/demo inline |
+| `shared/jobs/job-lambda-target.util.ts` | SYNC Lambda 名：`xituan-{slug}-{NODE_ENV}` |
 | `xituan_agent/lambda/image-normalize/` | 生产 Lambda 源码 |
 | `aws-setup/08_async_image_jobs.yaml` | **production only** |
 | `migrations/1710000000352_async_jobs.sql` | 表 |
@@ -141,7 +154,7 @@ Backend 统一旁路任务：写 `platform.async_jobs` → 按环境投递 → �
 
 | 阶段 | 内容 |
 |------|------|
-| **C3** | 上传 enqueue（product/news/logo）+ completion；`_w*` URL 优先 — 已接线，测稳后再上 production CFN |
+| **C3** | 上传 enqueue + completion；**默认 sync waitForTerminal**；`_w*` URL 优先 |
 | **C4** | 存量回填：本机批处理全量老图 → canonical + `_w*`；DB 对齐 webp/png；**终态不再保留 jpeg/jpg 业务主路径** |
 | **D** | PDF 异步 |
 
