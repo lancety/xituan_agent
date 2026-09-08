@@ -318,9 +318,10 @@ flowchart LR
 
 - Confirm 时就必须写出完整的 `merchant.shipments` + `merchant.shipment_lines`。**禁止**「只导出 CSV、等回填单号再建票」。
 - 回填 / 修正：入参 `shipmentId` + `tracking_number`；**不重新分箱**；**随时可改正**已填运单号；填完 **不**自动变为 `shipped`（保持 `ready`，直至商户另操作或日后规则）。
-- CSV 与票对应：`Additional Label Information 1` **优先满足官方长度/用途**（≤50）；内容优先 `shipment_number`，空间允许再拼订单号（实现期定具体拼接，保证可对账）。
+- CSV 与票对应：`Additional Label Information 1` **优先满足官方长度/用途**（≤50）；格式 `{shipment_number12}_{orderShort12}[_{activitySeq}]`（订单短码=订单号去 `XT`；活动序号有则带）。**匹配仅用第一段** `shipment_number`；订单/序号仅人眼与插件展示（`displayLabel`：≥3 段取末段序号，2 段取订单短码）。
 - **批量粘贴回填**：若交互可行则做（例如按 `shipment_number` / 标签附加信息多行粘贴匹配）；否则逐票填写。
 - tracking 仍空时：B / 订单可展示「已打包，待回填运单号」及行明细。
+- **插件同步（Chrome）**：`GET pending-shipments` → 无 tracking 按 ref 第一段 fillback；有 tracking 且 MyPost 为 Delivered 则 mark-delivered。认证走商户 Integration Key → extension JWT（非 webhook_key）。
 
 **重量与导出前校验（已确认 2026-08-04）：**
 
@@ -346,7 +347,7 @@ flowchart LR
 | Item Delivery Service | 包裹 PP / EXP |
 | Item weight（kg） | 有产品重量则自动汇总；可手改；导出前必填校验 |
 | *Item length/width/height（cm） | OWN_PACKAGING 时必填；导出前校验 |
-| Additional Label Information 1 | ≤50；优先 `shipment_number`，可拼订单号（对账） |
+| Additional Label Information 1 | ≤50；`{shipment12}_{order12}[_{activitySeq}]`；匹配第一段 |
 | Item Dangerous Goods Flag 等 | 每票手选；默认 NO |
 
 本期**不做** International 模板。上传前注意：Excel 可能吃掉邮编/手机前导 0，导出时按**文本**写出。
