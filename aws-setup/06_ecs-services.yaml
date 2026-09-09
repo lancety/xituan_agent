@@ -286,6 +286,14 @@ Resources:
                 Action:
                   - lambda:InvokeFunction
                 Resource: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:xituan-image-normalize-${Environment}'
+              # Async EXPENSE_RECEIPT_OCR (09_expense_receipt_ocr_jobs): Backend enqueue only
+              - Sid: ExpenseReceiptOcrSqsEnqueue
+                Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                  - sqs:GetQueueUrl
+                  - sqs:GetQueueAttributes
+                Resource: !Sub 'arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:xituan-expense-receipt-ocr-${Environment}'
 
   BackendTaskDefinition:
     Type: AWS::ECS::TaskDefinition
