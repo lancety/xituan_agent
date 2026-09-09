@@ -1,0 +1,16 @@
+{
+  "CORSRules": [
+    {
+      "AllowedHeaders": ["*"],
+      "AllowedMethods": ["GET", "PUT", "POST", "HEAD"],
+      "AllowedOrigins": [
+        "https://cms.xituan.com.au",
+        "https://platform.xituan.com.au",
+        "https://www.xituan.com.au",
+        "https://xituan.com.au"
+      ],
+      "ExposeHeaders": ["ETag", "x-amz-request-id", "x-amz-version-id"],
+      "MaxAgeSeconds": 3600
+    }
+  ]
+}

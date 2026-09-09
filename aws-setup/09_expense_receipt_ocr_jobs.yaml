@@ -1,0 +1,172 @@
+# Async EXPENSE_RECEIPT_OCR jobs - dedicated SQS + DLQ + Lambda (production).
+# Dev / demo: leave JOB_EXPENSE_OCR_SQS_QUEUE_URL empty -> Backend inline worker.
+# Do NOT share JOB_SQS_QUEUE_URL (image-normalize queue rejects other types).
+#
+# Deploy: aws-setup/scripts/deploy-expense-ocr-jobs.sh production
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Xituan async EXPENSE_RECEIPT_OCR production SQS and Lambda runner
+
+Parameters:
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues: [production]
+    Description: CFN stack is production-only; use Backend inline worker on demo/dev
+
+  MediaBucketName:
+    Type: String
+    Description: Existing merchant media S3 bucket (same as backend S3_BUCKET)
+
+  JobCallbackSecret:
+    Type: String
+    NoEcho: true
+    Description: HMAC secret for job callbacks (same as Backend JOB_CALLBACK_SECRET)
+
+  CodeS3Bucket:
+    Type: String
+    Default: ''
+    Description: Optional - S3 bucket holding expense-receipt-ocr.zip
+
+  CodeS3Key:
+    Type: String
+    Default: ''
+    Description: Optional - S3 key of expense-receipt-ocr.zip
+
+  LambdaMemoryMb:
+    Type: Number
+    Default: 256
+    MinValue: 128
+    MaxValue: 1024
+
+  LambdaTimeoutSeconds:
+    Type: Number
+    Default: 120
+    MinValue: 30
+    MaxValue: 300
+
+Conditions:
+  HasCodeObject: !And
+    - !Not [!Equals [!Ref CodeS3Bucket, '']]
+    - !Not [!Equals [!Ref CodeS3Key, '']]
+
+Resources:
+  ExpenseReceiptOcrDlq:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub 'xituan-expense-receipt-ocr-dlq-${Environment}'
+      MessageRetentionPeriod: 1209600
+
+  ExpenseReceiptOcrQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub 'xituan-expense-receipt-ocr-${Environment}'
+      # Must exceed Lambda timeout (Textract + Backend create expense)
+      VisibilityTimeout: 180
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt ExpenseReceiptOcrDlq.Arn
+        maxReceiveCount: 3
+
+  ExpenseReceiptOcrLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/xituan-expense-receipt-ocr-${Environment}'
+      RetentionInDays: 14
+
+  ExpenseReceiptOcrRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'xituan-expense-receipt-ocr-${Environment}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ExpenseReceiptOcrAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !GetAtt ExpenseReceiptOcrLogGroup.Arn
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                  - sqs:ChangeMessageVisibility
+                Resource: !GetAtt ExpenseReceiptOcrQueue.Arn
+              # Runner Lambda only calls Backend HMAC; S3/Textract stay on ECS.
+              # Keep GetObject in case future handler moves Textract into Lambda.
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:HeadObject
+                Resource: !Sub 'arn:aws:s3:::${MediaBucketName}/*'
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource: !Sub 'arn:aws:s3:::${MediaBucketName}'
+              - Effect: Allow
+                Action:
+                  - textract:AnalyzeExpense
+                Resource: '*'
+
+  ExpenseReceiptOcrFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: ExpenseReceiptOcrLogGroup
+    Properties:
+      FunctionName: !Sub 'xituan-expense-receipt-ocr-${Environment}'
+      Runtime: nodejs20.x
+      Handler: handler.handler
+      MemorySize: !Ref LambdaMemoryMb
+      Timeout: !Ref LambdaTimeoutSeconds
+      Role: !GetAtt ExpenseReceiptOcrRole.Arn
+      Environment:
+        Variables:
+          JOB_CALLBACK_SECRET: !Ref JobCallbackSecret
+          MEDIA_BUCKET: !Ref MediaBucketName
+      Code: !If
+        - HasCodeObject
+        - S3Bucket: !Ref CodeS3Bucket
+          S3Key: !Ref CodeS3Key
+        - ZipFile: |
+            exports.handler = async () => {
+              throw new Error('Upload expense-receipt-ocr.zip (see deploy-expense-ocr-jobs.sh)');
+            };
+
+  ExpenseReceiptOcrEventSource:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt ExpenseReceiptOcrQueue.Arn
+      FunctionName: !Ref ExpenseReceiptOcrFunction
+      BatchSize: 1
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
+      Enabled: true
+
+Outputs:
+  JobExpenseOcrQueueUrl:
+    Description: Set Backend env JOB_EXPENSE_OCR_SQS_QUEUE_URL to this value
+    Value: !Ref ExpenseReceiptOcrQueue
+    Export:
+      Name: !Sub 'xituan-expense-receipt-ocr-queue-url-${Environment}'
+
+  JobExpenseOcrQueueArn:
+    Value: !GetAtt ExpenseReceiptOcrQueue.Arn
+
+  DlqUrl:
+    Value: !Ref ExpenseReceiptOcrDlq
+
+  ExpenseOcrFunctionName:
+    Description: Informational - xituan-expense-receipt-ocr-${Environment}
+    Value: !Ref ExpenseReceiptOcrFunction
+    Export:
+      Name: !Sub 'xituan-expense-receipt-ocr-fn-${Environment}'
+
+  ExpenseOcrFunctionArn:
+    Value: !GetAtt ExpenseReceiptOcrFunction.Arn

@@ -1,0 +1,19 @@
+{
+  "CORSRules": [
+    {
+      "AllowedHeaders": ["*"],
+      "AllowedMethods": ["GET", "PUT", "POST", "HEAD"],
+      "AllowedOrigins": [
+        "https://cms-staging.xituan.com.au",
+        "https://staging.xituan.com.au",
+        "https://platform-staging.xituan.com.au",
+        "http://localhost:3010",
+        "http://localhost:3005",
+        "http://localhost:3020",
+        "http://127.0.0.1:3010"
+      ],
+      "ExposeHeaders": ["ETag", "x-amz-request-id", "x-amz-version-id"],
+      "MaxAgeSeconds": 3600
+    }
+  ]
+}
