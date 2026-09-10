@@ -669,8 +669,9 @@ erDiagram
 | 打包情况 | 订单 `status` 变化 |
 |----------|-------------------|
 | 部分产品 / 数量入票 | 不变（通常仍 `processing`），`resolveTargetOrderStatus` 返回 `null` |
-| 全部数量入票且票均 `ready`/`shipped` | → `ready_for_delivery` |
-| 全部数量入票且票均 `shipped` | → `in_delivery` |
+| 全部数量入票且票均至少 `ready` | → `ready_for_delivery` |
+| 全部数量入票且**任一**票 `shipped`/`delivered` | → `in_delivery`（已发货） |
+| 全部数量入票且**全部**票 `delivered` | → `delivered`（已送达） |
 
 部分打包没有独立订单状态；「是否还有货要包」的真相在 `shipment_lines` qty，不在 `orders.status`。
 
@@ -695,7 +696,7 @@ erDiagram
 
 ### 13.2 轨迹 / Webhook（P0，API carrier 必做）
 
-- 已对接 API 的 carrier 必须提供轨迹 + 异常 webhook（或官方推送）→ 回写 `shipment` 状态 → 再驱动订单状态（如全部票 `shipped` → `in_delivery`；投递完成规则实现期定）。
+- 已对接 API 的 carrier 必须提供轨迹 + 异常 webhook（或官方推送）→ 回写 `shipment` 状态 → 再驱动订单状态（如任一票 `shipped` → `in_delivery`；全部票 `delivered` → `delivered`）。
 - 异常事件：平台负责提醒 + 状态回写；深度异常处理（再投 / 退回工单）由商户与 carrier 线下协商，一期不做工单流程。
 
 ### 13.3 外链查件（含 manual_entry）
