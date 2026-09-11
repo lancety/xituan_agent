@@ -1,3 +1,32 @@
+## [3.12.1] - 2026-09-11
+
+### ✨ 新功能
+
+- feat(lambda): add expense receipt OCR SQS stack and runner
+- feat(lambda): image-normalize fit inside and variantsOnly; ignore deploy-tmp secrets
+
+### 🐛 修复
+
+- fix(iam): allow ECS task role to enqueue expense OCR SQS
+
+### 📚 文档
+
+- docs(post-deploy): update merchant customer PII restriction ledger
+- docs(delivery): clarify multi-parcel order status sync rules
+- docs(delivery): update unified dispatch pipeline design
+- docs(jobs): sync upload contract and ECS Lambda invoke IAM
+- docs(devGuide): image normalize policy backfill and Lambda withoutEnlargement
+- docs: lowercase imagesih hostnames in CDN checklist
+- docs: media/imageSIH CDN hostname split checklist
+- docs(agent): IMAGE_NORMALIZE C2/C3 lambda, CFN stub, and backfill planned work.
+- docs(devGuide): async jobs C1 framework, planned-work ledger, JobCallbackSecret CFN
+- docs(devGuide): SIH SIZE_OPTS post-deploy ledger and Phase B notes
+- docs(devGuide): SIH Phase A image size contract and gallery sizes
+
+### 🔧 构建/配置
+
+- chore(lambda): ignore expense-receipt-ocr zip artifact
+
 ## [3.12.0] - 2026-09-06
 
 ### 📚 文档
