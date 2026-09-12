@@ -34,6 +34,7 @@ const VARIANT_POLICY = {
   expense_receipt: { variants: [256], format: 'webp' },
   print_temp_image: { variants: [64, 128, 256, 512], format: 'png' },
   openim_chat_image: { variants: [64, 128, 256, 512], format: 'webp' },
+  barcode: { variants: [256, 512], format: 'png' },
 };
 
 function sortedUnique(edges) {
