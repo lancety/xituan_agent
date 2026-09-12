@@ -1,3 +1,26 @@
+## [3.12.2] - 2026-09-12
+
+### ✨ 新功能
+
+- feat(lambda): add barcode kind to image-normalize VARIANT_POLICY
+- feat(lambda): add expense receipt OCR SQS stack and runner
+- feat(lambda): image-normalize fit inside and variantsOnly; ignore deploy-tmp secrets
+
+### 🐛 修复
+
+- fix(iam): allow ECS task role to enqueue expense OCR SQS
+
+### 📚 文档
+
+- docs(post-deploy): update merchant customer PII restriction ledger
+- docs(delivery): clarify multi-parcel order status sync rules
+- docs(delivery): update unified dispatch pipeline design
+- docs(jobs): sync upload contract and ECS Lambda invoke IAM
+
+### 🔧 构建/配置
+
+- chore(lambda): ignore expense-receipt-ocr zip artifact
+
 ## [3.12.1] - 2026-09-11
 
 ### ✨ 新功能
