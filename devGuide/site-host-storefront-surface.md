@@ -1,6 +1,6 @@
 # Site Host-first Storefront（Surface / Tenant）
 
-Last updated: 2026-08-21
+Last updated: 2026-09-20
 
 主域与商户子域（及后续自有域）用 **Host 定 Surface**，双对外 path 形状 + 双 Layout + 单套业务 View + 唯一 URL 工厂。API Scope 分期叠加，不得破坏小程序跨商户契约。
 
@@ -76,3 +76,4 @@ storefront Host 上：
 ## 相关文档
 
 - 小程序锁态：`xituan_wechat_app/utils/storefront-lock.wechat.util.ts`（概念对齐，非同一套 Host）
+- 客户 App 锁店深链：[customer-app-storefront-lock-links.md](./customer-app-storefront-lock-links.md)

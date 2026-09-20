@@ -83,8 +83,8 @@
 
 | 规则 | 说明 |
 |------|------|
-| 共享类型 | **`xituan_codebase`** 为单一真源；改类型后按团队流程同步各 consumer |
-| 复杂同步流程 | 参考 **`.cursor/skills/xituan-multirepo-codebase-sync/SKILL.md`** |
+| 共享类型 | **`xituan_codebase`** 为单一真源；改类型后按团队流程同步各 consumer（含 `xituan_app_customer` / `xituan_app_merchant`） |
+| 复杂同步流程 | 参考 **`.cursor/skills/xituan-multirepo-codebase-sync/SKILL.md`**（7 主仓） |
 
 ---
 

@@ -1,6 +1,6 @@
 # Planned Work（规划台账）
 
-Last updated: 2026-09-17
+Last updated: 2026-09-18
 
 > **日常巡检口令：「检查规划」**（或「检查 planned」）  
 > → 打开 [`registry.md`](./registry.md)，看 **活跃** 表中非 `done` / `cancelled` 行。  
