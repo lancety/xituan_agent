@@ -18,8 +18,11 @@ class SmartUnifiedReleaseManager {
       { name: 'xituan_platform', path: path.join(projectRoot, 'xituan_platform') },
       { name: 'xituan_site', path: path.join(projectRoot, 'xituan_site') },
       { name: 'xituan_wechat_app', path: path.join(projectRoot, 'xituan_wechat_app') },
+      { name: 'xituan_app_customer', path: path.join(projectRoot, 'xituan_app_customer') },
+      { name: 'xituan_app_merchant', path: path.join(projectRoot, 'xituan_app_merchant') },
       { name: 'xituan_agent', path: path.join(projectRoot, 'xituan_agent') }
     ];
+    this.skipGlobalVersionReplace = new Set(['xituan_app_customer', 'xituan_app_merchant']);
   }
 
   // 执行命令
@@ -247,7 +250,7 @@ class SmartUnifiedReleaseManager {
   }
 
   // 更新版本号到指定版本
-  updateVersionTo(projectPath, targetVersion) {
+  updateVersionTo(projectPath, targetVersion, projectName = '') {
     console.log(`更新 ${projectPath} 版本号到 ${targetVersion}...`);
     
     const packageJsonPath = path.join(projectPath, 'package.json');
@@ -258,8 +261,13 @@ class SmartUnifiedReleaseManager {
       fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
       console.log(`版本已更新: ${oldVersion} → ${targetVersion}`);
       
-      // 在项目文件夹范围内替换所有旧版本号
-      this.replaceVersionInProject(projectPath, oldVersion, targetVersion);
+      // Expo apps stay on 1.0.0 until first unified release; a global 1.0.0
+      // replace would smash unrelated strings. app.json is updated by version:sync.
+      if (this.skipGlobalVersionReplace.has(projectName)) {
+        console.log(`跳过全局版本替换: ${projectName} (expo.version 由 version:sync 更新)`);
+      } else {
+        this.replaceVersionInProject(projectPath, oldVersion, targetVersion);
+      }
       
       return oldVersion; // 返回旧版本号，用于后续的版本替换
     }
@@ -430,15 +438,23 @@ class SmartUnifiedReleaseManager {
     console.log(`智能CHANGELOG已更新: ${changelogPath}`);
   }
 
-  // Sync config/app-version.ts from package.json (profile page; wechat also uses X-Client-Version).
+  // Sync display version from package.json (wechat/site app-version.ts; Expo app.json + app-version.ts).
   syncAppVersion(projectPath, projectLabel) {
     const syncScript = path.join(projectPath, 'scripts', 'sync-version.js');
     if (!fs.existsSync(syncScript)) {
       console.warn(`${projectLabel} version:sync 脚本不存在，跳过: ${syncScript}`);
       return;
     }
-    console.log(`同步 ${projectLabel} config/app-version.ts ...`);
+    console.log(`同步 ${projectLabel} 显示版本 (version:sync) ...`);
     this.exec(`node scripts/sync-version.js`, projectPath);
+  }
+
+  syncAppVersionIfPresent(project) {
+    const syncScript = path.join(project.path, 'scripts', 'sync-version.js');
+    if (!fs.existsSync(syncScript)) {
+      return;
+    }
+    this.syncAppVersion(project.path, project.name);
   }
 
   // 检查项目变更状态
@@ -572,18 +588,12 @@ class SmartUnifiedReleaseManager {
           console.log(`\n=== 更新 ${project.name} (${changeType}) ===`);
           
           // 更新版本号
-          const oldVersion = this.updateVersionTo(project.path, newVersion);
+          const oldVersion = this.updateVersionTo(project.path, newVersion, project.name);
           
           // 生成智能CHANGELOG
           this.generateSmartChangelog(project.path, newVersion, hasChanges, oldVersion);
           
-          // Sync profile display version (wechat + site config/app-version.ts)
-          if (project.name === 'xituan_wechat_app') {
-            this.syncAppVersion(project.path, '微信小程序');
-          }
-          if (project.name === 'xituan_site') {
-            this.syncAppVersion(project.path, '站点');
-          }
+          this.syncAppVersionIfPresent(project);
           
           // 获取当前分支名称
           const currentBranch = this.getCurrentBranch(project.path);
@@ -626,18 +636,12 @@ class SmartUnifiedReleaseManager {
           console.log(`\n=== 更新 ${project.name} (${changeType}) ===`);
           
           // 更新版本号
-          const oldVersion = this.updateVersionTo(project.path, newVersion);
+          const oldVersion = this.updateVersionTo(project.path, newVersion, project.name);
           
           // 生成智能CHANGELOG
           this.generateSmartChangelog(project.path, newVersion, hasChanges, oldVersion);
           
-          // Sync profile display version (wechat + site config/app-version.ts)
-          if (project.name === 'xituan_wechat_app') {
-            this.syncAppVersion(project.path, '微信小程序');
-          }
-          if (project.name === 'xituan_site') {
-            this.syncAppVersion(project.path, '站点');
-          }
+          this.syncAppVersionIfPresent(project);
           
           // 获取当前分支名称
           const currentBranch = this.getCurrentBranch(project.path);

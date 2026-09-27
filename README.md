@@ -134,6 +134,8 @@ node scripts/changelog-generator.js help
 本工具支持以下Xituan项目：
 
 - `xituan_wechat_app` - 微信小程序
+- `xituan_app_customer` - 顾客 Expo App（`app.json` expo.version + Profile 底部）
+- `xituan_app_merchant` - 商户 Expo App（`app.json` expo.version + More 底部）
 - `xituan_cms` - Next.js CMS
 - `xituan_backend` - NestJS Backend
 - `submodules/xituan_codebase` - 共享代码库
@@ -143,7 +145,7 @@ node scripts/changelog-generator.js help
 1. **发布前检查**: 确保所有项目工作区干净
 2. **版本同步**: 所有项目使用相同的主版本号
 3. **Submodule更新**: 共享代码库更新后需要同步到各项目
-4. **微信小程序**: 需要同时更新app.json和显示版本
+4. **微信小程序 / Expo App**: 需要同时更新显示版本（`config/app-version.ts`）；Expo 另写 `app.json` 的 `expo.version`（Play versionName）。**不要**用统一版本号覆盖 Android `versionCode`。
 
 ## 故障排除
 

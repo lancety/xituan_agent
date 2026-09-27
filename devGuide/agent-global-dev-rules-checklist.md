@@ -93,6 +93,8 @@
 | 主题 | 权威文档 |
 |------|----------|
 | 商品 metadata / 平台模板 / 绑定 / 合并 / 打印 | **`.cursor/skills/product-metadata-schema/SKILL.md`** + **`xituan_agent/devGuide/product_metadata_开发计划_b162e071.plan.md`** + **`xituan_agent/devGuide/商品_metadata_通用化_70835335.plan.md`** |
+| Expo 商户/客户 App 分页列表（虚拟化、触底加载、详情返回保滚动位置） | **`.cursor/skills/expo-paginated-list-scroll/SKILL.md`** |
+
 
 ---
 
