@@ -1,13 +1,14 @@
 # OpenIM 客户端交互
 
-Last updated: 2026-06-13
+Last updated: 2026-09-28
 
-本目录收录 OpenIM 聊天室 UI/滚动/缓存/历史同步的**定稿设计**与落地参考，供微信小程序及后续 CMS / Site / Platform 复用。
+本目录收录 OpenIM 聊天室 UI/滚动/缓存/历史同步的**定稿设计**，以及 Android 离线系统通知工作流。
 
 ## 文档索引
 
 | 文档 | 说明 |
 |------|------|
+| [device-push-offline-workflow.md](./device-push-offline-workflow.md) | **权威**：Expo Android 离线推送（OpenIM `beforeOfflinePush` → SNS/FCM）；手动配置清单与排障 |
 | [chat-room-inverted-scroll-design.md](./chat-room-inverted-scroll-design.md) | **权威**：rotateX 倒置滚动、进房/离房位置恢复、历史分页、缓存与后端契约；§5.4 商户侧进房须带 `merchantId`、踩坑与跨端移植 |
 
 ## 源码锚点（微信小程序）
@@ -33,3 +34,4 @@ Last updated: 2026-06-13
 
 - [backend-protection-layers-and-scale-notes.md](../backend-protection-layers-and-scale-notes.md) — OpenIM 后端与拉取路径
 - [site-login-register-wechat-flow.md](../site-login-register-wechat-flow.md) — 站点与微信登录（非 IM 滚动）
+- [OPENIM-DEPLOYMENT.md](../../aws-setup/OPENIM-DEPLOYMENT.md) — 生产 OpenIM EC2 / ALB

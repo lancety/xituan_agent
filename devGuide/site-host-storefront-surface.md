@@ -76,4 +76,4 @@ storefront Host 上：
 ## 相关文档
 
 - 小程序锁态：`xituan_wechat_app/utils/storefront-lock.wechat.util.ts`（概念对齐，非同一套 Host）
-- 客户 App 锁店深链：[customer-app-storefront-lock-links.md](./customer-app-storefront-lock-links.md)
+- 客户 App 扫码进 App（锁店、path、校验文件、Vercel 域名）：[customer-app-storefront-lock-links.md](./customer-app-storefront-lock-links.md)
