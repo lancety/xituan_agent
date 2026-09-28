@@ -1,0 +1,5 @@
+# Mount xituan beforeOfflinePush webhooks.yml into openim-server (production EC2).
+services:
+  openim-server:
+    volumes:
+      - /opt/openim/config/webhooks.yml:/openim-server/config/webhooks.yml:ro

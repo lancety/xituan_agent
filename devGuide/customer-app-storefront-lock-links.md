@@ -28,7 +28,7 @@ Last updated: 2026-09-20
 - `https://{code}.m.xituan.com.au/.well-known/apple-app-site-association`
 - `https://{code}.m.xituan.com.au/.well-known/assetlinks.json`
 
-文件已占位：`TEAMID`、`SHA256_PLACEHOLDER_*`。未替换前系统相机 App Link 验不过。Play 还没上传 AAB 时没有 App signing 页。
+`assetlinks.json` 已写入本机 USB / upload 证书与 debug keystore 的 SHA-256。线上仍是占位符时，系统相机扫店码会进网页；Site 发布新文件后需重装客户 App（或重新校验 App Links）才会再验。Play App Signing 证书尚未写入（商店安装包签名不同）。AASA 仍是 `TEAMID` 占位，iOS 相机扫码本轮不验收。
 
 ## 相关代码
 

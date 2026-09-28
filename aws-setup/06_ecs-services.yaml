@@ -294,6 +294,24 @@ Resources:
                   - sqs:GetQueueUrl
                   - sqs:GetQueueAttributes
                 Resource: !Sub 'arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:xituan-expense-receipt-ocr-${Environment}'
+        # Device push: OpenIM beforeOfflinePush → SNS platform apps (FCM)
+        - PolicyName: device-push-sns-fcm
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: SnsFcmPlatformAndEndpoints
+                Effect: Allow
+                Action:
+                  - sns:CreatePlatformEndpoint
+                  - sns:DeleteEndpoint
+                  - sns:SetEndpointAttributes
+                  - sns:GetEndpointAttributes
+                  - sns:Publish
+                Resource:
+                  - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:app/GCM/xituan-customer-fcm'
+                  - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:app/GCM/xituan-merchant-fcm'
+                  - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:endpoint/GCM/xituan-customer-fcm/*'
+                  - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:endpoint/GCM/xituan-merchant-fcm/*'
 
   BackendTaskDefinition:
     Type: AWS::ECS::TaskDefinition

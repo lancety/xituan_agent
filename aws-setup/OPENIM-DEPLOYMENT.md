@@ -33,7 +33,19 @@ chmod +x deploy-phase1.sh deploy-phase2.sh deploy-openim.sh
 | **production** | 默认 **跳过**（`SkipEcsServicesCfnDeploy=true`） | `xituan_backend` GitHub Actions `deploy.yml` |
 | **staging** | `deploy-phase2.sh staging` 更新 `06_ecs-services` | `parameters.staging.json`（gitignore，从 `parameters.staging.example.json` 复制） |
 
-生产 Android 离线推送（OpenIM `beforeOfflinePush` → Backend SNS/FCM）：在 GitHub Environment **`production`** 增加 Secrets `SNS_PLATFORM_ARN_FCM_CUSTOMER`、`SNS_PLATFORM_ARN_FCM_MERCHANT`（与本地 `.env.development` 同一对 ARN）。`deploy.yml` 会注入 ECS；**不要**写进 `06_ecs-services.yaml`。未设置时 ECS 跳过 FCM。Firebase 须包含 Play **App signing** SHA。
+生产 Android 离线推送链路是 **OpenIM `beforeOfflinePush` → Backend SNS/FCM**，只给 ECS 配 SNS ARN 不够。
+
+1. GitHub Environment **`production`** Secrets：`SNS_PLATFORM_ARN_FCM_CUSTOMER`、`SNS_PLATFORM_ARN_FCM_MERCHANT`（与本地 `.env.development` 同一对 ARN），以及 **`OPENIM_CALLBACK_PATH_TOKEN`**（生产专用 path token，不要用本地 `xituan-openim-callback-dev`）。`deploy.yml` 注入 ECS；**不要**写进 `06_ecs-services.yaml`。
+2. 生产 OpenIM EC2 默认没有本地 `webhooks.yml`。在实例上把 `aws-setup/scripts/openim-webhooks.yml.template`、`docker-compose.webhooks.yaml`、`openim-ec2-enable-offline-push-webhook.sh` 拷到同一目录后执行（token 与上一步 Secret 完全相同）：
+
+```bash
+export OPENIM_CALLBACK_PATH_TOKEN='<same as GitHub secret>'
+export BACKEND_PUBLIC_ORIGIN='https://backend.xituan.com.au'
+bash openim-ec2-enable-offline-push-webhook.sh
+```
+
+3. Firebase 须包含 Play **App signing** SHA。测系统通知时：接收方 **强杀后不要再打开**，再从另一端发消息。
+
 
 `UPDATE_ROLLBACK_COMPLETE` 的 production 栈可保持不动；勿对 production 再跑 06（除非显式 `SkipEcsServicesCfnDeploy=false` 且 parameters 含全部 Jwt/Stripe 等字段）。
 

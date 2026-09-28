@@ -12,5 +12,9 @@ CORE_SERVICES=(mongo redis kafka etcd minio openim-server)
 "${SCRIPT_DIR}/openim-ec2-install-core-only-mode.sh"
 
 cd "$COMPOSE_DIR"
-docker-compose --env-file "$ENV_FILE" -f docker-compose.yaml up -d "${CORE_SERVICES[@]}"
-docker-compose --env-file "$ENV_FILE" -f docker-compose.yaml ps
+COMPOSE_ARGS=(--env-file "$ENV_FILE" -f docker-compose.yaml)
+if [[ -f "${COMPOSE_DIR}/docker-compose.webhooks.yaml" ]]; then
+  COMPOSE_ARGS+=(-f docker-compose.webhooks.yaml)
+fi
+docker-compose "${COMPOSE_ARGS[@]}" up -d "${CORE_SERVICES[@]}"
+docker-compose "${COMPOSE_ARGS[@]}" ps
