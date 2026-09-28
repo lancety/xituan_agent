@@ -33,6 +33,8 @@ chmod +x deploy-phase1.sh deploy-phase2.sh deploy-openim.sh
 | **production** | 默认 **跳过**（`SkipEcsServicesCfnDeploy=true`） | `xituan_backend` GitHub Actions `deploy.yml` |
 | **staging** | `deploy-phase2.sh staging` 更新 `06_ecs-services` | `parameters.staging.json`（gitignore，从 `parameters.staging.example.json` 复制） |
 
+生产 Android 离线推送（OpenIM `beforeOfflinePush` → Backend SNS/FCM）：在 GitHub Environment **`production`** 增加 Secrets `SNS_PLATFORM_ARN_FCM_CUSTOMER`、`SNS_PLATFORM_ARN_FCM_MERCHANT`（与本地 `.env.development` 同一对 ARN）。`deploy.yml` 会注入 ECS；**不要**写进 `06_ecs-services.yaml`。未设置时 ECS 跳过 FCM。Firebase 须包含 Play **App signing** SHA。
+
 `UPDATE_ROLLBACK_COMPLETE` 的 production 栈可保持不动；勿对 production 再跑 06（除非显式 `SkipEcsServicesCfnDeploy=false` 且 parameters 含全部 Jwt/Stripe 等字段）。
 
 OpenIM EC2：`OPENIM_SECRET` 环境变量 / GitHub Secret。ECS OpenIM：`OpenimApiInternalUrl` + `OpenimApiPublicUrl` 等写入 staging parameters 或 production Actions。

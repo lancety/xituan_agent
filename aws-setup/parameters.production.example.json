@@ -7,7 +7,7 @@
   {
     "ParameterKey": "SkipEcsServicesCfnDeploy",
     "ParameterValue": "true",
-    "Comment": "true = skip 06_ecs-services in deploy-phase2; ECS env from GitHub Actions deploy.yml"
+    "Comment": "true = skip 06_ecs-services in deploy-phase2; ECS env from GitHub Actions deploy.yml. FCM: GitHub Secrets SNS_PLATFORM_ARN_FCM_CUSTOMER / SNS_PLATFORM_ARN_FCM_MERCHANT (same ARNs as local .env.development; not CFN)."
   },
   {
     "ParameterKey": "AWSRegion",
