@@ -10,6 +10,7 @@ Last updated: 2026-09-05
 
 | ID | 状态 | 已部署 | 待完成 | Gate 摘要 | 下一动作 | Entry | Last updated |
 |----|------|--------|--------|-----------|----------|-------|--------------|
+| `metadata-rebind-provenance-batch` | `planned` | — | Phase 1 加表与解绑保留 MANUAL；Phase N 清洗 UNBIND_COPY | CMS 批次看板发版且抽查 MANUAL 不被改写 | 部署 migration 0363 与 backend 解绑行为 | [entry](./entries/2026-09-metadata-rebind-provenance-batch.md) | 2026-09-29 |
 | `sih-format-allowlist-webp-png` | `planned` | —（format 本期不动） | ① 手动 `SIZE_OPTS` ② **Gate 后 SIH 只留 webp\|png（终态不支持 jpeg/jpg）** | C4 回填完、DB 主 path 均为 webp/png | 部署 SIH 时改 `SIZE_OPTS`；format 收紧等 Gate | [entry](./entries/2026-09-sih-format-allowlist-webp-png.md) | 2026-09-06 |
 | `shipping-service-pp-exp-alias` | `planned` | — | Phase 1 + Phase N | WeChat/Site 订单路径只传长名后再删入站 PP/EXP fallback | 实施 Phase 1：长名落库 + normalize 双读；Gate 后单独 PR 删别名 | [entry](./entries/2026-09-shipping-service-pp-exp-alias.md) | 2026-09-01 |
 | `non-same-day-wechat-compat` | `planned` | — | Phase 1 + Phase N | WeChat AusPost 结账版本全量后再删 `allowNonSameDay` | 部署 Phase 1 backend 双路径；旧端超距离回 `DELIVERY_DISTANCE_EXCEEDED` | [entry](./entries/2026-08-non-same-day-wechat-compat.md) | 2026-08-15 |
