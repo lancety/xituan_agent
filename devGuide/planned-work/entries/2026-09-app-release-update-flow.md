@@ -1,11 +1,13 @@
 # app-release-update-flow
 
-Last updated: 2026-09-18
+Last updated: 2026-10-04
 
 ## 摘要
 
-为 `xituan_app_customer` / `xituan_app_merchant` 制定正式上架后的 **发布与更新流程**（商店原生包 + Expo OTA + 可选强制更新）。  
-**不是** post-deploy Phase N：尚未实施；当前仍在 Expo 开发/内部分发阶段。
+为 `xituan_app_customer` / `xituan_app_merchant` 落地 **商店原生更新 + 自建 Expo OTA（content CDN）+ Platform 强制更新（minVersion）**。  
+**不是** post-deploy Phase N：方案已定稿，**实施等待 iOS 开发者 App 创建完成**后再开工。
+
+Cursor 方案原稿：`self-hosted_app_ota` plan（本机 `.cursor/plans`）。
 
 ## 当前掌握的信息
 
@@ -13,73 +15,88 @@ Last updated: 2026-09-18
 
 | 项 | 现状 |
 |----|------|
-| 栈 | Expo ~57 + EAS Build（`eas.json` 已有 `development` / `preview` / `production`） |
-| 仓 | `xituan_app_customer`（`au.com.xituan.customer`）、`xituan_app_merchant`（`au.com.xituan.merchant`） |
-| 多仓对齐 | 已纳入 **`xituan-multirepo-codebase-sync`** / **`xituan-batch-deploy`**：与其它主仓一起 bump `submodules/xituan_codebase` 并 `push origin master`；两 App 的 Git `production` 存 EAS 生产配置，批量部署会 `merge master` 后 `push origin production`。商店包仍走 EAS Build/Submit，不是 ECS CI |
-| OTA | **未接**：无 `expo-updates` 依赖，`app.json` 无 `updates` / `runtimeVersion` |
-| 内测 | `preview` / `development` 为 `distribution: internal`，Android `buildType: apk` |
-| 结论 | 发版后用户端 **不会** 自动拉 JS 热更新；内测 APK 也不走商店自动更新 |
+| 栈 | Expo ~57 + EAS Build（`development` / `preview` / `production`） |
+| 仓 | customer `au.com.xituan.customer`、merchant `au.com.xituan.merchant` |
+| OTA | **未接**：无 `expo-updates`；无自建 manifest |
+| 强制更新 | **未做** |
+| iOS | **商店/开发者 App 尚未创建** → 本项实施 **blocked**，等创建后再开 |
+| Android | 可本地/preview 验收；不阻塞方案定稿 |
 
-### 更新分三层（已对齐的产品认知）
+### 更新分三层（已定）
 
-商店原生包 **不能保证** 所有用户立刻装上（系统自动更新可关、可延迟）。紧急修复若只靠商店，总会有一批旧版本。
+| 层 | 覆盖 | 本方案 |
+|----|------|--------|
+| 商店原生更新 | APK/AAB、IPA、native | Play / App Store 主路径 |
+| 自建 OTA | JS bundle + 资源 | **自建**：非 EAS Update MAU；content 子域 + backend 协议 |
+| 业务强制更新 | `minVersion` | Platform 配置；与 OTA **同波实现** |
 
-| 层 | 覆盖什么 | 用户体验 | 适用 |
-|----|----------|----------|------|
-| **商店原生更新** | APK/AAB、IPA；原生模块、权限、SDK、Expo native 依赖 | Play / App Store 在用户开启自动更新时后台安装；不能强制立刻装 | 任何 native 变更；正式上架后的主路径 |
-| **Expo OTA（EAS Update）** | JS bundle + 资源 | 下次打开（或下完立刻重启）静默切 bundle，不必再走商店审核 | 页面、业务逻辑、文案；**不能**绕过审核做大功能 |
-| **业务强制更新** | 后端 `minVersion` / `forceUpdate`，App 启动比对 | 弹窗引导去商店（可做成关不掉） | 支付/协议/安全等「旧包不能再用」；**不是**系统替你装包 |
+### 已定架构决策
 
-OTA **不能**热更：原生代码、新权限、新 native 依赖、改 RN / Expo SDK 版本。这些仍要 `eas build` 并上架。
+| 项 | 决定 |
+|----|------|
+| OTA 托管 | 自建；**不用** EAS Update 计费 CDN（可选日后对照） |
+| Asset CDN | **`content` 子域**（与 media **同一 S3 桶根**，前缀 `app-ota/...`）；禁止 SIH / IMAGE_NORMALIZE |
+| Manifest | 现有 **backend 公共 API**（Expo Updates 协议）；`Cache-Control: no-store`；**不**新开 updates 子域 |
+| CLI | **各 App 仓各自** `ota:prepare`（export → presign 直传 S3 → complete）；失败回滚 draft；**不**经 Platform 上传 |
+| Platform | **不上传**；OTA 历史 + **手动激活/回滚**；另配 **强制更新 minVersion**（customer / merchant 分开） |
+| minVersion 格式 | Expo `version` 字符串 `a.b.c` 或 `a.b.c.d`（纯数字段）；**不是** Android `versionCode` |
+| Settings SQL | 强制更新 category **无需** migration 种子；`updateSetting` upsert，Platform 首次保存建行 |
+| OTA 表 | 版本历史 **需要** `migrations/` 新表（非 settings） |
+| Code signing | **下个商店包带**公钥；私钥发布机本地 / 日后 GHA secret；**不用** Secrets Manager（项目无先例） |
+| 强制更新 vs OTA | **同波实现**（强制更新为小改动） |
 
-Apple / Google 允许 JS OTA，但禁止用来规避审核或大幅改应用行为。
+### 角色流
 
-### 内测 vs 正式
+```text
+CLI(每App): expo export → draft+presign → PUT S3 → complete(ready)
+Platform: 查看历史 → 激活/回滚 active 指针；配置 minVersion
+Backend: 版本表 + 发布鉴权 + 公共 manifest + minVersion 查询
+App: updates.url → backend；asset → content CDN；启动比对 minVersion
+```
 
-- **开发/内测包**（当前 `development` / `preview`）：同事每次原生改动后重新打包装；**无**商店自动更新。
-- **正式上架包**（`production`）：才可能被系统自动更新；仍无法 100% 覆盖所有设备。
+版本维度：`app` × `channel` × `platform` × `runtimeVersion` × `updateId`  
+状态：`uploading` → `ready` →（Platform）`active`；另有 `failed`；历史保留可回滚。
 
-### 刻意不做（现在）
+### 刻意不做（触发前）
 
-- 不在开发期接 `expo-updates` 或做强制更新弹窗。
-- 等确认要上架、且有「旧包不能再用」的接口契约时，再设计最低版本检查。
+- 不为开发机 Metro 热重载接 OTA。
+- **在 iOS 开发者 App 创建完成前不开始写实现代码**（方案与台账可先定稿）。
 
 ## 期望目标结果
 
-- [ ] 书面流程：何时走商店发版、何时走 EAS Update、何时强制跳商店
-- [ ] 两仓接好 `expo-updates`：`runtimeVersion`、channel 与 EAS `production` / 内测 channel 对齐
-- [ ] 日常 JS 修复可通过 OTA 到达已安装的正式包，无需每次商店审核
-- [ ] Native / 权限 / SDK 变更仍走商店；发版 checklist 写清
-- [ ] 可选：后端下发最低版本 + App 启动拦截（仅在确认有不兼容旧包时落地）
-- [ ] 内测包如何通知/分发（internal APK / TestFlight）写清，避免和商店自动更新混为一谈
-- [ ] 本 entry → `done`，registry 归档；定稿方案可另落 `devGuide` 专题（本 entry 不替代 runbook）
+- [ ] 书面流程与本 entry 一致；registry 在实施完成后归档
+- [ ] Platform：minVersion 配置（两 App）+ OTA 列表/激活/回滚
+- [ ] Backend：OTA 表 + draft/presign/complete + 公共 Expo Updates manifest + minVersion API
+- [ ] 两 App：`expo-updates`、`runtimeVersion`/channel、`updates.url`；启动强制更新弹窗（商店链接 i18n）
+- [ ] 各 App CLI 发布准备脚本；content 前缀隔离；manifest 禁缓存
+- [ ] 下个商店包带 code signing 公钥；Android / iOS 均可验收（实施启动后）
+- [ ] 本 entry → `done`
 
 ## 触发条件 / 目标窗口
 
-建议在以下**任一更早者**启动设计（实施可分阶段）：
+**开工条件（硬）：** iOS 侧开发者 App（App Store Connect / Apple Developer 应用记录）**已为 customer / merchant 创建完成**（与 Android 包名策略对齐后），再启动实现。
 
-1. 准备第一次向 Google Play / App Store **提交 production** 之前；或  
-2. 正式包已在少量用户设备上，且需要不走审核的 JS 热修；或  
-3. 后端即将做破坏性 API，旧 App 不能继续用。
+实现启动后建议窗口：首次向商店提交 production 前，或需要 JS 热修 / 破坏性 API 前。
 
-**刻意不做：** 仅为开发机热重载去接 OTA；不为日常小改立刻做强制更新。
+**刻意不做：** 触发前不接 `expo-updates`、不写 OTA/强制更新生产代码。
 
-## 实施备忘（可选草稿）
+## 实施备忘
 
-### 推荐落地顺序（以后实施时）
-
-1. 定 `runtimeVersion` 策略（native 变了必须升 runtime，旧包收不到不兼容 OTA）
-2. 两仓加 `expo-updates` + EAS Update channel（production / preview 分开）
-3. 写发版 checklist：JS-only → `eas update`；native → `eas build` + store submit
-4. 若需要强制更新：后端最低版本字段 + 启动比对 + 商店链接（按业务错误码 / i18n，不写死中文文案）
-5. 定稿 devGuide runbook（本 planned entry 只保留规划，不复制成长文）
+1. codebase：`app_force_update`（名待定）category + `PLATFORM_ONLY_CATEGORIES`；minVersion 比较 util（3～4 段数字）
+2. backend：平台设定读写 + App 可读 minVersion；OTA 表 migration；协议 manifest；presign 到同桶 `app-ota/`
+3. Platform：设定页 minVersion；OTA 管理页（无上传）
+4. 两 App：expo-updates + 强制更新 UI；每仓 CLI
+5. 验收：先 Android 真机（强制更新调 minVersion；OTA 激活/回滚）；iOS 有包后补平台验收
 
 ### 相关路径
 
-- `xituan_app_customer/package.json`、`app.json`、`eas.json`
-- `xituan_app_merchant/package.json`、`app.json`、`eas.json`
+- `xituan_app_customer` / `xituan_app_merchant`：`app.json`、`eas.json`、CLI
+- `xituan_platform`：settings + OTA 管理页
+- `xituan_backend`：platform-setting、OTA 域、公共路由
+- `xituan_codebase`：`siteDomain.content`、`epPlatformSettingCategory`
 
 ## 相关文档
 
 - [planned-work README](../README.md)
 - [planned-work registry](../registry.md)
+- [media-cdn-sih-domain-split](../../media-cdn-sih-domain-split.md)（content ≠ SIH）

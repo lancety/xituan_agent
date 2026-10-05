@@ -152,7 +152,7 @@
   {
     "ParameterKey": "MerchantContactEmail",
     "ParameterValue": "",
-    "Comment": "Optional GitHub secret MERCHANT_CONTACT_EMAIL"
+    "Comment": "Optional GitHub secret MERCHANT_CONTACT_EMAIL. Also set GitHub secret ABN_LOOKUP_GUID (injected by xituan_backend deploy.yml into ECS; not a CFN param)."
   },
   {
     "ParameterKey": "AwsSesRegion",
