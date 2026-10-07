@@ -1,6 +1,6 @@
 # Post-Deploy Registry（巡检入口）
 
-Last updated: 2026-09-05
+Last updated: 2026-10-07
 
 **日常巡检：「检查 post-deploy」** — 打开本文件，活跃表行数应为 **0** 表示无待收尾部署债务。非 0 则点击 **Entry** 查看 Gate 与勾选清单。
 
@@ -10,6 +10,7 @@ Last updated: 2026-09-05
 
 | ID | 状态 | 已部署 | 待完成 | Gate 摘要 | 下一动作 | Entry | Last updated |
 |----|------|--------|--------|-----------|----------|-------|--------------|
+| `merchant-panel-mixed-activities-retire` | `planned` | —（Phase 1：分接口客户端 + **保留** 混合 API） | Phase N 删 `GET /activities` + `listActivities` | WeChat 商家面板分接口版本全量后再删混合路由 | 部署 Phase 1；旧 WeChat 仍打混合 path；Gate 后单独 PR 清理 | [entry](./entries/2026-10-merchant-panel-mixed-activities-retire.md) | 2026-10-07 |
 | `metadata-rebind-provenance-batch` | `planned` | — | Phase 1 加表与解绑保留 MANUAL；Phase N 清洗 UNBIND_COPY | CMS 批次看板发版且抽查 MANUAL 不被改写 | 部署 migration 0363 与 backend 解绑行为 | [entry](./entries/2026-09-metadata-rebind-provenance-batch.md) | 2026-09-29 |
 | `sih-format-allowlist-webp-png` | `planned` | —（format 本期不动） | ① 手动 `SIZE_OPTS` ② **Gate 后 SIH 只留 webp\|png（终态不支持 jpeg/jpg）** | C4 回填完、DB 主 path 均为 webp/png | 部署 SIH 时改 `SIZE_OPTS`；format 收紧等 Gate | [entry](./entries/2026-09-sih-format-allowlist-webp-png.md) | 2026-09-06 |
 | `shipping-service-pp-exp-alias` | `planned` | — | Phase 1 + Phase N | WeChat/Site 订单路径只传长名后再删入站 PP/EXP fallback | 实施 Phase 1：长名落库 + normalize 双读；Gate 后单独 PR 删别名 | [entry](./entries/2026-09-shipping-service-pp-exp-alias.md) | 2026-09-01 |

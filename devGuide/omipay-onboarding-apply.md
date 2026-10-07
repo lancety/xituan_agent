@@ -27,4 +27,6 @@
 
 ## 必填（申请时）
 
-银行流水；公司 ASIC；身份件（驾照正+反 **或** 护照）；运营联系电话/邮箱。Sole trader **不要求** ABN 文件。
+银行流水文件；公司 ASIC；身份件（驾照正+反 **或** 护照）；运营联系电话/邮箱；商户档案 **ABN**（无则拒申请）。Sole trader **不要求** ABN 文件。
+
+申请时重新跑 ABN Lookup（Active / 主体类型 / 有名字则比 legalName）。ABR 故障放行；姓名 suppress 不拒单，邮件与 CMS 打 `abnNameSuppressed` 标记。
