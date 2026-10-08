@@ -1,3 +1,24 @@
+## [4.0.0] - 2026-10-08
+
+### ✨ 新功能
+
+- feat(lambda): add barcode kind to image-normalize VARIANT_POLICY
+
+### 📚 文档
+
+- docs(devGuide): update omipay onboarding and post-deploy ledger
+- docs(devGuide): record category ownership binding and rebind provenance rollout
+- docs(openim): add device push offline workflow and refresh related guides
+- docs(aws): allow ECS SNS FCM publish and document OpenIM offline push webhooks.
+- docs(aws): document production SNS FCM GitHub Secrets
+- docs(release): include Expo apps in unified-release version sync
+- docs(devGuide): document Expo app production branch and storefront lock links
+- docs(planned-work): update image-normalize ledger and add node runtime upgrade entry
+
+### 🔧 构建/配置
+
+- chore: sync after omipay catalog work
+
 ## [3.12.2] - 2026-09-12
 
 ### ✨ 新功能
