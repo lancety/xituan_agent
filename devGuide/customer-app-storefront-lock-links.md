@@ -14,7 +14,7 @@ Web 店码继续编现有 Site 地址，不另造一套链接。系统相机在�
 | 环境 | host 解析出的环境必须等于 App 的 `EXPO_PUBLIC_APP_ENV`（正式包默认 prod）。环境不一致时系统仍可能打开 App，但不上锁 |
 | 进具体页 | 解析 Site 公开 path，映射到已有路由。认不出的 path 停在已锁店首页 |
 | 调试（不依赖校验文件） | `xituancustomer://storefront?code=` 或 `merchantId=`。自定义 scheme 只锁店，不带 path |
-| iOS | `apple-app-site-association` 的 `appID` 仍是 `TEAMID` 占位。补上 Apple Team ID 之前，iPhone 系统相机扫码不进 App |
+| iOS | `apple-app-site-association` 使用 Team ID `FHUTTYDPQ8`（`FHUTTYDPQ8.au.com.xituan.customer`）。Site 未部署到 `m.xituan.com.au` 前，系统相机扫码可能仍不进 App |
 
 Play internal testing **现包**（`135df28` 及之后、且已含 `intentFilters` 的 AAB）只能做到：校验通过后进已锁店首页。按 path 进详情、顶栏分享是客户 App 工作区里的后续改动，要进测试包必须重新上传 AAB。只验证「扫码进商户首页」不用新 AAB。
 
