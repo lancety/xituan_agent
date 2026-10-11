@@ -541,3 +541,5 @@ const imageResult = await s3UploadManager.uploadFileToS3(
 ## 相关文档
 
 - [`sih-image-size-phase-a.md`](./sih-image-size-phase-a.md) — SIH 允许边长、fit/format、渐进加载与查漏 checklist
+- [planned-work `catalog-image-direct-upload`](./planned-work/entries/2026-10-catalog-image-direct-upload.md) — **规划中**：目录/业务图迁直传
+- [`catalog-image-direct-upload-standard.md`](./catalog-image-direct-upload-standard.md) — **多端直传标准（权威）**；本文 FormData 过 backend 为 as-is，迁完后以标准契约为准
