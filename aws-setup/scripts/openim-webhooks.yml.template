@@ -1,4 +1,5 @@
-# Xituan production: OpenIM → backend beforeOfflinePush (path token = OPENIM_CALLBACK_PATH_TOKEN).
+# Xituan production: OpenIM → backend webhooks (path token = OPENIM_CALLBACK_PATH_TOKEN).
+# beforeOfflinePush (SNS/FCM) + afterSendGroupMsg (inbox last_message_at).
 # Placeholder replaced by openim-ec2-enable-offline-push-webhook.sh
 url: {{OPENIM_CALLBACK_URL}}
 beforeSendSingleMsg:
@@ -46,7 +47,7 @@ beforeMsgModify:
   allowedTypes: []
   deniedTypes: []
 afterSendGroupMsg:
-  enable: false
+  enable: true
   timeout: 5
   # See beforeSendSingleMsg comment.
   allowedTypes: []

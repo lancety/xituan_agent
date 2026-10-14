@@ -22,7 +22,22 @@ class SmartUnifiedReleaseManager {
       { name: 'xituan_app_merchant', path: path.join(projectRoot, 'xituan_app_merchant') },
       { name: 'xituan_agent', path: path.join(projectRoot, 'xituan_agent') }
     ];
-    this.skipGlobalVersionReplace = new Set(['xituan_app_customer', 'xituan_app_merchant']);
+    /**
+     * Allowlist only — never walk the tree / replace `v{old}` globally
+     * (that smashed OpenIM image tags and unrelated docs).
+     *
+     * - packageJsonVersionPaths: JSON `version` field for this repo
+     * - displayVersionSyncProjects: must run scripts/sync-version.js after bump
+     *   (writes config/app-version.ts and/or app.json — site, wechat, expo apps)
+     * - CHANGELOG: generateSmartChangelog only
+     */
+    this.packageJsonVersionPaths = ['package.json', 'tests/package.json'];
+    this.displayVersionSyncProjects = new Set([
+      'xituan_site',
+      'xituan_wechat_app',
+      'xituan_app_customer',
+      'xituan_app_merchant'
+    ]);
   }
 
   // 执行命令
@@ -249,123 +264,38 @@ class SmartUnifiedReleaseManager {
     }
   }
 
-  // 更新版本号到指定版本
+  /**
+   * Set app release version only on allowlisted package.json files (JSON field).
+   * Returns previous root package.json version (for changelog), or null if missing.
+   */
   updateVersionTo(projectPath, targetVersion, projectName = '') {
     console.log(`更新 ${projectPath} 版本号到 ${targetVersion}...`);
-    
-    const packageJsonPath = path.join(projectPath, 'package.json');
-    if (fs.existsSync(packageJsonPath)) {
+
+    let rootOldVersion = null;
+    for (const relPath of this.packageJsonVersionPaths) {
+      const packageJsonPath = path.join(projectPath, relPath);
+      if (!fs.existsSync(packageJsonPath)) {
+        continue;
+      }
       const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
       const oldVersion = packageJson.version;
+      if (relPath === 'package.json') {
+        rootOldVersion = oldVersion;
+      }
+      if (oldVersion === targetVersion) {
+        console.log(`  已是目标版本: ${relPath} (${targetVersion})`);
+        continue;
+      }
       packageJson.version = targetVersion;
       fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
-      console.log(`版本已更新: ${oldVersion} → ${targetVersion}`);
-      
-      // Expo apps stay on 1.0.0 until first unified release; a global 1.0.0
-      // replace would smash unrelated strings. app.json is updated by version:sync.
-      if (this.skipGlobalVersionReplace.has(projectName)) {
-        console.log(`跳过全局版本替换: ${projectName} (expo.version 由 version:sync 更新)`);
-      } else {
-        this.replaceVersionInProject(projectPath, oldVersion, targetVersion);
-      }
-      
-      return oldVersion; // 返回旧版本号，用于后续的版本替换
+      console.log(`  ✅ ${relPath}: ${oldVersion} → ${targetVersion}`);
     }
-    return null;
-  }
 
-  // 在项目文件夹范围内替换所有旧版本号
-  replaceVersionInProject(projectPath, oldVersion, newVersion) {
-    console.log(`在项目 ${projectPath} 中替换版本号: ${oldVersion} → ${newVersion}`);
-    
-    try {
-      // 递归搜索项目文件夹中的所有文件
-      const files = this.getAllFiles(projectPath);
-      let replacedCount = 0;
-      
-      files.forEach(filePath => {
-        // 跳过 node_modules、.git 等目录
-        if (this.shouldSkipFile(filePath)) {
-          return;
-        }
-        
-        try {
-          const content = fs.readFileSync(filePath, 'utf8');
-          const oldContent = content;
-          
-          // 替换各种版本号格式
-          let newContent = content;
-          
-          // 替换 v0.23.0 格式
-          newContent = newContent.replace(new RegExp(`v${oldVersion.replace(/\./g, '\\.')}`, 'g'), `v${newVersion}`);
-          
-          // 替换 版本 v0.23.0 格式
-          newContent = newContent.replace(new RegExp(`版本 v${oldVersion.replace(/\./g, '\\.')}`, 'g'), `版本 v${newVersion}`);
-          
-          // 替换纯版本号 0.23.0 格式（在特定上下文中）
-          newContent = newContent.replace(new RegExp(`"version":\\s*"${oldVersion.replace(/\./g, '\\.')}"`, 'g'), `"version": "${newVersion}"`);
-          
-          // 如果内容有变化，写回文件
-          if (newContent !== oldContent) {
-            fs.writeFileSync(filePath, newContent, 'utf8');
-            console.log(`  ✅ 已更新: ${path.relative(projectPath, filePath)}`);
-            replacedCount++;
-          }
-        } catch (error) {
-          // 忽略无法读取的文件（如二进制文件）
-          console.log(`  ⚠️  跳过文件: ${path.relative(projectPath, filePath)} (${error.message})`);
-        }
-      });
-      
-      console.log(`版本号替换完成，共更新 ${replacedCount} 个文件`);
-      
-    } catch (error) {
-      console.error(`版本号替换失败:`, error.message);
+    if (rootOldVersion === null) {
+      console.warn(`  ⚠️  未找到 package.json: ${projectPath}`);
     }
-  }
 
-  // 递归获取文件夹中的所有文件
-  getAllFiles(dirPath) {
-    const files = [];
-    
-    try {
-      const items = fs.readdirSync(dirPath);
-      
-      items.forEach(item => {
-        const fullPath = path.join(dirPath, item);
-        const stat = fs.statSync(fullPath);
-        
-        if (stat.isDirectory()) {
-          // 递归处理子目录
-          files.push(...this.getAllFiles(fullPath));
-        } else if (stat.isFile()) {
-          files.push(fullPath);
-        }
-      });
-    } catch (error) {
-      console.log(`无法读取目录: ${dirPath}`);
-    }
-    
-    return files;
-  }
-
-  // 判断是否应该跳过某个文件
-  shouldSkipFile(filePath) {
-    const skipPatterns = [
-      'node_modules',
-      '.git',
-      'dist',
-      'build',
-      '.next',
-      'coverage',
-      '.nyc_output',
-      'package-lock.json',
-      'yarn.lock',
-      '.DS_Store',
-      'Thumbs.db'
-    ];
-    
-    return skipPatterns.some(pattern => filePath.includes(pattern));
+    return rootOldVersion;
   }
 
   // 生成智能CHANGELOG
@@ -438,23 +368,22 @@ class SmartUnifiedReleaseManager {
     console.log(`智能CHANGELOG已更新: ${changelogPath}`);
   }
 
-  // Sync display version from package.json (wechat/site app-version.ts; Expo app.json + app-version.ts).
-  syncAppVersion(projectPath, projectLabel) {
-    const syncScript = path.join(projectPath, 'scripts', 'sync-version.js');
-    if (!fs.existsSync(syncScript)) {
-      console.warn(`${projectLabel} version:sync 脚本不存在，跳过: ${syncScript}`);
+  /**
+   * Sync allowlisted display version files from package.json via scripts/sync-version.js
+   * (site/wechat → config/app-version.ts; Expo → app.json + config/app-version.ts).
+   */
+  syncDisplayVersion(project) {
+    if (!this.displayVersionSyncProjects.has(project.name)) {
       return;
     }
-    console.log(`同步 ${projectLabel} 显示版本 (version:sync) ...`);
-    this.exec(`node scripts/sync-version.js`, projectPath);
-  }
-
-  syncAppVersionIfPresent(project) {
     const syncScript = path.join(project.path, 'scripts', 'sync-version.js');
     if (!fs.existsSync(syncScript)) {
-      return;
+      throw new Error(
+        `${project.name} is in displayVersionSyncProjects but missing scripts/sync-version.js`
+      );
     }
-    this.syncAppVersion(project.path, project.name);
+    console.log(`同步 ${project.name} 显示版本 (version:sync → app-version.ts / app.json) ...`);
+    this.exec(`node scripts/sync-version.js`, project.path);
   }
 
   // 检查项目变更状态
@@ -593,7 +522,7 @@ class SmartUnifiedReleaseManager {
           // 生成智能CHANGELOG
           this.generateSmartChangelog(project.path, newVersion, hasChanges, oldVersion);
           
-          this.syncAppVersionIfPresent(project);
+          this.syncDisplayVersion(project);
           
           // 获取当前分支名称
           const currentBranch = this.getCurrentBranch(project.path);
@@ -641,7 +570,7 @@ class SmartUnifiedReleaseManager {
           // 生成智能CHANGELOG
           this.generateSmartChangelog(project.path, newVersion, hasChanges, oldVersion);
           
-          this.syncAppVersionIfPresent(project);
+          this.syncDisplayVersion(project);
           
           // 获取当前分支名称
           const currentBranch = this.getCurrentBranch(project.path);

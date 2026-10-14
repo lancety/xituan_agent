@@ -1,8 +1,8 @@
-# Android 离线推送工作流（OpenIM → SNS → FCM）
+# 离线推送工作流（OpenIM → SNS → FCM / APNs）
 
-Last updated: 2026-09-28
+Last updated: 2026-10-13
 
-**范围**：Expo **喜团**（customer）与 **喜团运营**（merchant）Android 系统通知。微信小程序 / Site / CMS 在线聊天不走这条 FCM 链路。iOS APNs 代码里有 ARN 槽位，生产 `deploy.yml` **尚未注入**。
+**范围**：Expo **喜团**（customer）与 **喜团运营**（merchant）Android（FCM）与 iOS（APNs）系统通知。微信小程序 / Site / CMS 在线聊天不走这条链路。
 
 **权威**：本文。OpenIM EC2 / Compose 细节见 [OPENIM-DEPLOYMENT.md](../../aws-setup/OPENIM-DEPLOYMENT.md)；本地 Docker 见 `xituan_backend/deploy/openim/README.md`。
 
@@ -10,7 +10,7 @@ Last updated: 2026-09-28
 
 | 问题 | 结论 |
 |------|------|
-| 谁发系统通知 | OpenIM 判定接收方**离线**后回调 backend，backend 用 AWS SNS 发 FCM。不用 OpenIM 内置个推。 |
+| 谁发系统通知 | OpenIM 判定接收方**离线**后回调 backend，backend 用 AWS SNS 发 FCM / APNs。不用 OpenIM 内置个推。 |
 | 谁算离线 | 该 OpenIM user 没有活跃长连接。App 进后台须 `setAppBackgroundStatus(true)`，否则 websocket 仍算在线、不会回调。 |
 | ECS 读哪份环境变量 | **只读 GitHub Environment `production` Secrets**（`deploy.yml` 注入）。本机 `xituan_backend/.env.production` **不会**进容器。 |
 | 生产 06 CloudFormation | 默认跳过。SNS IAM 策略在模板 `06_ecs-services.yaml` 的 `device-push-sns-fcm`；若 06 未再部署，须确认 **线上 Task Role 已有同名 inline policy**。 |
@@ -33,9 +33,9 @@ Last updated: 2026-09-28
 
 | 项 | 说明 |
 |----|------|
-| 创建 | 区域 `ap-southeast-2`。GCM/FCM：**`xituan-customer-fcm`**、**`xituan-merchant-fcm`**。ARN 形如 `arn:aws:sns:ap-southeast-2:ACCOUNT:app/GCM/xituan-customer-fcm`。 |
-| 密钥 | Platform Application 绑定对应 Firebase 服务账号 / API key（控制台一次性配置）。 |
-| iOS | `SNS_PLATFORM_ARN_APNS_*` 代码已读，生产 workflow **未注入**，先不依赖。 |
+| 创建 | 区域 `ap-southeast-2`。GCM/FCM：**`xituan-customer-fcm`**、**`xituan-merchant-fcm`**；APNS：**`xituan-customer-apns`**、**`xituan-merchant-apns`**（Token 认证，生产勿勾 sandbox）。 |
+| 密钥 | FCM：Firebase 服务账号；APNS：Apple Key（Team `FHUTTYDPQ8` / Key `NPBPWXH8YY`）与 Bundle ID。 |
+| iOS 变量 | `SNS_PLATFORM_ARN_APNS_CUSTOMER` / `SNS_PLATFORM_ARN_APNS_MERCHANT`（本地 `.env.*` + GitHub `production` Secrets；`deploy.yml` 已注入）。 |
 
 ### 3. 环境变量与 Secret（三处值必须对齐）
 
@@ -43,6 +43,8 @@ Last updated: 2026-09-28
 |------|------|------|
 | `SNS_PLATFORM_ARN_FCM_CUSTOMER` | `.env.development` | GitHub Environment **`production`** Secret |
 | `SNS_PLATFORM_ARN_FCM_MERCHANT` | 同上 | 同上 |
+| `SNS_PLATFORM_ARN_APNS_CUSTOMER` | 同上 | 同上 |
+| `SNS_PLATFORM_ARN_APNS_MERCHANT` | 同上 | 同上 |
 | `OPENIM_CALLBACK_PATH_TOKEN` | 本地固定 `xituan-openim-callback-dev`，与 `deploy/openim/config/webhooks.yml` 的 URL 路径一致 | **独立生产 token**（勿复用本地字符串）。须同时写入 GitHub Secret **和** OpenIM EC2 `webhooks.yml` |
 
 生产部署：改 Secret 后要跑 **含当前 `deploy.yml` 的** production 工作流。只 Re-run **旧 commit** 不会带上后来才写进 YAML 的注入项。
@@ -55,14 +57,14 @@ OpenIM **不读** backend 环境变量。回调 URL 只在 OpenIM 自己的 `web
 
 | 环境 | 怎么挂 |
 |------|--------|
-| 本机 | `npm run im:up` 挂载 `deploy/openim/config/webhooks.yml`。URL：`http://host.docker.internal:3050/api/openim/callback/xituan-openim-callback-dev`。`beforeOfflinePush.enable: true`。 |
-| 生产 EC2 | 默认是库存 `callbackExample`（本机 127.0.0.1），**不会**打到 ECS。用 `aws-setup/scripts/openim-ec2-enable-offline-push-webhook.sh`（token 与 GitHub Secret 相同，origin `https://backend.xituan.com.au`）。 |
+| 本机 | `npm run im:up` 挂载 `deploy/openim/config/webhooks.yml`。URL：`http://host.docker.internal:3050/api/openim/callback/xituan-openim-callback-dev`。`beforeOfflinePush.enable: true`，`afterSendGroupMsg.enable: true`（会话列表 `last_message_at`）。 |
+| 生产 EC2 | 默认是库存 `callbackExample`（本机 127.0.0.1），**不会**打到 ECS。用 `aws-setup/scripts/openim-ec2-enable-offline-push-webhook.sh`（token 与 GitHub Secret 相同，origin `https://backend.xituan.com.au`；模板含 beforeOfflinePush + afterSendGroupMsg）。 |
 
 生产 URL 形态：`https://backend.xituan.com.au/api/openim/callback/<OPENIM_CALLBACK_PATH_TOKEN>`。
 
 ### 5. ECS Task Role SNS IAM
 
-Task Role 须能对上述两个 Platform Application 执行 `CreatePlatformEndpoint` / `Publish`（以及 endpoint 的 Get/Set/Delete）。
+Task Role 须能对上述 FCM + APNS Platform Application 执行 `CreatePlatformEndpoint` / `Publish`（以及 endpoint 的 Get/Set/Delete）。
 
 | 项 | 说明 |
 |----|------|
@@ -144,7 +146,14 @@ Backend 处理：
 
 ### 3. 客户端点击
 
-`openimPushNavigationUtil` 认 `data.type === openim`，拉会话后进 **Messages → ChatRoom**（不是只切 Tab 停在列表）。
+`devicePushNavigationUtil` 按 `data.type` 分流：
+
+| `type` | 行为 |
+|--------|------|
+| `openim` | 拉会话后进 **Messages → ChatRoom**（栈底保留会话列表，可返回；merchant 按 `conversationType` 区分客户/平台会话与 viewer） |
+| `order` / `payment` | 进对应 **订单详情**（customer 根栈；merchant Home 栈，下方为首页以便返回） |
+
+业务订单/收款推送由 backend `DevicePushNotificationChannelHandler` / `devicePushOrderNotifyUtil` 发出，data 含 `orderId`、`mode` 等。
 
 ---
 

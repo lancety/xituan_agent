@@ -1,5 +1,6 @@
 #!/bin/bash
-# Production OpenIM EC2: point beforeOfflinePush at xituan backend SNS/FCM.
+# Production OpenIM EC2: point beforeOfflinePush + afterSendGroupMsg at xituan backend.
+# beforeOfflinePush → SNS/FCM; afterSendGroupMsg → PG last_message_at / inbox sort.
 # Requires the same OPENIM_CALLBACK_PATH_TOKEN as GitHub Environment production
 # (injected into ECS by xituan_backend/.github/workflows/deploy.yml).
 #
@@ -54,4 +55,4 @@ cd "$COMPOSE_DIR"
   -f docker-compose.webhooks.yaml \
   up -d --force-recreate --no-deps openim-server
 
-echo "openim-server recreated with beforeOfflinePush webhook (origin=${ORIGIN})"
+echo "openim-server recreated with beforeOfflinePush + afterSendGroupMsg webhooks (origin=${ORIGIN})"
