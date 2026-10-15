@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>批量图片缩放裁剪</title>
+  <style>
+    :root {
+      --bg0: #0e1419;
+      --bg1: #162028;
+      --bg2: #1e2c36;
+      --line: rgba(180, 210, 220, 0.14);
+      --text: #e8f0f3;
+      --muted: #8aa0ab;
+      --accent: #3ecf8e;
+      --accent-dim: rgba(62, 207, 142, 0.16);
+      --warn: #f0b429;
+      --danger: #ef6b6b;
+      --radius: 12px;
+      --font: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      --mono: "Cascadia Code", "Consolas", monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: var(--font);
+      color: var(--text);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, rgba(62, 207, 142, 0.12), transparent 55%),
+        radial-gradient(900px 500px at 100% 0%, rgba(64, 140, 180, 0.14), transparent 50%),
+        linear-gradient(165deg, var(--bg0), var(--bg1) 45%, #101820);
+    }
+
+    .app {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 28px 20px 48px;
+      display: grid;
+      gap: 20px;
+    }
+
+    header h1 {
+      margin: 0 0 6px;
+      font-size: 1.55rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(300px, 360px) 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+    @media (max-width: 920px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: linear-gradient(180deg, rgba(30, 44, 54, 0.92), rgba(18, 28, 36, 0.95));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .panel h2 {
+      margin: 0 0 12px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .field { margin-bottom: 14px; }
+    .field label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    input[type="number"],
+    input[type="text"],
+    select {
+      width: 100%;
+      background: var(--bg0);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 9px 10px;
+      font: inherit;
+      outline: none;
+    }
+    input:focus, select:focus {
+      border-color: rgba(62, 207, 142, 0.55);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+    input[type="color"] {
+      width: 100%;
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--bg0);
+      padding: 4px;
+      cursor: pointer;
+    }
+    input[type="range"] { width: 100%; }
+
+    .seg {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      background: var(--bg0);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 4px;
+    }
+    .seg button {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      border-radius: 8px;
+      padding: 8px 6px;
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.88rem;
+    }
+    .seg button.active {
+      background: var(--accent-dim);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .anchor-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      max-width: 168px;
+    }
+    .anchor-grid button {
+      aspect-ratio: 1;
+      border: 1px solid var(--line);
+      background: var(--bg0);
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 0.75rem;
+      padding: 0;
+    }
+    .anchor-grid button.active {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+      color: var(--accent);
+      box-shadow: inset 0 0 0 1px rgba(62, 207, 142, 0.35);
+    }
+
+    .checks {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 16px;
+      align-items: center;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .checks label {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    button.btn {
+      border: 1px solid var(--line);
+      background: var(--bg2);
+      color: var(--text);
+      border-radius: 9px;
+      padding: 10px 14px;
+      font: inherit;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    button.btn:hover { border-color: rgba(62, 207, 142, 0.4); }
+    button.btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    button.btn-primary {
+      background: linear-gradient(180deg, #49d89a, #2fb87a);
+      color: #062016;
+      border-color: transparent;
+      font-weight: 700;
+    }
+    button.btn-primary:hover { filter: brightness(1.05); }
+    button.btn-ghost { background: transparent; }
+
+    .drop {
+      border: 1.5px dashed rgba(62, 207, 142, 0.35);
+      border-radius: var(--radius);
+      min-height: 140px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 22px;
+      cursor: pointer;
+      background: rgba(10, 16, 20, 0.35);
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .drop.dragover {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+    .drop strong { color: var(--accent); font-size: 1.05rem; }
+    .drop span { display: block; margin-top: 6px; color: var(--muted); font-size: 0.88rem; }
+
+    .preview-wrap {
+      display: grid;
+      gap: 12px;
+    }
+    .preview-stage {
+      position: relative;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: #0a1014;
+      overflow: auto;
+      padding: 12px;
+      line-height: 0;
+    }
+    .preview-stage canvas {
+      display: block;
+      margin: 0 auto;
+      padding: 0;
+      max-width: 100%;
+      height: auto;
+      vertical-align: top;
+      background: #121a20;
+    }
+    .preview-empty {
+      color: var(--muted);
+      font-size: 0.95rem;
+      text-align: center;
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+    .meta b { color: var(--text); font-weight: 600; }
+
+    .file-list {
+      max-height: 220px;
+      overflow: auto;
+      display: grid;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .file-item {
+      display: grid;
+      grid-template-columns: 40px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.18);
+      border: 1px solid transparent;
+      font-size: 0.85rem;
+    }
+    .file-item.active { border-color: rgba(62, 207, 142, 0.45); }
+    .file-item img {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 6px;
+      background: #000;
+    }
+    .file-item .name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .file-item .dim { color: var(--muted); font-size: 0.78rem; }
+    .file-item button {
+      border: 0;
+      background: transparent;
+      color: var(--danger);
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 4px 6px;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      min-height: 1.2em;
+    }
+    .status.ok { color: var(--accent); }
+    .status.err { color: var(--danger); }
+    .progress {
+      margin-top: 8px;
+      height: 6px;
+      background: var(--bg0);
+      border-radius: 999px;
+      overflow: hidden;
+      display: none;
+    }
+    .progress > i {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #2fb87a, #5ee0a8);
+      transition: width 0.12s linear;
+    }
+
+    .hint {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.45;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>批量图片缩放裁剪</h1>
+      <p>拖入多张图片 → 设定目标尺寸与填充/裁剪模式 → 预览第一张效果 → 批量导出 PNG / JPEG。使用 createImageBitmap + Canvas2D（浏览器 GPU 加速绘制）处理。</p>
+    </header>
+
+    <div class="layout">
+      <aside class="panel">
+        <h2>参数</h2>
+
+        <div class="field">
+          <label>目标尺寸 (px)</label>
+          <div class="row">
+            <input id="targetW" type="number" min="1" max="16384" value="1080" />
+            <input id="targetH" type="number" min="1" max="16384" value="1080" />
+          </div>
+          <div class="hint">宽 × 高</div>
+        </div>
+
+        <div class="field">
+          <label>填充模式</label>
+          <div class="seg" id="fitModeSeg">
+            <button type="button" data-fit="cover" class="active" title="短边 100% 铺满，多出按锚点裁剪">短边铺满 (裁剪)</button>
+            <button type="button" data-fit="contain" title="长边 100% 完整放入，不足留白">长边适配 (留白)</button>
+          </div>
+          <div class="hint" id="fitHint">短边缩放至 100%，超出目标的一边按锚点裁掉。</div>
+        </div>
+
+        <div class="field">
+          <label>锚点方向（裁剪 / 留白定位）</label>
+          <div class="anchor-grid" id="anchorGrid" aria-label="9-point anchor"></div>
+          <div class="hint">左上：保留左上，裁右/下；中间：超出部分对半裁。</div>
+        </div>
+
+        <div class="field">
+          <label>导出格式</label>
+          <div class="seg" id="formatSeg">
+            <button type="button" data-fmt="image/png" class="active">PNG</button>
+            <button type="button" data-fmt="image/jpeg">JPEG</button>
+          </div>
+        </div>
+
+        <div class="field" id="pngOpts">
+          <label>PNG 背景</label>
+          <div class="checks">
+            <label><input type="radio" name="pngBg" value="transparent" checked /> 透明</label>
+            <label><input type="radio" name="pngBg" value="color" /> 填充色</label>
+          </div>
+          <div style="margin-top:8px">
+            <input id="fillColor" type="color" value="#ffffff" />
+          </div>
+        </div>
+
+        <div class="field" id="jpegOpts" style="display:none">
+          <label>JPEG 质量 <span id="qualityLabel">0.92</span></label>
+          <input id="jpegQuality" type="range" min="0.5" max="1" step="0.01" value="0.92" />
+          <div class="hint">JPEG 不支持透明，留白区域使用下方填充色。</div>
+          <input id="jpegFillColor" type="color" value="#ffffff" style="margin-top:8px" />
+        </div>
+
+        <div class="field">
+          <label>文件名</label>
+          <div class="checks">
+            <label><input type="checkbox" id="keepName" checked /> 保留原名 + 后缀</label>
+          </div>
+          <input id="nameSuffix" type="text" value="_resized" style="margin-top:8px" />
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" id="btnDownload" disabled>批量导出到文件夹</button>
+          <button class="btn btn-ghost" id="btnClear" disabled>清空</button>
+        </div>
+        <div class="status" id="status"></div>
+        <div class="progress" id="progress"><i></i></div>
+      </aside>
+
+      <main>
+        <div
+          class="drop"
+          id="dropZone"
+          tabindex="0"
+          role="button"
+          aria-label="拖拽或点击选择图片"
+        >
+          <div>
+            <strong>拖拽图片到此处</strong>
+            <span>或点击选择 · 支持多选 · PNG / JPEG / WebP / BMP / GIF</span>
+          </div>
+          <input id="fileInput" type="file" accept="image/*" multiple hidden />
+        </div>
+
+        <div class="panel" style="margin-top:14px">
+          <h2>裁剪预览（第一张原图）</h2>
+          <div class="preview-wrap">
+            <div class="preview-stage" id="previewStage">
+              <div class="preview-empty" id="previewEmpty">尚未导入图片</div>
+              <canvas id="previewCanvas" style="display:none"></canvas>
+            </div>
+            <div class="meta" id="previewMeta"></div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:14px">
+          <h2>已导入 <span id="fileCount">0</span> 张</h2>
+          <div class="file-list" id="fileList"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+(() => {
+  "use strict";
+
+  /** @typedef {'nw'|'n'|'ne'|'w'|'c'|'e'|'sw'|'s'|'se'} Anchor */
+  /** @typedef {'cover'|'contain'} FitMode */
+
+  const ANCHORS = [
+    { id: "nw", label: "↖" },
+    { id: "n", label: "↑" },
+    { id: "ne", label: "↗" },
+    { id: "w", label: "←" },
+    { id: "c", label: "·" },
+    { id: "e", label: "→" },
+    { id: "sw", label: "↙" },
+    { id: "s", label: "↓" },
+    { id: "se", label: "↘" },
+  ];
+
+  const state = {
+    /** @type {{ id: string, file: File, url: string, width: number, height: number, bitmap: ImageBitmap|null }[]} */
+    items: [],
+    fitMode: /** @type {FitMode} */ ("cover"),
+    anchor: /** @type {Anchor} */ ("c"),
+    format: "image/png",
+    renderer: "canvas2d",
+  };
+
+  /** Reused export canvas to avoid alloc churn. */
+  const exportCanvas = document.createElement("canvas");
+  const exportCtx = exportCanvas.getContext("2d", { alpha: true, willReadFrequently: false });
+
+  const el = {
+    targetW: document.getElementById("targetW"),
+    targetH: document.getElementById("targetH"),
+    fitModeSeg: document.getElementById("fitModeSeg"),
+    fitHint: document.getElementById("fitHint"),
+    anchorGrid: document.getElementById("anchorGrid"),
+    formatSeg: document.getElementById("formatSeg"),
+    pngOpts: document.getElementById("pngOpts"),
+    jpegOpts: document.getElementById("jpegOpts"),
+    fillColor: document.getElementById("fillColor"),
+    jpegFillColor: document.getElementById("jpegFillColor"),
+    jpegQuality: document.getElementById("jpegQuality"),
+    qualityLabel: document.getElementById("qualityLabel"),
+    keepName: document.getElementById("keepName"),
+    nameSuffix: document.getElementById("nameSuffix"),
+    btnDownload: document.getElementById("btnDownload"),
+    btnClear: document.getElementById("btnClear"),
+    status: document.getElementById("status"),
+    progress: document.getElementById("progress"),
+    progressBar: document.querySelector("#progress > i"),
+    dropZone: document.getElementById("dropZone"),
+    fileInput: document.getElementById("fileInput"),
+    previewCanvas: document.getElementById("previewCanvas"),
+    previewEmpty: document.getElementById("previewEmpty"),
+    previewMeta: document.getElementById("previewMeta"),
+    fileList: document.getElementById("fileList"),
+    fileCount: document.getElementById("fileCount"),
+  };
+
+  // ---------- math / layout ----------
+
+  /**
+   * Compute source crop rect and destination draw rect for target box.
+   * cover  = short-edge 100% (scale = max), crop overflow by anchor
+   * contain = long-edge 100% (scale = min), letterbox by anchor
+   */
+  function computeLayout(srcW, srcH, dstW, dstH, fitMode, anchor) {
+    const srcAspect = srcW / srcH;
+    const dstAspect = dstW / dstH;
+
+    if (fitMode === "cover") {
+      let cropW;
+      let cropH;
+      if (srcAspect > dstAspect) {
+        // source wider → crop left/right
+        cropH = srcH;
+        cropW = srcH * dstAspect;
+      } else {
+        // source taller → crop top/bottom
+        cropW = srcW;
+        cropH = srcW / dstAspect;
+      }
+      const cropX = alignAxis(srcW - cropW, anchor, "x");
+      const cropY = alignAxis(srcH - cropH, anchor, "y");
+      return {
+        sx: cropX,
+        sy: cropY,
+        sw: cropW,
+        sh: cropH,
+        dx: 0,
+        dy: 0,
+        dw: dstW,
+        dh: dstH,
+      };
+    }
+
+    // contain
+    const scale = Math.min(dstW / srcW, dstH / srcH);
+    const dw = srcW * scale;
+    const dh = srcH * scale;
+    const dx = alignAxis(dstW - dw, anchor, "x");
+    const dy = alignAxis(dstH - dh, anchor, "y");
+    return {
+      sx: 0,
+      sy: 0,
+      sw: srcW,
+      sh: srcH,
+      dx,
+      dy,
+      dw,
+      dh,
+    };
+  }
+
+  /** Map leftover space to offset using 9-point anchor. */
+  function alignAxis(leftover, anchor, axis) {
+    if (leftover <= 0) return 0;
+    const mapX = { nw: 0, n: 0.5, ne: 1, w: 0, c: 0.5, e: 1, sw: 0, s: 0.5, se: 1 };
+    const mapY = { nw: 0, n: 0, ne: 0, w: 0.5, c: 0.5, e: 0.5, sw: 1, s: 1, se: 1 };
+    const t = axis === "x" ? mapX[anchor] : mapY[anchor];
+    return leftover * t;
+  }
+
+  function parseColor(hex) {
+    const h = hex.replace("#", "");
+    const full = h.length === 3
+      ? h.split("").map((c) => c + c).join("")
+      : h;
+    const n = parseInt(full, 16);
+    return {
+      r: (n >> 16) & 255,
+      g: (n >> 8) & 255,
+      b: n & 255,
+      a: 1,
+    };
+  }
+
+  function getBgColor() {
+    if (state.format === "image/png") {
+      const mode = document.querySelector('input[name="pngBg"]:checked')?.value;
+      if (mode === "transparent") return null;
+      return parseColor(el.fillColor.value);
+    }
+    return parseColor(el.jpegFillColor.value);
+  }
+
+  function getTargetSize() {
+    const w = Math.max(1, Math.min(16384, Math.round(Number(el.targetW.value) || 1)));
+    const h = Math.max(1, Math.min(16384, Math.round(Number(el.targetH.value) || 1)));
+    return { w, h };
+  }
+
+  function extForFormat(fmt) {
+    return fmt === "image/jpeg" ? "jpg" : "png";
+  }
+
+  function outputName(file) {
+    const base = file.name.replace(/\.[^.]+$/, "");
+    const suffix = el.keepName.checked ? (el.nameSuffix.value || "") : "";
+    const name = el.keepName.checked ? `${base}${suffix}` : `${base}${suffix || "_out"}`;
+    return `${name}.${extForFormat(state.format)}`;
+  }
+
+  // ---------- Canvas2D renderer (same coord space as images: origin top-left) ----------
+
+  /**
+   * Paint fit/crop result into an existing 2D context.
+   * Canvas2D matches image coordinates — avoids WebGL Y-up / UV unpack flips.
+   */
+  function paintToContext(ctx, bitmap, dstW, dstH, layout, bg) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+
+    if (bg) {
+      ctx.globalCompositeOperation = "copy";
+      ctx.fillStyle = `rgba(${bg.r},${bg.g},${bg.b},${bg.a})`;
+      ctx.fillRect(0, 0, dstW, dstH);
+      ctx.globalCompositeOperation = "source-over";
+    } else {
+      ctx.clearRect(0, 0, dstW, dstH);
+    }
+
+    ctx.drawImage(
+      bitmap,
+      layout.sx, layout.sy, layout.sw, layout.sh,
+      layout.dx, layout.dy, layout.dw, layout.dh
+    );
+  }
+
+  /** Render into reusable export canvas and return it. */
+  function renderImage(bitmap, dstW, dstH, fitMode, anchor, bg) {
+    if (!exportCtx) throw new Error("Canvas2D unavailable");
+    const layout = computeLayout(bitmap.width, bitmap.height, dstW, dstH, fitMode, anchor);
+    exportCanvas.width = dstW;
+    exportCanvas.height = dstH;
+    paintToContext(exportCtx, bitmap, dstW, dstH, layout, bg);
+    return exportCanvas;
+  }
+
+  function canvasToBlob(canvas, type, quality) {
+    return new Promise((resolve, reject) => {
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error("toBlob failed"))),
+        type,
+        quality
+      );
+    });
+  }
+
+  // ---------- file ingest ----------
+
+  let idSeq = 0;
+
+  async function addFiles(fileList) {
+    const files = Array.from(fileList || []).filter((f) => f.type.startsWith("image/"));
+    if (!files.length) {
+      setStatus("未识别到图片文件", "err");
+      return;
+    }
+
+    setStatus(`正在解码 ${files.length} 张…`);
+    for (const file of files) {
+      try {
+        let bitmap;
+        try {
+          bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
+        } catch {
+          bitmap = await createImageBitmap(file);
+        }
+        const url = URL.createObjectURL(file);
+        state.items.push({
+          id: `img_${++idSeq}`,
+          file,
+          url,
+          width: bitmap.width,
+          height: bitmap.height,
+          bitmap,
+        });
+      } catch (err) {
+        console.warn("decode failed", file.name, err);
+      }
+    }
+    refreshFileList();
+    updateButtons();
+    await refreshPreview();
+    setStatus(`已加载 ${state.items.length} 张 · 渲染器 ${state.renderer.toUpperCase()}`, "ok");
+  }
+
+  function removeItem(id) {
+    const idx = state.items.findIndex((x) => x.id === id);
+    if (idx < 0) return;
+    const item = state.items[idx];
+    if (item.bitmap) item.bitmap.close();
+    URL.revokeObjectURL(item.url);
+    state.items.splice(idx, 1);
+    refreshFileList();
+    updateButtons();
+    refreshPreview();
+  }
+
+  function clearAll() {
+    for (const item of state.items) {
+      if (item.bitmap) item.bitmap.close();
+      URL.revokeObjectURL(item.url);
+    }
+    state.items = [];
+    refreshFileList();
+    updateButtons();
+    refreshPreview();
+    setStatus("");
+    setProgress(null);
+  }
+
+  function refreshFileList() {
+    el.fileCount.textContent = String(state.items.length);
+    el.fileList.innerHTML = "";
+    state.items.forEach((item, i) => {
+      const row = document.createElement("div");
+      row.className = "file-item" + (i === 0 ? " active" : "");
+      row.innerHTML = `
+        <img src="${item.url}" alt="" />
+        <div>
+          <div class="name" title="${escapeHtml(item.file.name)}">${escapeHtml(item.file.name)}</div>
+          <div class="dim">${item.width}×${item.height}</div>
+        </div>
+        <button type="button" data-rm="${item.id}" title="移除">✕</button>
+      `;
+      el.fileList.appendChild(row);
+    });
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  /** Diagonal hatch + dim fill, clipped to a rect (discarded / outside crop). */
+  function fillDimHatch(ctx, x, y, w, h) {
+    if (w <= 0.5 || h <= 0.5) return;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x, y, w, h);
+    ctx.clip();
+    ctx.fillStyle = "rgba(6, 12, 16, 0.62)";
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = "rgba(180, 210, 220, 0.16)";
+    ctx.lineWidth = 1;
+    const step = 9;
+    const x0 = Math.floor(x);
+    const y0 = Math.floor(y);
+    const x1 = Math.ceil(x + w);
+    const y1 = Math.ceil(y + h);
+    for (let i = x0 - (y1 - y0); i < x1; i += step) {
+      ctx.beginPath();
+      ctx.moveTo(i, y0);
+      ctx.lineTo(i + (y1 - y0), y1);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function strokeTargetFrame(ctx, kx, ky, kw, kh, lineW) {
+    ctx.save();
+    ctx.strokeStyle = "#3ecf8e";
+    ctx.lineWidth = lineW;
+    ctx.strokeRect(kx + 0.5, ky + 0.5, Math.max(0, kw - 1), Math.max(0, kh - 1));
+    const tick = Math.min(18, Math.min(kw, kh) * 0.12);
+    ctx.beginPath();
+    ctx.moveTo(kx, ky + tick); ctx.lineTo(kx, ky); ctx.lineTo(kx + tick, ky);
+    ctx.moveTo(kx + kw - tick, ky); ctx.lineTo(kx + kw, ky); ctx.lineTo(kx + kw, ky + tick);
+    ctx.moveTo(kx, ky + kh - tick); ctx.lineTo(kx, ky + kh); ctx.lineTo(kx + tick, ky + kh);
+    ctx.moveTo(kx + kw - tick, ky + kh); ctx.lineTo(kx + kw, ky + kh); ctx.lineTo(kx + kw, ky + kh - tick);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawFrameLabel(ctx, viewW, kx, ky, targetW, targetH) {
+    const label = `${targetW}×${targetH}`;
+    ctx.font = "600 12px Segoe UI, PingFang SC, sans-serif";
+    const tw = ctx.measureText(label).width;
+    const lx = Math.min(Math.max(kx, 4), viewW - tw - 14);
+    const ly = Math.max(ky - 6, 16);
+    ctx.fillStyle = "rgba(6, 16, 12, 0.82)";
+    ctx.fillRect(lx - 4, ly - 12, tw + 8, 16);
+    ctx.fillStyle = "#3ecf8e";
+    ctx.fillText(label, lx, ly);
+  }
+
+  /**
+   * Crop / fit guide preview:
+   * - cover: full original; green frame = kept region (→ target); outside dimmed + hatch
+   * - contain: target frame canvas; full original inside by anchor; letterbox dimmed + hatch
+   */
+  function paintCropGuidePreview(ctx, bitmap, viewW, viewH, layout, targetW, targetH, fitMode) {
+    ctx.clearRect(0, 0, viewW, viewH);
+    ctx.fillStyle = "#0a1014";
+    ctx.fillRect(0, 0, viewW, viewH);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+
+    if (fitMode === "contain") {
+      // View == target aspect. Show full original placed by layout; hatch letterbox.
+      const s = viewW / targetW;
+      const ix = layout.dx * s;
+      const iy = layout.dy * s;
+      const iw = layout.dw * s;
+      const ih = layout.dh * s;
+
+      // Checker inside target for letterbox readability
+      ctx.fillStyle = "#152028";
+      ctx.fillRect(0, 0, viewW, viewH);
+
+      ctx.drawImage(bitmap, ix, iy, iw, ih);
+
+      // Letterbox bands (inside target, outside image)
+      fillDimHatch(ctx, 0, 0, viewW, Math.max(0, iy));
+      fillDimHatch(ctx, 0, iy + ih, viewW, Math.max(0, viewH - (iy + ih)));
+      fillDimHatch(ctx, 0, iy, Math.max(0, ix), ih);
+      fillDimHatch(ctx, ix + iw, iy, Math.max(0, viewW - (ix + iw)), ih);
+
+      strokeTargetFrame(ctx, 0, 0, viewW, viewH, 2);
+      drawFrameLabel(ctx, viewW, 0, 0, targetW, targetH);
+      return;
+    }
+
+    // cover: full original in view; hatch discarded source regions
+    const srcW = bitmap.width;
+    const srcH = bitmap.height;
+    const fit = Math.min(viewW / srcW, viewH / srcH);
+    const dispW = srcW * fit;
+    const dispH = srcH * fit;
+    const ox = (viewW - dispW) / 2;
+    const oy = (viewH - dispH) / 2;
+
+    ctx.drawImage(bitmap, ox, oy, dispW, dispH);
+
+    const kx = ox + layout.sx * fit;
+    const ky = oy + layout.sy * fit;
+    const kw = layout.sw * fit;
+    const kh = layout.sh * fit;
+
+    fillDimHatch(ctx, ox, oy, dispW, Math.max(0, ky - oy));
+    fillDimHatch(ctx, ox, ky + kh, dispW, Math.max(0, oy + dispH - (ky + kh)));
+    fillDimHatch(ctx, ox, ky, Math.max(0, kx - ox), kh);
+    fillDimHatch(ctx, kx + kw, ky, Math.max(0, ox + dispW - (kx + kw)), kh);
+
+    strokeTargetFrame(ctx, kx, ky, kw, kh, Math.max(2, fit * 2));
+    drawFrameLabel(ctx, viewW, kx, ky, targetW, targetH);
+  }
+
+  async function refreshPreview() {
+    const first = state.items[0];
+    if (!first?.bitmap) {
+      el.previewCanvas.style.display = "none";
+      el.previewEmpty.style.display = "block";
+      el.previewMeta.textContent = "";
+      return;
+    }
+
+    const { w, h } = getTargetSize();
+    const layout = computeLayout(first.width, first.height, w, h, state.fitMode, state.anchor);
+
+    const stage = el.previewCanvas.parentElement;
+    const cssMaxW = stage ? Math.max(120, stage.clientWidth - 24) : 720;
+    const cssMaxH = Math.min(720, Math.floor(window.innerHeight * 0.62));
+
+    let viewW;
+    let viewH;
+    if (state.fitMode === "contain") {
+      const aspect = w / h;
+      viewW = cssMaxW;
+      viewH = viewW / aspect;
+      if (viewH > cssMaxH) {
+        viewH = cssMaxH;
+        viewW = viewH * aspect;
+      }
+      viewW = Math.max(1, Math.round(viewW));
+      viewH = Math.max(1, Math.round(viewH));
+    } else {
+      const fit = Math.min(cssMaxW / first.width, cssMaxH / first.height, 1);
+      viewW = Math.max(1, Math.round(first.width * fit));
+      viewH = Math.max(1, Math.round(first.height * fit));
+    }
+
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const prev = el.previewCanvas;
+    prev.width = Math.round(viewW * dpr);
+    prev.height = Math.round(viewH * dpr);
+    prev.style.width = `${viewW}px`;
+    prev.style.height = `${viewH}px`;
+
+    const ctx = prev.getContext("2d", { alpha: true });
+    if (!ctx) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    paintCropGuidePreview(ctx, first.bitmap, viewW, viewH, layout, w, h, state.fitMode);
+
+    el.previewEmpty.style.display = "none";
+    prev.style.display = "block";
+
+    el.previewMeta.innerHTML = `
+      <span>原图 <b>${first.width}×${first.height}</b></span>
+      <span>目标 <b>${w}×${h}</b></span>
+      <span>模式 <b>${state.fitMode === "cover" ? "短边铺满·裁剪" : "长边适配·留白"}</b></span>
+      <span>锚点 <b>${state.anchor.toUpperCase()}</b></span>
+      <span>保留区 <b>${Math.round(layout.sw)}×${Math.round(layout.sh)}</b> @ ${Math.round(layout.sx)},${Math.round(layout.sy)}</span>
+      <span>${state.fitMode === "cover" ? "绿框内保留 · 斜线区裁掉" : "绿框=目标画布 · 斜线区为留白"}</span>
+    `;
+  }
+
+  function updateButtons() {
+    const has = state.items.length > 0;
+    el.btnDownload.disabled = !has;
+    el.btnClear.disabled = !has;
+  }
+
+  function setStatus(text, kind) {
+    el.status.textContent = text || "";
+    el.status.className = "status" + (kind ? ` ${kind}` : "");
+  }
+
+  function setProgress(ratio) {
+    if (ratio == null) {
+      el.progress.style.display = "none";
+      el.progressBar.style.width = "0%";
+      return;
+    }
+    el.progress.style.display = "block";
+    el.progressBar.style.width = `${Math.round(ratio * 100)}%`;
+  }
+
+  async function processItem(item) {
+    const { w, h } = getTargetSize();
+    const bg = getBgColor();
+    const canvas = renderImage(item.bitmap, w, h, state.fitMode, state.anchor, bg);
+    const quality = state.format === "image/jpeg" ? Number(el.jpegQuality.value) : undefined;
+    const blob = await canvasToBlob(canvas, state.format, quality);
+    return { blob, name: outputName(item.file) };
+  }
+
+  function triggerDownload(blob, name) {
+    const a = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  function canPickDirectory() {
+    return typeof window.showDirectoryPicker === "function";
+  }
+
+  async function writeBlobToDirectory(dirHandle, name, blob) {
+    const fileHandle = await dirHandle.getFileHandle(name, { create: true });
+    const writable = await fileHandle.createWritable();
+    try {
+      await writable.write(blob);
+    } finally {
+      await writable.close();
+    }
+  }
+
+  async function downloadAll() {
+    if (!state.items.length) return;
+    el.btnDownload.disabled = true;
+
+    /** @type {FileSystemDirectoryHandle|null} */
+    let dirHandle = null;
+    if (canPickDirectory()) {
+      try {
+        setStatus("请选择保存文件夹…");
+        dirHandle = await window.showDirectoryPicker({
+          id: "xituan-image-batch-export",
+          mode: "readwrite",
+          startIn: "downloads",
+        });
+      } catch (err) {
+        // User cancelled folder picker
+        if (err && (err.name === "AbortError" || err.name === "NotAllowedError")) {
+          setStatus("已取消导出");
+          updateButtons();
+          return;
+        }
+        console.warn("showDirectoryPicker failed, fallback to downloads", err);
+      }
+    }
+
+    setProgress(0);
+    try {
+      if (dirHandle) {
+        setStatus("正在写入文件夹…");
+        for (let i = 0; i < state.items.length; i++) {
+          const { blob, name } = await processItem(state.items[i]);
+          await writeBlobToDirectory(dirHandle, name, blob);
+          setProgress((i + 1) / state.items.length);
+          setStatus(`已保存 ${i + 1}/${state.items.length}：${name}`);
+          await new Promise((r) => setTimeout(r, 0));
+        }
+        setStatus(`已全部保存到所选文件夹（${state.items.length} 张）`, "ok");
+      } else {
+        setStatus("浏览器不支持选文件夹，改为逐个下载…");
+        for (let i = 0; i < state.items.length; i++) {
+          const { blob, name } = await processItem(state.items[i]);
+          triggerDownload(blob, name);
+          setProgress((i + 1) / state.items.length);
+          setStatus(`已触发下载 ${i + 1}/${state.items.length}`);
+          await new Promise((r) => setTimeout(r, 280));
+        }
+        setStatus(`已触发 ${state.items.length} 个下载（未选文件夹）`, "ok");
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus(`导出失败：${err.message || err}`, "err");
+    } finally {
+      updateButtons();
+      setTimeout(() => setProgress(null), 800);
+    }
+  }
+
+  // ---------- settings cache (localStorage) ----------
+
+  const SETTINGS_KEY = "xituan.image-batch-resize-crop.settings.v1";
+
+  function collectSettings() {
+    const pngBg = document.querySelector('input[name="pngBg"]:checked')?.value || "transparent";
+    return {
+      targetW: el.targetW.value,
+      targetH: el.targetH.value,
+      fitMode: state.fitMode,
+      anchor: state.anchor,
+      format: state.format,
+      pngBg,
+      fillColor: el.fillColor.value,
+      jpegFillColor: el.jpegFillColor.value,
+      jpegQuality: el.jpegQuality.value,
+      keepName: el.keepName.checked,
+      nameSuffix: el.nameSuffix.value,
+    };
+  }
+
+  function saveSettings() {
+    try {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(collectSettings()));
+    } catch (err) {
+      console.warn("save settings failed", err);
+    }
+  }
+
+  const saveSettingsDebounced = debounce(saveSettings, 150);
+
+  function applyFitModeUi() {
+    el.fitModeSeg.querySelectorAll("button").forEach((b) => {
+      b.classList.toggle("active", b.dataset.fit === state.fitMode);
+    });
+    el.fitHint.textContent = state.fitMode === "cover"
+      ? "短边缩放至 100%，超出目标的一边按锚点裁掉。"
+      : "长边缩放至 100% 完整放入，不足区域留白；图像按锚点落位。";
+  }
+
+  function applyFormatUi() {
+    el.formatSeg.querySelectorAll("button").forEach((b) => {
+      b.classList.toggle("active", b.dataset.fmt === state.format);
+    });
+    const isPng = state.format === "image/png";
+    el.pngOpts.style.display = isPng ? "block" : "none";
+    el.jpegOpts.style.display = isPng ? "none" : "block";
+  }
+
+  function loadSettings() {
+    try {
+      const raw = localStorage.getItem(SETTINGS_KEY);
+      if (!raw) return;
+      const s = JSON.parse(raw);
+      if (!s || typeof s !== "object") return;
+
+      if (s.targetW != null) el.targetW.value = String(s.targetW);
+      if (s.targetH != null) el.targetH.value = String(s.targetH);
+
+      if (s.fitMode === "cover" || s.fitMode === "contain") {
+        state.fitMode = s.fitMode;
+      }
+      if (typeof s.anchor === "string" && ANCHORS.some((a) => a.id === s.anchor)) {
+        state.anchor = /** @type {Anchor} */ (s.anchor);
+      }
+      if (s.format === "image/png" || s.format === "image/jpeg") {
+        state.format = s.format;
+      }
+
+      if (s.pngBg === "transparent" || s.pngBg === "color") {
+        const radio = document.querySelector(`input[name="pngBg"][value="${s.pngBg}"]`);
+        if (radio) radio.checked = true;
+      }
+      if (typeof s.fillColor === "string") el.fillColor.value = s.fillColor;
+      if (typeof s.jpegFillColor === "string") el.jpegFillColor.value = s.jpegFillColor;
+      if (s.jpegQuality != null) {
+        el.jpegQuality.value = String(s.jpegQuality);
+        el.qualityLabel.textContent = Number(el.jpegQuality.value).toFixed(2);
+      }
+      if (typeof s.keepName === "boolean") el.keepName.checked = s.keepName;
+      if (typeof s.nameSuffix === "string") el.nameSuffix.value = s.nameSuffix;
+
+      applyFitModeUi();
+      applyFormatUi();
+    } catch (err) {
+      console.warn("load settings failed", err);
+    }
+  }
+
+  // ---------- UI wiring ----------
+
+  function buildAnchorGrid() {
+    el.anchorGrid.innerHTML = "";
+    for (const a of ANCHORS) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = a.label;
+      btn.dataset.anchor = a.id;
+      btn.title = a.id.toUpperCase();
+      if (a.id === state.anchor) btn.classList.add("active");
+      btn.addEventListener("click", () => {
+        state.anchor = /** @type {Anchor} */ (a.id);
+        el.anchorGrid.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b.dataset.anchor === a.id));
+        saveSettings();
+        refreshPreview();
+      });
+      el.anchorGrid.appendChild(btn);
+    }
+  }
+
+  el.fitModeSeg.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-fit]");
+    if (!btn) return;
+    state.fitMode = /** @type {FitMode} */ (btn.dataset.fit);
+    applyFitModeUi();
+    saveSettings();
+    refreshPreview();
+  });
+
+  el.formatSeg.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-fmt]");
+    if (!btn) return;
+    state.format = btn.dataset.fmt;
+    applyFormatUi();
+    saveSettings();
+    refreshPreview();
+  });
+
+  document.querySelectorAll('input[name="pngBg"]').forEach((r) => {
+    r.addEventListener("change", () => {
+      saveSettings();
+      refreshPreview();
+    });
+  });
+  el.fillColor.addEventListener("input", () => {
+    saveSettingsDebounced();
+    refreshPreview();
+  });
+  el.jpegFillColor.addEventListener("input", () => {
+    saveSettingsDebounced();
+    refreshPreview();
+  });
+  el.jpegQuality.addEventListener("input", () => {
+    el.qualityLabel.textContent = Number(el.jpegQuality.value).toFixed(2);
+    saveSettingsDebounced();
+  });
+  el.keepName.addEventListener("change", saveSettings);
+  el.nameSuffix.addEventListener("input", saveSettingsDebounced);
+  el.targetW.addEventListener("change", () => {
+    saveSettings();
+    refreshPreview();
+  });
+  el.targetH.addEventListener("change", () => {
+    saveSettings();
+    refreshPreview();
+  });
+  el.targetW.addEventListener("input", debounce(() => {
+    saveSettingsDebounced();
+    refreshPreview();
+  }, 200));
+  el.targetH.addEventListener("input", debounce(() => {
+    saveSettingsDebounced();
+    refreshPreview();
+  }, 200));
+
+  el.btnDownload.addEventListener("click", downloadAll);
+  el.btnClear.addEventListener("click", clearAll);
+
+  el.fileList.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-rm]");
+    if (!btn) return;
+    removeItem(btn.dataset.rm);
+  });
+
+  el.dropZone.addEventListener("click", () => el.fileInput.click());
+  el.dropZone.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      el.fileInput.click();
+    }
+  });
+  el.fileInput.addEventListener("change", () => {
+    addFiles(el.fileInput.files);
+    el.fileInput.value = "";
+  });
+
+  ["dragenter", "dragover"].forEach((type) => {
+    el.dropZone.addEventListener(type, (e) => {
+      e.preventDefault();
+      el.dropZone.classList.add("dragover");
+    });
+  });
+  ["dragleave", "drop"].forEach((type) => {
+    el.dropZone.addEventListener(type, (e) => {
+      e.preventDefault();
+      el.dropZone.classList.remove("dragover");
+    });
+  });
+  el.dropZone.addEventListener("drop", (e) => {
+    addFiles(e.dataTransfer?.files);
+  });
+
+  // prevent browser opening dropped files outside zone
+  window.addEventListener("dragover", (e) => e.preventDefault());
+  window.addEventListener("drop", (e) => e.preventDefault());
+
+  function debounce(fn, ms) {
+    let t = 0;
+    return (...args) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(...args), ms);
+    };
+  }
+
+  // boot
+  loadSettings();
+  buildAnchorGrid();
+  setStatus("就绪 · 设置已缓存到本地");
+})();
+  </script>
+</body>
+</html>
