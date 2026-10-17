@@ -1,9 +1,10 @@
 # 目录/业务图直传标准（多端复用）
 
-Last updated: 2026-10-11
+Last updated: 2026-10-17
 
 > **规划状态**：尚未实施。台账见 [`planned-work/entries/2026-10-catalog-image-direct-upload.md`](./planned-work/entries/2026-10-catalog-image-direct-upload.md)。  
-> 本文是 **契约 + 分层标准**；实施时按本文件建可复用模块，禁止各端各写一套 presign/complete。
+> 本文是 **契约 + 分层标准**；实施时按本文件建可复用模块，禁止各端各写一套 presign/complete。  
+> **PUT 主机与安全约束**以 [S3 直传约定](../../.cursor/skills/s3-direct-upload/reference.md) 为准。本文不再规定独立 upload 子域。
 
 ## 1. 目标
 
@@ -23,7 +24,7 @@ sequenceDiagram
   participant UI as UI壳(CMS/微信/Expo)
   participant Orch as codebase编排
   participant API as Backend
-  participant Up as upload中继
+  participant Up as content写入behavior
   participant S3 as S3
 
   UI->>Orch: pickLocalFile + bindKind + entityId
@@ -61,7 +62,7 @@ Backend 内同样分层：
 |----|------|----------|
 | **Controller** | 鉴权、merchant 上下文、参数校验、HTTP 映射 | 共享路由模块（如 `catalog-image-upload`）或现有 domain 下统一 controller |
 | **Service** | 生成 key、presign、HEAD、enqueue normalize、回 canonical | **一个** `CatalogImageDirectUploadService`（或同名），Offer/Product 只传 bind |
-| **Infra** | S3 / upload 中继签名、`imageNormalizeEnqueueUtil` | 现有 `s3UploadManager` + jobs；不复制 normalize |
+| **Infra** | content 写入 behavior 的签名、`imageNormalizeEnqueueUtil` | 现有 jobs；不复制 normalize。签名方式见直传约定，不要改 SigV4 Host |
 
 实体 Create/Update（Offer 等）**只收 path**，不再收文件；业务 Controller 不感知 PUT。
 
@@ -76,7 +77,7 @@ Backend 内同样分层：
 | `bindKind` | `epImageNormalizeBindKind` |
 | `entityId` | 业务实体 id（可先占位再绑） |
 | `contentType` / `byteSize` | 校验用 |
-| 响应 `putUrl` | **一律 upload 中继 Host**（与 OpenIM 直传共用策略） |
+| 响应 `putUrl` | 不透明；主机见 [S3 直传约定](../../.cursor/skills/s3-direct-upload/reference.md)（content 暂存前缀，不是 media，也不是新建 upload 子域） |
 | 响应 `sourceKey` | 源对象 key（仅 complete 用，不进表单） |
 
 **complete**
@@ -111,7 +112,7 @@ Backend 内同样分层：
 | 端 | View 形态 | 内部只做 |
 |----|-----------|----------|
 | **CMS** | 如 `CatalogImageDirectUpload`（Ant Upload 定制） | 选文件 → 调 util → `currentImages` / Form 字段写 path；submit **无** file |
-| **微信商家** | component + 选图 API | 同上；PUT 走 request 合法域名（upload 中继） |
+| **微信商家** | component + 选图 API | 同上；PUT 走 request 合法域名里的现成 `content*.lancety.com` |
 | **Expo 商家** | 共享 RN 小组件或 hook | 同上；与微信共用 util，仅 transport 不同 |
 
 CMS 现有 FormData 图片文档（[`FormData-Image-Management-System.md`](./FormData-Image-Management-System.md)）在迁移后：**保留「path 列表 / 删除 diff」语义**，删除「multipart 文件字段」；skill `cms-form-image-upload` 同步改为直传 checklist。
@@ -121,17 +122,17 @@ CMS 现有 FormData 图片文档（[`FormData-Image-Management-System.md`](./For
 - **一个** presign + **一个** complete 入口（query/body 带 `bindKind`），不要 Offer/News 各抄一套签名逻辑。  
 - Key 布局仍按实体（`merchant/.../offer/.../headerImage/...`），由 service 按 bindKind 分支生成前缀。  
 - `complete` 内强制：`canonicalKeyFromJob`；无 canonical → 4xx/5xx，禁止降级回源 key。  
-- 与 OpenIM：**共用 upload 中继 infra**；业务 API 与 IM attachments **分路由**，避免会话权限缠进目录图。
+- 与 OpenIM：**共用同一条 content 写入 behavior**（见直传约定）；业务 API 与 IM attachments **分路由**，避免会话权限缠进目录图。
 
 ## 8. 与支出 OCR / OpenIM 的边界
 
 | 能力 | 目录图（本标准） | 支出 OCR | OpenIM 附件 |
 |------|------------------|----------|-------------|
-| PUT Host | upload 中继（目标） | 现 `amazonaws.com`（可后置） | upload 中继（planned） |
+| PUT Host | content 暂存 behavior（见直传约定） | 现 `amazonaws.com`（保持） | 与目录图同一条 content 写入 behavior |
 | complete 后 | 业务表 path = canonical | OCR 管线 | 聊天 URL = canonical |
-| 复用 | transport 模式 / 中继 | 仅作 presign 参考 | 中继 +「complete 回 webp」参考 |
+| 复用 | 同一条 content 写入 behavior | 仅作 presign 参考 | 同一条写入 behavior +「complete 回 webp」 |
 
-**不要**把支出 OCR 强行并进本 util（bind/鉴权不同）；**要**复用「presign→PUT→complete→canonical」形状与中继。
+**不要**把支出 OCR 强行并进本 util（bind/鉴权不同）；**要**复用「presign→PUT→complete→canonical」形状。主机不要抄支出的 `amazonaws.com`。
 
 ## 9. 实施顺序（降维护成本）
 
@@ -148,10 +149,11 @@ CMS 现有 FormData 图片文档（[`FormData-Image-Management-System.md`](./For
 - [ ] 任意端抓包：实体 save **无** multipart 文件  
 - [ ] 编排代码只在 codebase 一处；端上无第二套三步流程  
 - [ ] `complete` 失败时表单不出现源 key  
-- [ ] 微信仅配置 upload 中继为 request 合法域名，不配 S3 主机  
+- [ ] 微信 request 合法域名加入现成 `content*.lancety.com`，不配 S3 主机，不新建 upload 子域  
 
 ## 相关文档
 
+- [S3 直传约定](../../.cursor/skills/s3-direct-upload/reference.md) — PUT 主机、暂存前缀、为何不拆 media/content 两套上传
 - [planned-work entry](./planned-work/entries/2026-10-catalog-image-direct-upload.md)
 - [openim-attachment-direct-upload](./planned-work/entries/2026-09-openim-attachment-direct-upload.md)
 - [async-lambda-jobs-framework](./async-lambda-jobs-framework.md)

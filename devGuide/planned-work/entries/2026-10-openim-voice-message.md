@@ -73,4 +73,4 @@ OpenIM 聊天补齐 **语音消息（Voice / contentType 103）**：气泡展示
 工作量粗估：仅 Customer 收+播偏小～中；完整收发中等；全端对齐偏大。  
 Phase A 缺口：bubble util 分支、history/SDK map、播放依赖。  
 Phase B 缺口：录音 UI、权限、attachment policy、session `sendSound*`。  
-相关：会话预览 `openim-message-preview.util`；附件直传规划见 [`openim-attachment-direct-upload`](./2026-09-openim-attachment-direct-upload.md)（语音上传短期可仍走现有 multipart）。
+相关：会话预览 `openim-message-preview.util`；附件直传规划见 [`openim-attachment-direct-upload`](./2026-09-openim-attachment-direct-upload.md)（语音上传短期可仍走现有 multipart）。PUT 主机见 [S3 直传约定](../../../../.cursor/skills/s3-direct-upload/reference.md)。

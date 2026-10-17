@@ -1,5 +1,7 @@
 # 支付服务架构重构总结
 
+> **部分过时**（以 Airwallex 为中心）。Webhook/Handler 分层思路可参考；当前 PSP 与异常处理见 [payment/current-state.md](./payment/current-state.md)。
+
 ## 📋 重构概述
 
 本次重构将原有的单一支付服务拆分为多个专门的服务，实现了更好的关注点分离和代码复用。

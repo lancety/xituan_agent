@@ -1,5 +1,7 @@
 # 微信小程序支付系统实现方案
 
+> **现状以 [payment/current-state.md](./payment/current-state.md) §2.2 为准**（OmiPay 小程序单 + 订单状态轮询）。本文为早期方案，部分流程可能过时；索引见 [payment/README.md](./payment/README.md)。
+
 ## 📋 项目概述
 
 本方案专门针对微信小程序环境下的支付系统实现，重点解决微信小程序与标准实时支付系统的差异，以及小程序特有的支付限制和用户体验要求。

@@ -1,5 +1,7 @@
 # Stripe / OmiPay 换轨与线下支付改造 — 人工测试检查清单
 
+> 架构与各端实装总览：[payment/current-state.md](./payment/current-state.md)；目录索引：[payment/README.md](./payment/README.md)。
+
 本文档汇总本计划相关改动的人工测试点；复杂场景附步骤。测试前请在目标环境执行所需 **数据库迁移**（含 `psp_checkout` 去掉平台轨中的 `cash` / `bank_transfer` 等脚本），并按实际部署配置 Stripe、OmiPay、环境变量。
 
 ---

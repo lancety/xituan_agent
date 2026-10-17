@@ -1,5 +1,7 @@
 # 支付系统设计方案
 
+> **现状以 [payment/current-state.md](./payment/current-state.md) 为准**（Stripe Connect + OmiPay 实装、各端异常处理）。本文为早期总设计，枚举/PSP 细节可能过时；索引见 [payment/README.md](./payment/README.md)。
+
 ## 📋 项目概述
 
 本方案设计了一个支持多种支付方式的完整支付系统，包括实时支付（微信支付）、非实时支付（现金、银行转账）以及网页支付（Apple Pay、Google Pay、Mastercard）。系统采用支付状态与订单状态分离的设计，确保业务逻辑清晰、扩展性强。

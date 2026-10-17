@@ -1,5 +1,7 @@
 # 支付服务重构变更总结
 
+> **归档**（Airwallex webhook 拆分时期）。当前零售/订阅轨与异常处理见 [payment/current-state.md](./payment/current-state.md)。
+
 ## 🎯 重构目标
 - 统一支付处理逻辑，避免重复代码
 - 改进错误处理和日志记录

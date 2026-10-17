@@ -1,6 +1,6 @@
 # 媒体 CDN 与 SIH 域名拆分实施清单
 
-Last updated: 2026-09-06
+Last updated: 2026-10-17
 
 ## 已定结论（勿再改写成反方案）
 
@@ -29,6 +29,8 @@ Last updated: 2026-09-06
 ## 命名：为何用 `media` 而不是拆 audios/videos
 
 **一个静态 CDN + S3 路径区分类型**；不要为每种媒体再拆子域名。
+
+直传 PUT 不走本展示 CDN，也不另开 upload 子域。写入主机、暂存前缀和「为何不按图片/文件拆两套上传」见 [S3 直传约定](../../.cursor/skills/s3-direct-upload/reference.md)。`media` 保持只读。
 
 ---
 
@@ -94,4 +96,5 @@ wechatSIH:   https://imagesih-dev.lancety.com
 - [SIH Phase A / 渐进加载](./sih-image-size-phase-a.md)
 - [Async Lambda / IMAGE_NORMALIZE](./async-lambda-jobs-framework.md)
 - [C4 全量回填](./planned-work/entries/2026-09-image-normalize-full-backfill.md)
+- [S3 直传约定](../../.cursor/skills/s3-direct-upload/reference.md) — 直传写入不放在 media 默认 behavior；不新建 upload 子域
 - 按类型预生成尺寸：`IMAGE_NORMALIZE_VARIANT_POLICY`（codebase）；取图用 `getContentUrlImageForKind`；改表 → 预生成/`--prune-orphans` → 再改 UI

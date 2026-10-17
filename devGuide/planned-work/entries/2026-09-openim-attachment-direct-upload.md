@@ -1,6 +1,6 @@
 # openim-attachment-direct-upload
 
-Last updated: 2026-09-20
+Last updated: 2026-10-17
 
 ## 摘要
 
@@ -25,8 +25,8 @@ Last updated: 2026-09-20
 
 1. **所有端同一套直传协议**（CMS / Site / 微信 / 原生 App + backend）：`presign` → PUT `putUrl` → `complete`（HEAD、enqueue IMAGE_NORMALIZE、回 webp `cdnUrl`）。聊天业务（会话权限、附件表、转码、OpenIM 落 URL）**不按端拆分**。
 2. **`putUrl` 对客户端不透明**。不要 `if (wechat) 签 lancety else 签 S3`，也不要 CMS 走 S3、小程序走另一套接口。
-3. **PUT 目标统一为独立中继域名**（草案：`upload[-env].lancety.com`），**不要**在展示用 `media.*` 上开写、不要和公开读共用同一条 cache。中继是为了微信 **request 合法域名**；其它端只是同一 URL，不是微信专用业务。
-4. **不能**把 S3 SigV4 URL 改 Host 成 `lancety.com` 再转发（签名绑定 Host）。中继侧签 CF / 自签短链，由 OAC 或 IAM 写入 S3。
+3. **PUT 主机不新建 `upload` 子域**（该草案未配置，已撤回）。规则见 [S3 直传约定](../../../../.cursor/skills/s3-direct-upload/reference.md)：写入走现有 content 主机的暂存前缀 behavior；`media` 保持只读。图片 / 视频 / 音频的**展示**仍用 media，其它文件用 content，不因此做两套上传。
+4. **不能**把 S3 SigV4 URL 改 Host 再转发（签名绑定 Host）。content 上的 `putUrl` 由该写入 behavior 自己签发。
 5. **仅小程序**受合法域名约束；CMS / Site / 原生可以直连 S3，但 OpenIM **故意不**走双 Host，以免全仓 if/else。支出 OCR **保持**现有 S3 直传，与本项无关。
 6. 各端仅 HTTP 封装不同（`fetch` / `wx.request` PUT / RN）；小程序 PUT 走 **request 合法域名**，不是 `wx.uploadFile`。
 7. `complete` 之前的对象要有 **孤儿 TTL 清理**（申请了但未确认）。
@@ -34,28 +34,28 @@ Last updated: 2026-09-20
 
 ### 明确不做（现在）
 
-- 不改展示 CDN 为可写。
+- 不在 `media` 展示 CDN 上开写。content 只加暂存前缀的写入 behavior，不改默认读 behavior。
 - 不为微信单独做一套附件业务或 backend 分支。
-- 不把支出 OCR 的 PUT Host 改成中继（无必要）。
+- 不把支出 OCR 的 PUT Host 改到 content behavior（无必要）。
 
 ## 期望目标结果
 
-- [ ] 独立 upload 域名 + CF（PUT）+ 桶/OAC 写权限；与 `media.*` 读路径隔离
-- [ ] backend 一套 OpenIM `presign` / `complete`；`putUrl` Host 一律中继
+- [ ] content 暂存前缀写入 behavior（签名、不缓存、桶策略只允许该前缀）；`media` 保持只读。不新建 upload 域名
+- [ ] backend 一套 OpenIM `presign` / `complete`；`putUrl` Host 按直传约定走 content 暂存 behavior
 - [ ] CMS / Site / 微信 / 顾客与商家 App 均改为该协议；发消息仍用 complete 返回的 canonical webp URL
 - [ ] 未 complete 对象可按 TTL 清理
-- [ ] 微信后台：upload 子域加入 **request 合法域名**
+- [ ] 微信后台：现成 `content*.lancety.com` 加入 **request 合法域名**
 - [ ] 旧 multipart `POST .../attachments` 的下线策略另开 post-deploy（本 entry 只覆盖直传落地）
 - [ ] 本 entry → `done`，registry 归档
 
 ## 触发条件 / 目标窗口
 
-主动启动「OpenIM 附件直传」实施时（含 CF/DNS 窗口）。  
-**现在不实施**（2026-09 已回退直传，先维持 multipart + 回 webp）。
+主动启动「OpenIM 附件直传」实施时（含 content 暂存写入 behavior）。  
+**现在不实施**（2026-09 已回退直传，先维持 multipart + 回 webp）。不新建 upload 子域。
 
 ## 实施备忘（可选草稿）
 
-控制面可对标 CMS 支出：`expense-batch.service.ts` 的 presign + notify，但 OpenIM 的 `putUrl` 签中继而非 `amazonaws.com`。  
+控制面可对标 CMS 支出：`expense-batch.service.ts` 的 presign + notify，但 OpenIM 的 `putUrl` 按 [S3 直传约定](../../../../.cursor/skills/s3-direct-upload/reference.md) 签 content 写入 behavior，不签 `amazonaws.com`。  
 展示仍用现有 `openimAttachmentCdnUtil` → `media` / `wechatMedia`。  
 相关：[`media-cdn-sih-domain-split.md`](../../media-cdn-sih-domain-split.md)、[`docs/openim-aws-and-production-config.md`](../../../docs/openim-aws-and-production-config.md)。  
-目录/业务 Form 图直传（可共用 upload 中继）：[`catalog-image-direct-upload`](./2026-10-catalog-image-direct-upload.md)；多端分层标准：[`catalog-image-direct-upload-standard.md`](../../catalog-image-direct-upload-standard.md)。
+目录/业务 Form 图直传（同一条 content 写入 behavior）：[`catalog-image-direct-upload`](./2026-10-catalog-image-direct-upload.md)；多端分层标准：[`catalog-image-direct-upload-standard.md`](../../catalog-image-direct-upload-standard.md)。主机约定：[S3 直传约定](../../../../.cursor/skills/s3-direct-upload/reference.md)。
