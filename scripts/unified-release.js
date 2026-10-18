@@ -265,7 +265,52 @@ class SmartUnifiedReleaseManager {
   }
 
   /**
+   * Align package-lock.json root package version with package.json (top-level + packages[""]).
+   * Surgical replace only — does not rewrite the dependency tree or re-serialize the lockfile.
+   */
+  syncPackageLockRootVersion(projectPath, targetVersion) {
+    const lockPath = path.join(projectPath, 'package-lock.json');
+    if (!fs.existsSync(lockPath)) {
+      return;
+    }
+
+    const lock = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
+    const prevTop = lock.version;
+    const prevRoot = lock.packages && lock.packages['']
+      ? lock.packages[''].version
+      : undefined;
+
+    if (prevTop === targetVersion && prevRoot === targetVersion) {
+      console.log(`  已是目标版本: package-lock.json (${targetVersion})`);
+      return;
+    }
+
+    let content = fs.readFileSync(lockPath, 'utf8');
+    // lockfileVersion 3: first "version" is top-level; second under packages[""] is root package.
+    if (typeof prevTop === 'string' && prevTop !== targetVersion) {
+      content = content.replace(
+        `"version": "${prevTop}"`,
+        `"version": "${targetVersion}"`
+      );
+    }
+    if (typeof prevRoot === 'string' && prevRoot !== targetVersion) {
+      content = content.replace(
+        `"version": "${prevRoot}"`,
+        `"version": "${targetVersion}"`
+      );
+    }
+
+    fs.writeFileSync(lockPath, content);
+    console.log(
+      `  ✅ package-lock.json: ${prevTop ?? '(none)'}` +
+        (prevRoot !== prevTop ? ` / packages[""]=${prevRoot ?? '(none)'}` : '') +
+        ` → ${targetVersion}`
+    );
+  }
+
+  /**
    * Set app release version only on allowlisted package.json files (JSON field).
+   * Also syncs package-lock.json root version when present.
    * Returns previous root package.json version (for changelog), or null if missing.
    */
   updateVersionTo(projectPath, targetVersion, projectName = '') {
@@ -294,6 +339,8 @@ class SmartUnifiedReleaseManager {
     if (rootOldVersion === null) {
       console.warn(`  ⚠️  未找到 package.json: ${projectPath}`);
     }
+
+    this.syncPackageLockRootVersion(projectPath, targetVersion);
 
     return rootOldVersion;
   }
