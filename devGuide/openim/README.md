@@ -1,8 +1,8 @@
 # OpenIM 客户端交互
 
-Last updated: 2026-09-28
+Last updated: 2026-10-19
 
-本目录收录 OpenIM 聊天室 UI/滚动/缓存/历史同步的**定稿设计**，以及 Android 离线系统通知工作流。
+本目录收录 OpenIM 聊天室 UI/滚动/缓存/历史同步的**定稿设计**、UGC 举报/屏蔽方案，以及 Android 离线系统通知工作流。
 
 ## 文档索引
 
@@ -10,6 +10,7 @@ Last updated: 2026-09-28
 |------|------|
 | [device-push-offline-workflow.md](./device-push-offline-workflow.md) | **权威**：Expo Android 离线推送（OpenIM `beforeOfflinePush` → SNS/FCM）；手动配置清单与排障 |
 | [chat-room-inverted-scroll-design.md](./chat-room-inverted-scroll-design.md) | **权威**：rotateX 倒置滚动、进房/离房位置恢复、历史分页、缓存与后端契约；§5.4 商户侧进房须带 `merchantId`、踩坑与跨端移植 |
+| [chat-report-block-design.md](./chat-report-block-design.md) | **权威**：顾客↔商户会话举报 + 按会话屏蔽（App Store 1.2）；Phase 1 仅双端 App；内部邮件处理路径与 AI 分析预留 |
 
 ## 源码锚点（微信小程序）
 
