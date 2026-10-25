@@ -31,7 +31,7 @@ $env:DB_PASSWORD="Xituan2024Secure"  # 注意：不能包含 @ 符号
 - `GOOGLE_MAPS_API_KEY`: Google Maps API 密钥
 - `S3_KEY`: AWS S3 访问密钥
 - `S3_SECRET_KEY`: AWS S3 秘密密钥
-- `S3_BUCKET`: S3 存储桶名称
+- `S3_BUCKET`: S3 存储桶名称（桶策略、私有前缀 CDN Deny、CORS：见 `xituan_agent/devGuide/s3/README.md`）
 
 ### 4. 检查 AWS 身份
 ```bash

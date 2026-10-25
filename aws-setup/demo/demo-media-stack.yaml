@@ -18,7 +18,7 @@ Parameters:
   CorsAllowedOrigins:
     Type: CommaDelimitedList
     Default: >-
-      https://demo.xituan.com.au,https://cms-demo.xituan.com.au,https://platform-demo.xituan.com.au,http://localhost:3005,http://localhost:3010,http://localhost:3020
+      https://demo.xituan.com.au,https://cms-demo.xituan.com.au,https://platform-demo.xituan.com.au,http://localhost:3005,http://localhost:3010,http://localhost:3020,http://127.0.0.1:3010
     Description: S3 CORS AllowedOrigins for CMS/site uploads.
 
 Resources:
@@ -121,6 +121,14 @@ Resources:
             Condition:
               StringEquals:
                 AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${ContentDistribution}'
+          # Private prefixes: explicit Deny so OAC cannot anonymously GET. Merge-safe Sid.
+          # Registry: xituan_agent/devGuide/s3/README.md
+          - Sid: DenyCloudFrontGetLedgerIntake
+            Effect: Deny
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub '${MediaBucket.Arn}/merchant/*/ledger-intake/*'
 
 Outputs:
   BucketName:

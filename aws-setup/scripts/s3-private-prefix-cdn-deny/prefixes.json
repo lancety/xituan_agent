@@ -1,0 +1,14 @@
+{
+  "buckets": [
+    "xituan-dev",
+    "xituan-staging",
+    "xituan-demo",
+    "xituan"
+  ],
+  "denies": [
+    {
+      "sid": "DenyCloudFrontGetLedgerIntake",
+      "resourceSuffix": "merchant/*/ledger-intake/*"
+    }
+  ]
+}

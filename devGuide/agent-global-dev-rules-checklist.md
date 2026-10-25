@@ -94,6 +94,9 @@
 |------|----------|
 | 商品 metadata / 平台模板 / 绑定 / 合并 / 打印 | **`.cursor/skills/product-metadata-schema/SKILL.md`** + **`xituan_agent/devGuide/product_metadata_开发计划_b162e071.plan.md`** + **`xituan_agent/devGuide/商品_metadata_通用化_70835335.plan.md`** |
 | Expo 商户/客户 App 分页列表（虚拟化、触底加载、详情返回保滚动位置） | **`.cursor/skills/expo-paginated-list-scroll/SKILL.md`** |
+| S3 桶策略 / 私有前缀 / CDN 匿名 GET | **`.cursor/skills/s3-bucket-access/SKILL.md`** + **`xituan_agent/devGuide/s3/README.md`** |
+| 商户记账货币 / 流水计入 / 入账汇率 | **`.cursor/skills/merchant-currency/SKILL.md`** + **`xituan_agent/devGuide/merchant-currency/README.md`** |
+| 流水入账 / 数据块保存与删除 | **`.cursor/skills/ledger-intake/SKILL.md`** + **`xituan_agent/devGuide/ledger-intake/README.md`** |
 
 
 ---
