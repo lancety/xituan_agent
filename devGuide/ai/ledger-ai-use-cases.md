@@ -8,7 +8,7 @@ Last updated: 2026-10-25
 
 ## 环境变量
 
-- `DEEPSEEK_API_KEY`：必填，缺则 `AI_NOT_CONFIGURED`
+- `DEEPSEEK_API_KEY`：必填，缺则 `AI_NOT_CONFIGURED`。生产由 `xituan_backend/.github/workflows/deploy.yml` 注入 GitHub Environment `production` secret。demo **不提供**试用 AI，不注入该变量。本机 `.env*` 不会进 ECS。
 - `DEEPSEEK_API_BASE_URL`：默认 `https://api.deepseek.com`
 - `DEEPSEEK_MODEL`：默认 `deepseek-chat`
 - 预留不读：`AI_API_BASE_URL` / `AI_API_KEY`（以后 backend 转发到独立 AI 进程）
