@@ -19,7 +19,7 @@ Skill checklist：`.cursor/skills/merchant-currency/SKILL.md`。流水数据块�
 | 计入账目汇总 | `块货币 !== 商户货币`（今天即非 AUD，例如 RMB 流水） |
 | 不计入账目汇总 | `块货币 === 商户货币`（今天 AUD–AUD）：**不写**收入支出管理；用来发现漏记后 **手动**补记录 |
 | 「进」的含义 | 计入块：按块汇率换算后，每种收入/支出类型最多 **1 条**管理记录（金额 > 0 才写）；保存/更新时 upsert；删块时一并删 |
-| 入账汇率 | 块级 `fx_to_merchant`： **1 单位源货币 = 多少记账货币**（例：1 RMB = 0.21 AUD 填 `0.21`） |
+| 入账汇率 | 库字段 `fx_to_merchant`：**1 源 = 多少记账**（`source × rate`）。界面填 **1 记账 = 多少源**（例：1 AUD = 4.76 RMB 填 `4.76`），保存时取倒数 |
 | 税表展示汇率 | 财年级 `fxCnyToAud`，只换算税表 overlay / `commerceCny` 展示，**不得**再写入 `revenues`/`expenses` |
 | 外币自动入账 GST | **0**（`gst_amount = 0`，`net_amount = total_amount`） |
 | 时区 | 商户/平台 IANA 时区与货币 **独立**。改货币不要动时区工具 |
@@ -32,7 +32,7 @@ Skill checklist：`.cursor/skills/merchant-currency/SKILL.md`。流水数据块�
 | 块货币 / 源货币 | 该份流水文件本身的币种（CBA=AUD，支付宝=CNY，标准源可选） |
 | 计入 | 换算后自动写入管理记录，并进入账目汇总 |
 | 不计入 | 不写管理记录；只做对账查漏 |
-| `fxToMerchant` | 入账用。merchant / 1 source |
+| `fxToMerchant` | 入账用，库内 merchant / 1 source；界面填 source / 1 merchant 后取倒数 |
 | `fxCnyToAud` | 税表 overlay 用。历史命名，语义仍是「目标货币 / 1 CNY」，与入账汇率 **不是同一字段** |
 
 ## 当前实现边界（as-is）
@@ -76,7 +76,8 @@ revenues / expenses.total_amount（记账货币，无币种列）
 ### 入账（权威）
 
 - 字段：`ledger_analysis_blocks.fx_to_merchant`（`numeric(18,8)`，可空）
-- 语义：**记账货币 / 1 源货币**
+- 语义（库）：**记账货币 / 1 源货币**
+- 语义（界面）：**源货币 / 1 记账货币**。例：1 AUD = 4.76 RMB 填 `4.76`；`ledgerFxUtil.fromUiSourcePerMerchant` 取倒数后再存
 - 计入保存：必须 `> 0` 有限数字，否则 `eBusinessErrorCode.LEDGER_BLOCK_FX_REQUIRED`
 - 换算：`merchantAmount = round(sourceAmount * fxToMerchant, 2)`
 - 实现仍叫 `ledgerFxUtil.cnyToAud` / `parseCnyToAud`：名字带 CNY/AUD，**语义已是通用乘法**。实装多商户货币时 **改名或包一层**，禁止再复制第二条乘法
@@ -135,7 +136,7 @@ revenues / expenses.total_amount（记账货币，无币种列）
 
 1. **历史管理记录**：已按 AUD 写入。商户改成别的货币时，禁止只改设置不迁金额（否则旧 AUD 与新币数字会加在同一列）。
 2. **已上传流水块**：块头仍是源货币。重新保存会按 **当时** 商户货币重算「计不计入」。商户从 AUD 改为 CNY 后，旧支付宝块会从「计入」变成「不计入」并 **删掉** 自动管理记录——这是公式结果，必须在产品上明示，或改为「按块保存时快照的商户货币」判定（若改判定，要写迁移，不要静默改公式）。
-3. **`fx_to_merchant` 方向不变**：永远是 记账/1源。商户变 CNY、块为 AUD 时，填的是「1 AUD = 多少 CNY」，不是倒数，除非 UI 写清并在存储前取倒数。
+3. **`fx_to_merchant` 库方向不变**：永远是 记账/1源。界面已按「1 记账 = 多少源」填写并在存储前取倒数；商户变 CNY、块为 AUD 时仍走同一套 UI 倒数，不要再改库语义。
 4. **税表 `fxCnyToAud`**：要么降级为「仅当目标是 AUD 的 overlay」，要么迁到通用 `fxToMerchant` 并与块级汇率对齐；禁止长期三套汇率。
 5. **枚举 / CHECK**：`ck_ledger_analysis_blocks_currency` 目前只允许 `AUD`,`CNY`。新币种要改 enum + CHECK + `selectOptions`。
 6. **`ledgerFxUtil` 命名**：去掉 CnyToAud 硬编码名，避免后人按名字再写一条 AUD 专用函数。
