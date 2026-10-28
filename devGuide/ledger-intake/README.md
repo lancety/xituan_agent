@@ -200,7 +200,7 @@ Skill：`.cursor/skills/ledger-intake/SKILL.md`。改匹配逻辑前先读本节
 
 | 处理结果 | 窗 | Phase1 | 金额 | 日期 | Phase2 |
 |----------|-----|--------|------|------|--------|
-| 订单收入 | BEFORE | `orders` 且 `BANK_TRANSFER` | charged→final→total 命中其一 | `paidAt` 或 `createdAt` | `revenues` `source_type=ORDER` + `source_id` |
+| 订单收入 | BEFORE | `orders` 且 `cash`/`bank_transfer` | charged→final→total 命中其一 | **仅** `createdAt`（下单日；不用 `paidAt`，先收后确认会滞后） | `revenues` `source_type=ORDER` + `source_id` |
 | 结算单收入 | AFTER | （确认收款即账本）`revenues` `source_type=partner_invoice_summary` | **确认额** `total_amount`（非 summary total/loss/totalPaid） | `revenue_date` | 同左；`summaryId=source_id` |
 | 送货单收入 | AFTER | `partner_invoices` 且 `summary_id IS NULL` | `totalAmount-totalLoss` | `issue_date` | `revenues` `source_type=PARTNER_INVOICE` |
 | 普通支出 | BEFORE | — | `expenses.total_amount`（排除借给董事） | `expense_date` | 账本即对象 |
