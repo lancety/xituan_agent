@@ -160,6 +160,7 @@ revenues / expenses.total_amount（记账货币，无币种列）
 ## 相关文档
 
 - [../ledger-intake/README.md](../ledger-intake/README.md) — 流水入账流程与存储
+- [../revenue-expense-idempotency/README.md](../revenue-expense-idempotency/README.md) — 不计入手工创建幂等（与计入 `ledger_block_id` 自动账正交）
 - [../tax-return-report-design.md](../tax-return-report-design.md) — 税表快照；overlay 汇率
 - [../../.cursor/skills/merchant-currency/SKILL.md](../../.cursor/skills/merchant-currency/SKILL.md) — agent checklist
 - [../agent-global-dev-rules-checklist.md](../agent-global-dev-rules-checklist.md) — 全仓规则索引

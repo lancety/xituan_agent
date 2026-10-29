@@ -1,8 +1,8 @@
 # 流水入账（最终方案）
 
-Last updated: 2026-10-28
+Last updated: 2026-10-29
 
-Skill checklist：`.cursor/skills/ledger-intake/SKILL.md`。货币 / 汇率 / 计不计入账目见 **[商户记账货币](../merchant-currency/README.md)**（权威，本文不重复公式）。
+Skill checklist：`.cursor/skills/ledger-intake/SKILL.md`。货币 / 汇率 / 计不计入账目见 **[商户记账货币](../merchant-currency/README.md)**（权威，本文不重复公式）。从流水「创建收支」的管理账本防重复见 **[收入/支出创建幂等](../revenue-expense-idempotency/README.md)**（权威键表）。
 
 CMS 财年工具。分析在浏览器完成，再按**数据块**保存。两种用途不要写进同一套入账路径：
 
@@ -33,7 +33,8 @@ CMS 财年工具。分析在浏览器完成，再按**数据块**保存。两种
 | 整理列表 | 唯一把已定行移出待审筛选的操作（清 pin，**不切换**当前分类筛选）。分类按钮数量也按 pin 计：未整理前计入待审，整理后才进目标分类。银行「支出」未选手类型的行忽略，仍留待审 |
 | 重置待审改动 | 把待审列表里已定处理结果改回待审，清对应 pin；不跑日期金额匹配。支出未选手类型的行不动 |
 | 缓存/保存闸门 | 待审里还有已定结果时，本地缓存、保存流水、数据块更新先弹窗：取消 / 重置待审改动 / 整理列表。做完后再点原按钮 |
-| 董事借款 | 成对 **loan from / to director**，不用 repayment 文案 |
+| 董事借款 | 成对 **loan from / to director**，不用 repayment / 退款文案 |
+| 银行行分组 | 默认跟金额符号；列表可选手动改 **收入 / 支出 / 退款**。退款下处理结果图标按资金回收/反退对调禁用；待审始终可点；董事两钮在退款下禁用。**创建**：退款+正数 → 支出退款（金额存负）；退款+负数 → 收入退款（金额存负）。账本统一：正常正 / 退款负 |
 | 文件读 | 登录后短时签名 GET；接口不回 S3 key；backend 不中转字节 |
 | 货币与入账 | 见 [商户记账货币](../merchant-currency/README.md) |
 
@@ -132,7 +133,7 @@ flowchart LR
 
 电商类别：原材料 / 耗材 / 设备 / 海外 / 费用 / 排除 / 待审。设备且金额 `< 300` 匹配成耗材。标题或来源识别「海外税费」等可直接标海外。
 
-银行动作：合作商收入、网银平台提现、订单收入、设备处置、支出、借给董事（loan to director）、向董事借款（loan from director）、待审。**没有忽略**；不是商户经营收支的只能标借给/向董事借款。`epBankRowGroup` **仅按金额正负**分收入/支出（不读摘要里的 `refund` 关键字；「我退别人」与「别人退我」是账本语义：负向支出 vs 收入且 `isRefund`）。枚举值 `REFUND` 仅兼容旧 CSV。向董事借款是收入组动作，进税表负债 `loanFromDirector`（与电商垫付并列加总，报表页再与借给董事净额对冲）。`epBankClassifyAction.IGNORE` 仅兼容旧数据，打开时升成待审。
+银行动作：合作商收入、网银平台提现、订单收入、设备处置、支出、借给董事（loan to director）、向董事借款（loan from director）、待审。**没有忽略**；不是商户经营收支的只能标借给/向董事借款。`epBankRowGroup` 默认跟金额正负（收入≥0 / 支出<0）；列表可**手动**改成退款（不读摘要关键字）。退款落账与收入/支出管理同符号——**正常正、退款负**：银行退款+正数 → 支出退款（`is_refund`）；退款+负数 → 收入退款（`isRefund`）。日期金额匹配**跳过**退款组（退款创建走专用弹窗/matchHint，不把原支出/原收入误绑成该行账本）。向董事借款是收入组动作，进税表负债 `loanFromDirector`（与电商垫付并列加总，报表页再与借给董事净额对冲）。`epBankClassifyAction.IGNORE` 仅兼容旧数据，打开时升成待审。
 
 ### 规则
 
@@ -166,7 +167,7 @@ flowchart LR
 - 内联「怎么处理」四步，样本 CSV 链在选文件说明里。
 - 块级工具条：匹配语种、货币类型、商户货币、计入标签、计入时汇率（见「数据块管理」）。
 - 匹配语种：默认语种 + 可勾选额外语种（电商改语种会按原始行重跑规则）。
-- 分类筛选在「选择文件」下一行。电商一行；银行三行：收入种类、支出种类、`全部` + 借给董事/向董事借款/待审。种类含未匹配到的 0 条。两行 `{名称} {N}` / `{金额}`，圆角 8px。待审琥珀、排除红、**行分类**计入蓝（不是块级「计入账目汇总」）。银行、电商表「处理结果」都在最右列；**不计入**块银行表在其左侧「收支数据绑定」列（手工创建/查看账本/查看源头；不要带 `ledger_block_id`）。电商「创建」列仅不计入时出现（Alipay 计入时无此列）。本币银行行标成借给/向董事借款时，用日期金额匹配关联已有记录，或「创建」`LOAN_TO_DIRECTOR` 支出 / `LOAN_FROM_DIRECTOR` 收入。计入外币块保存时自动合计并写入一条向董事借款收入（删块 CASCADE）；外币不自动写借给董事。对端日期/合作商/结算单列已去掉。
+- 分类筛选在「选择文件」下一行。电商一行；银行三行：收入种类、支出种类、`全部` + 借给董事/向董事借款/待审。种类含未匹配到的 0 条。两行 `{名称} {N}` / `{金额}`，圆角 8px。待审琥珀、排除红、**行分类**计入蓝（不是块级「计入账目汇总」）。银行、电商表「处理结果」都在最右列；**不计入**块银行表在其左侧「收支数据绑定」列（手工创建/绑定已有/查看账本/查看源头；不要带 `ledger_block_id`）。电商「创建」列仅不计入时出现（Alipay 计入时无此列）。本币银行行标成借给/向董事借款时，用日期金额匹配关联已有记录，或「创建」`LOAN_TO_DIRECTOR` 支出 / `LOAN_FROM_DIRECTOR` 收入。计入外币块保存时自动合计并写入一条向董事借款收入（删块 CASCADE）；外币不自动写借给董事。对端日期/合作商/结算单列已去掉。
 - 行：处理结果 icon（蓝计入 / 红排除 / 琥珀待审）。电商勾选后对方和商品名分词成可点徽章；银行摘要在推荐完成后分词。本地分词仍用 `Intl.Segmenter`，保留 `&`（如 `Rose & Co`），但会把相邻被拆开的汉字物品名合成 2–3 字词；AI 返回更长整词时继续合成（「剪刀」）。单独的 `&` 不自动勾成规则词。已登记未选中=默认样式；当前选中=绿色（保存后仍绿）。推荐会给每条勾选行一个具体词。AI 词若出现在标题里，按原文位置切开误粘的本地分词再合并（`式洗/鼻器` → `式` + `洗鼻器`）。对不上的行再从该行现有词里补一个物品名。`sales` / `Foods` / 订单号等泛词或编号不自动勾。
 - 工具条顺序：已选条数 → AI 复查 → 推荐规则词 → 保存规则词 → 取消推荐 →（待审时）待审数据重新识别 → 整理列表 → 重置待审改动。其下银行为批量行（与列表同列）：日期起止、金额最小最大（空则用当前列表 min/max）、分组可空、摘要关键字（输入即筛底下列表，空格分词且全部命中；拼音确认后再生效）、绑定列「全部/已绑定/未绑定」Select 在「批量操作」**左侧**（变更同时过滤当前列表；已绑定=有 `revenueId`/`expenseId`）、处理结果列与列表相同。匹配当前筛选列表并写入该处理结果（支出含子分类）。电商不加绑定筛选。
 - 日期金额匹配：见下节「日期金额匹配（硬性）」。
@@ -186,7 +187,7 @@ Skill：`.cursor/skills/ledger-intake/SKILL.md`。改匹配逻辑前先读本节
 
 - **已绑定** = 有账本 ID。源头-only 不算绑定。
 - 源头 **不** 与流水行直接「绑定」；创建收入/支出时把源头 ID 写入管理记录的相关 ID。
-- UI：创建 / 查看收入或支出 → 只看账本有无。支出绑定后展示 `expenseSupplierName`（匹配 API 的 `supplierName`，与 `expenseId` 一并进缓存/processed CSV）于「查看支出记录」下一行。已绑定时可 **取消绑定**（清账本/源头 ID 与供货商名，保留分类；不自动再跑匹配）。查看源头 → 只看有无可打开的源头文档 ID。
+- UI：未绑定 → **创建收支**（新建）与 **绑定收支**（按该行分类选已有收入/支出写回账本 ID）；已绑定 → 查看收入或支出（只看账本有无）。支出绑定后展示 `expenseSupplierName`（匹配 API 的 `supplierName`，或已有支出的 `supplierName`，与 `expenseId` 一并进缓存/processed CSV）于「查看支出记录」下一行。已绑定时可 **取消绑定**（清账本/源头 ID 与供货商名，保留分类；不自动再跑匹配）。查看源头 → 只看有无可打开的源头文档 ID。
 
 ### 两阶段（有源头的类型）
 
@@ -203,13 +204,17 @@ Skill：`.cursor/skills/ledger-intake/SKILL.md`。改匹配逻辑前先读本节
 | 订单收入 | BEFORE | `orders` 且 `cash`/`bank_transfer` | charged→final→total 命中其一 | **仅** `createdAt`（下单日；不用 `paidAt`，先收后确认会滞后） | `revenues` `source_type=ORDER` + `source_id` |
 | 结算单收入 | AFTER | （确认收款即账本）`revenues` `source_type=partner_invoice_summary` | **确认额** `total_amount`（非 summary total/loss/totalPaid） | `revenue_date` | 同左；`summaryId=source_id` |
 | 送货单收入 | AFTER | `partner_invoices` 且 `summary_id IS NULL` | `totalAmount-totalLoss` | `issue_date` | `revenues` `source_type=PARTNER_INVOICE` |
-| 普通支出 | BEFORE | — | `expenses.total_amount`（排除借给董事） | `expense_date` | 账本即对象 |
+| 普通支出 | BEFORE | — | `receipt_total_amount` **或** `total_amount`（优先单据额对齐刷卡；排除借给董事） | `expense_date` | 账本即对象 |
 | 借给董事 | AFTER | — | 上表且 `LOAN_TO_DIRECTOR` | 同上 | 账本即对象 |
 | 向董事借款 | AFTER | — | `revenues` `LOAN_FROM_DIRECTOR` 非退款 | `revenue_date` | 账本即对象 |
 | 设备处置 | — | 不自动匹配 | — | — | 创建时设备可选 |
 | 网银平台提现 | — | 不匹配 | — | — | 不创建（订单侧已录） |
 
-批限制：每组 ≤50；一批内银行日跨度 ≤4 周。待审不跑。已有 `revenueId`/`expenseId` 不覆盖。触发：导入后（已分类行）、手工/批量改处理结果后、待审重新识别升类后、「整理列表」对 pin 行再补绑。普通支出只比日期+`total_amount`，**不**比供应商名；同金额多笔按日期最近且先到先得。
+批限制：每组 ≤50；一批内银行日跨度 ≤4 周。待审不跑。已有 `revenueId`/`expenseId` 不覆盖。触发：导入后（已分类行）、手工/批量改处理结果后、待审重新识别升类后、「整理列表」对 pin 行再补绑。普通支出只比日期+金额（单据额优先），**不**比供应商名；同金额多笔按日期最近且先到先得。
+
+### 创建收支幂等（摘要）
+
+不计入手工「创建」须带幂等键；服务端命中则返回已有账本。完整键表与查重顺序见 **[收入/支出创建幂等](../revenue-expense-idempotency/README.md)**（权威）。流水侧只保证：稳定 UUID `clientId` 进缓存/CSV；打开创建时预填 `bank_row` / `source_reference`；**禁止**手工行写 `ledger_block_id`。
 
 ### 禁止
 
@@ -314,7 +319,7 @@ AI 信封与 prompt 槽位见 [../ai/ledger-ai-use-cases.md](../ai/ledger-ai-use
 | 源货币 / 计入判定 | `ledger-source-currency.util.ts` |
 | 自动入账映射 | `xituan_backend/src/domains/financial/utils/ledger-intake-books.util.ts` |
 | Backend | `xituan_backend/src/domains/financial/{routes,controllers,services,infrastructure}/ledger-intake.*` |
-| 迁移 | `1710000000376` 起：0380 无行表；0381 向董事借款；0382 文件可选；0383 `ledger_block_id` + `fx_to_merchant`；**0385** 删除 `source_key` |
+| 迁移 | `1710000000376` 起：0380 无行表；0381 向董事借款；0382 文件可选；0383 `ledger_block_id` + `fx_to_merchant`；**0385** 删除 `source_key`；支出创建幂等列见 **0389**（权威在幂等文档） |
 
 ## S3 读权限
 
@@ -323,6 +328,8 @@ processed CSV 的 key 为 `merchant/{id}/ledger-intake/...`。四环境桶对 Cl
 ## 相关文档
 
 - [../../.cursor/skills/ledger-intake/SKILL.md](../../.cursor/skills/ledger-intake/SKILL.md) — agent checklist
+- [../revenue-expense-idempotency/README.md](../revenue-expense-idempotency/README.md) — 收入/支出创建幂等键（权威）
+- [../../.cursor/skills/revenue-expense-idempotency/SKILL.md](../../.cursor/skills/revenue-expense-idempotency/SKILL.md) — 创建幂等 checklist
 - [../merchant-currency/README.md](../merchant-currency/README.md) — 商户货币 / 计入规则 / 入账汇率（权威）
 - [../s3/README.md](../s3/README.md) — 私有前缀 CDN Deny / 桶策略
 - [../ai/ledger-ai-use-cases.md](../ai/ledger-ai-use-cases.md) — AI HTTP / prompt / 输出信封

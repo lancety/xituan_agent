@@ -26,7 +26,7 @@ Block Public Access **挡不住** OAC。要禁止「同一 key 走 CDN 匿名 GE
 
 | Sid | Resource suffix | 业务 | 应用读法 | 落地 |
 |-----|-----------------|------|----------|------|
-| `DenyCloudFrontGetLedgerIntake` | `merchant/*/ledger-intake/*` | 流水源文件 + processed CSV | CMS 登录后 `GET .../blocks/:id/source\|processed` → 短时 `getUrl`（不回 key、不拼 content/media） | 四桶 CLI 已合并；demo CFN 已写入 |
+| `DenyCloudFrontGetLedgerIntake` | `merchant/*/ledger-intake/*` | 流水 processed CSV | CMS 登录后 `GET .../blocks/:id/processed` → 短时 `getUrl`（不回 key、不拼 content/media） | 四桶 CLI 已合并；demo CFN 已写入 |
 
 已知仍走公开 CDN、**尚未**收口（不要在流水任务里顺手改）：
 
