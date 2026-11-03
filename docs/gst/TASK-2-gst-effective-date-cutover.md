@@ -1,8 +1,10 @@
 # 大任务 2：GST 生效日切齐（收支 + 单据 PDF）
 
-> **状态：** 大任务 2 等 ATO 的 D；**纠错**（2025-07-01 起未注册计法）可先做，与手续费 plan、与「D 日迁移」分开。  
+> **权威已迁：** [`devGuide/gst/gst-effective-date-cutover.md`](../../devGuide/gst/gst-effective-date-cutover.md)  
+> **规划台账：** [`planned-work` entry `gst-effective-date-cutover`](../../devGuide/planned-work/entries/2026-10-gst-effective-date-cutover.md)（「检查规划」）  
+> **状态：** 等 ATO 的 D；纠错（2025-07-01 起）可先做，与手续费 plan、与「D 日迁移」分开。  
 > **手续费：** Cursor plan `stripe_fee_auto_expense`（无关本文）。  
-> **细节：** [`gst-effective-date-amount-cutover.md`](./gst-effective-date-amount-cutover.md)
+> **细节 SQL：** [`gst-effective-date-amount-cutover.md`](./gst-effective-date-amount-cutover.md)
 
 ### 纠错 vs 生效日迁移（两回事）
 

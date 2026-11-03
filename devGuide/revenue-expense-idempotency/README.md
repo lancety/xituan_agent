@@ -14,7 +14,8 @@ Skill checklist：`.cursor/skills/revenue-expense-idempotency/SKILL.md`。
 | 项 | 约定 |
 |----|------|
 | 命中行为 | **返回已有记录**，不新建（客户端照常写回 `revenueId` / `expenseId`） |
-| 不用的键 | 单独金额；单独日期+金额；`ledger_block_id`（不计入手工账禁止写，删块会误删） |
+| 不用的键 | 单独金额；单独日期+金额 |
+| `ledger_block_id` | **流水界面新建/批量**写入当前块（与计入自动账同列，删块 CASCADE）；**绑定 / OCR / 管理页手工创建禁止写**。同块可有多条同类型账（已去掉 `uq_*_ledger_block_type`）；计入同步只维护 `source_type=ledger_block` 的自动账 |
 | 订单收入 | `ORDER` + `orderId` **不**做 1:1 全局唯一（一单可多笔收款）；流水侧靠 `bank_row` 引用防同线重复 |
 | 稳定行身份 | 银行分析行 `clientId` = UUID，进 IndexedDB / processed CSV |
 
@@ -23,10 +24,11 @@ Skill checklist：`.cursor/skills/revenue-expense-idempotency/SKILL.md`。
 | 场景 | 写入字段 | 查重顺序 |
 |------|----------|----------|
 | 任意从**银行行**创建的收入 | `source_reference = bank_row:{clientId}` | **先**按 `source_reference` + `is_refund` |
-| 结算 / 送货 / 设备（有源头 id） | `source_type` + `source_id`（及同 `revenue_type`、`is_refund`） | 无 bank_row 引用命中时，再按 source 1:1 |
+| 送货 / 设备（有源头 id） | `source_type` + `source_id`（及同 `revenue_type`、`is_refund`） | 无 bank_row 引用命中时，再按 source 1:1 |
+| 结算单确认收款 | `source_type=partner_invoice_summary` + `source_id`；**不做** source 1:1（可多笔分日收款）；同日重复由 confirm API 拦截 | 仅 bank_row 引用优先（流水创建时） |
 | 无业务源头的收入 / 向董事借款（未挂支出） | `source_type=bank_row` + `source_id=clientId` | 同上（source 1:1 集合含 `bank_row`） |
 | 从银行行创建的支出 | `expenses.source_type=bank_row` + `source_id=clientId` | 按 source 查已有支出 |
-| 私人卡垫付 `LOAN_FROM_DIRECTOR`（规划/已枚举） | `source_type=expense` + `source_id=expenseId` | 一笔支出最多一条非退款垫付借款 |
+| 公司外账户垫付 `LOAN_FROM_DIRECTOR`（编辑支出按钮） | `source_type=expense` + `source_id=expenseId` | 一笔支出最多一条非退款垫付借款；与 `businessType` 无关 |
 
 `bank_row:` 前缀与格式：`ledgerBookIdempotencyUtil.bankRowSourceReference`（codebase）。
 
@@ -36,10 +38,10 @@ Skill checklist：`.cursor/skills/revenue-expense-idempotency/SKILL.md`。
 
 1. `RevenueService.createRevenue`：若 `source_reference` 为 bank_row 引用 → `findBySourceReference`；否则若 `source_type` 在 1:1 集合内且有 `source_id` → `findBySourceIdempotent`；命中则返回已有。
 2. `ExpenseService.createExpense`：若有 `source_type` + `source_id` → `findBySourceIdempotent`；命中则返回已有。
-3. **不**对 `ORDER` 做 source 级唯一（多笔支付合法）。
-4. 计入块自动账仍用 `ledger_block_id` / 每类型 ≤1，与本文手工幂等正交。
+3. **不**对 `ORDER`、`partner_invoice_summary` 做 source 级唯一（多笔收款合法；结算同分日确认收款）。
+4. 计入块自动账：`ledger_block_id` + 每类型 ≤1；`source_id={blockId}:{type}`（支出 DB unique 要求；勿用裸 blockId）。与本文手工幂等正交。
 
-1:1 的收入 `source_type`：`partner_invoice`、`partner_invoice_summary`、`equipment_disposal`、`expense`、`bank_row`（见 `revenueSourceAllowsUniqueDedupe`）。
+1:1 的收入 `source_type`：`partner_invoice`、`equipment_disposal`、`expense`、`bank_row`（见 `revenueSourceAllowsUniqueDedupe`）。
 
 ## CMS 流水创建预填
 
@@ -54,12 +56,12 @@ Skill checklist：`.cursor/skills/revenue-expense-idempotency/SKILL.md`。
 | 日期金额匹配、绑定列、clientId 进 CSV | [流水入账](../ledger-intake/README.md) |
 | 匹配支出金额：单据额优先于总金额 | 流水入账日期金额表 + `listExpensesForDateAmount` |
 | 创建查重键与 create 返回已有 | **本文** |
-| orphan / 非公司支付待审 → 建 loan from | 产品未闭环；幂等键已预留 `expense` source |
+| 公司外账户垫付 → 建 loan from | CMS 编辑支出一键生成（不看 `businessType`）；`source_type=expense` + `source_id=expenseId`；按钮即标记，无付款账户字段 |
 
 ## 禁止
 
 - 用金额或「日期+金额」当唯一幂等键。
-- 不计入手工创建写入 `ledger_block_id`。
+- 绑定已有账、OCR、收支管理手工创建写入 `ledger_block_id`（仅流水新建/批量与计入自动账可写）。
 - 仅靠行上已有 `revenueId`/`expenseId` 藏按钮、不做服务端查重（取消绑定 / 换浏览器会丢）。
 - 把订单多笔收款误做成「一单只能一条收入」。
 - 在流水 README 与本文各维护一份完整键表（改键只改本文，流水侧只留摘要链接）。

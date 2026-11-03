@@ -601,7 +601,7 @@ Response: {
 ## 相关文档
 
 - [ledger-intake/README.md](ledger-intake/README.md) — 流水入账块头汇总如何进入税表
-- [merchant-currency/README.md](merchant-currency/README.md) — 商户货币、计入判定、块入账汇率 vs 税表 overlay 财年汇率（禁止 overlay 再写入收入支出）
+- [merchant-currency/README.md](merchant-currency/README.md) — 商户货币、计入判定、块级 `fxToMerchant` 与税表 overlay（禁止 overlay 再写入收入支出 / P&L）
 
 ## 注意事项
 

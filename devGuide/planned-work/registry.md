@@ -1,6 +1,6 @@
 # Planned Work Registry（巡检入口）
 
-Last updated: 2026-10-20
+Last updated: 2026-10-30
 
 **日常巡检：「检查规划」** — 打开本文件；需要细节再进 Entry。
 
@@ -10,6 +10,7 @@ Last updated: 2026-10-20
 
 | ID | 状态 | 简述 | 目标阶段/触发 | 下一动作 | Entry | Last updated |
 |----|------|------|---------------|----------|-------|--------------|
+| `gst-effective-date-cutover` | `blocked` | GST 生效日 D 切齐（**仅 todo，不实施**） | **未决：ATO 的 D** | 等 D；未决项见 entry；SQL 草稿已备勿跑 | [entry](./entries/2026-10-gst-effective-date-cutover.md) | 2026-10-30 |
 | `fb-product-reports-enforcement` | `planned` | 商品合规举报 App+S3 备份+Platform 商品 Tab；下架/`pt::`/商户邮件/协议 | Platform 聊天反馈管理页上线后主动启动 | SQL 已在 0373；先实现聊天管理页，再开本 entry | [entry](./entries/2026-10-fb-product-reports-enforcement.md) | 2026-10-20 |
 | `platform-feedback-ai-triage` | `planned` | 多类型反馈 AI 预处理 + 自动/人工裁定 | IM 举报/屏蔽上架后主动启动设计 | 先写反馈类型/报告 schema；Phase 1 IM 勿接真模型 | [entry](./entries/2026-10-platform-feedback-ai-triage.md) | 2026-10-20 |
 | `async-jobs-retention` | `planned` | `platform.async_jobs` 终态行定期清理 | 统一替换 ECS cron 调度后，或表明显变大前 | 勿加 Backend cron；调度方案落地后再做 purge | [entry](./entries/2026-09-async-jobs-retention.md) | 2026-09-05 |

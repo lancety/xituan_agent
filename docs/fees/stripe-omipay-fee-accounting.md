@@ -13,23 +13,24 @@ Last updated: 2026-10-29
 
 ## Stripe
 
-1. Webhook 结算抽出 `balance_transaction.fee` → 写 `order_payment_records.psp_processing_fee_amount`
-2. `PspFeeExpenseService` 幂等建支出：`source_type=payment_record` + `source_id=支付记录 id`，`order_id` 可绑订单
-3. GST：未注册 → gst=0、net=total；已注册 → 价内拆（`/11`）
-4. **订单退款不冲销**该支出（沉没成本）；CMS 订单支付记录可显示通道费
-5. `payout.paid` / `payout.updated(status=paid)` 且 fee>0 → 账户级支出：`source_type=stripe_payout` + `source_id=po_…`（无站内提现 UI）
+1. Webhook 结算抽出 `balance_transaction.fee`；若 BT 仅为 id → retrieve（短重试）再落库  
+2. `PspFeeExpenseService` 幂等建支出：`source_type=payment_record` + `source_id=支付记录 id`，`order_id` 可绑订单  
+3. 取 fee / 建支出失败 → webhook **FAILED**，走现有 replay（勿吞掉标 PROCESSED）  
+4. GST：未注册 → gst=0、net=total；已注册 → 价内拆（`/11`）  
+5. **订单退款不冲销**；CMS 通道费支出只读（禁改/删/冲销）  
+6. `payout.paid` / `payout.updated(status=paid)` 且 fee>0 → 账户级支出：`source_type=stripe_payout`
 
-**勿与流水分类 `PLATFORM_PAYOUT` 混记同一笔**：银行到账分类是 ledger 规则；本支出是 Stripe 账本 fee 自动入账。
+**勿与流水分类 `PLATFORM_PAYOUT` 混记同一笔**。
 
 ## OmiPay
 
 - 新单：webhook 已收款 = `chargedAmount`；PSP 实付进 `metadata.omipayPspPaidAmount`
-- 历史：`npm run migrate:script:data-repair` → job `omipay-customer-fee-turnover`（preview → 确认 migrate）
+- 历史：`npm run migrate:script:data-repair` → `omipay-customer-fee-turnover`（只修支付已收款 + 收入 `total`；**不碰 gst/net**）
 - 商户手续费：暂不自动记支出
 
 ## 相关代码
 
-- Migration：`xituan_backend/migrations/1710000000391_expense_payment_processing.sql`
+- Migration：`0391`（`order_id` additive）→ 查重 → `0392`（source unique）
 - `PspFeeExpenseService`、`WebhookStripePaymentService`
 - data-repair：`xituan_backend/scripts/data-repair/`
 

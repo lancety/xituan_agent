@@ -1,7 +1,9 @@
 # GST 生效日切齐 — 技术细节（SQL / 字段）
 
-> **大任务说明书：** [`TASK-2-gst-effective-date-cutover.md`](./TASK-2-gst-effective-date-cutover.md)  
-> 状态：**未定稿**；纠错可先做，D 切齐等生效日。  
+> **运维说明书（权威）：** [`devGuide/gst/gst-effective-date-cutover.md`](../../devGuide/gst/gst-effective-date-cutover.md)  
+> **规划台账：** [`gst-effective-date-cutover` entry](../../devGuide/planned-work/entries/2026-10-gst-effective-date-cutover.md)  
+> **任务草稿：** [`TASK-2-gst-effective-date-cutover.md`](./TASK-2-gst-effective-date-cutover.md)  
+> 状态：纠错可先做，D 切齐等生效日。  
 > **手续费 / OmiPay 已收款：** 仅见 Cursor plan `stripe_fee_auto_expense`，**不在本文**。  
 
 ---

@@ -1,6 +1,6 @@
 # 商户记账货币
 
-Last updated: 2026-10-25
+Last updated: 2026-11-02
 
 Skill checklist：`.cursor/skills/merchant-currency/SKILL.md`。流水数据块保存/删除见 [../ledger-intake/README.md](../ledger-intake/README.md) 与 `.cursor/skills/ledger-intake/SKILL.md`。
 
@@ -10,6 +10,15 @@ Skill checklist：`.cursor/skills/merchant-currency/SKILL.md`。流水数据块�
 
 ## 结论
 
+**硬性总则（电商块 / 收支流水块相同）：**
+
+| 块货币 vs 商户货币 | 用途 | 自动管理记录 |
+|--------------------|------|--------------|
+| **同货币**（今天 AUD–AUD） | **复查对账** + **手动创建**收支（可绑已有账） | **不写** |
+| **不同货币**（今天 RMB/CNY 块） | **计入账目汇总**（须块汇率） | 已分类且有金额的**每种类型各 1 条**收支，再用 **loan from / to director 配平** |
+
+配平：商业净支出 → `LOAN_FROM_DIRECTOR` 收入；商业净收入 → `LOAN_TO_DIRECTOR` 支出（另叠加行上已标的董事借款）。待审 / 排除 / 退款 / 平台提现 / 现金存现不进自动账。
+
 | 项 | 当前锁定 |
 |----|----------|
 | 商户记账货币 | **AUD**。代码入口 `ledgerSourceCurrencyUtil.defaultMerchant()`。商户表 **没有** `currency` 列 |
@@ -17,10 +26,10 @@ Skill checklist：`.cursor/skills/merchant-currency/SKILL.md`。流水数据块�
 | 流水块源货币 | `epLedgerCurrency`：`AUD` \| `CNY`。界面把 CNY 显示成 **RMB**。库内禁止存 `RMB` |
 | 源货币谁可改 | CBA **锁 AUD**；支付宝 **锁 CNY**；标准银行 / 标准电商可下拉，**默认 AUD** |
 | 计入账目汇总 | `块货币 !== 商户货币`（今天即非 AUD，例如 RMB 流水） |
-| 不计入账目汇总 | `块货币 === 商户货币`（今天 AUD–AUD）：**不写**收入支出管理；用来发现漏记后 **手动**补记录 |
-| 「进」的含义 | 计入块：按块汇率换算后，每种收入/支出类型最多 **1 条**管理记录（金额 > 0 才写）；保存/更新时 upsert；删块时一并删 |
+| 不计入账目汇总 | `块货币 === 商户货币`（今天 AUD–AUD）：**不写**自动管理记录；复查 + **手动**补记 |
+| 「进」的含义 | 计入块：按块汇率换算后，每种已分类收入/支出类型最多 **1 条**（金额 > 0）；再用 loan from/to director 配平；保存/更新 upsert；删块一并删 |
 | 入账汇率 | 库字段 `fx_to_merchant`：**1 源 = 多少记账**（`source × rate`）。界面填 **1 记账 = 多少源**（例：1 AUD = 4.76 RMB 填 `4.76`），保存时取倒数 |
-| 税表展示汇率 | 财年级 `fxCnyToAud`，只换算税表 overlay / `commerceCny` 展示，**不得**再写入 `revenues`/`expenses` |
+| 税表展示汇率 | 用各块 `fxToMerchant` 换算 overlay / `commerceCny` 展示，**不得**再写入 `revenues`/`expenses`；无财年级汇率 |
 | 外币自动入账 GST | **0**（`gst_amount = 0`，`net_amount = total_amount`） |
 | 时区 | 商户/平台 IANA 时区与货币 **独立**。改货币不要动时区工具 |
 
@@ -33,7 +42,7 @@ Skill checklist：`.cursor/skills/merchant-currency/SKILL.md`。流水数据块�
 | 计入 | 换算后自动写入管理记录，并进入账目汇总 |
 | 不计入 | 不写管理记录；只做对账查漏 |
 | `fxToMerchant` | 入账用，库内 merchant / 1 source；界面填 source / 1 merchant 后取倒数 |
-| `fxCnyToAud` | 税表 overlay 用。历史命名，语义仍是「目标货币 / 1 CNY」，与入账汇率 **不是同一字段** |
+| 税表 overlay 换算 | 复用块级 `fxToMerchant`；不再有财年级 `fxCnyToAud` |
 
 ## 当前实现边界（as-is）
 
@@ -84,10 +93,10 @@ revenues / expenses.total_amount（记账货币，无币种列）
 
 ### 税表 overlay（非入账）
 
-- 字段：税表请求/快照上的 `fxCnyToAud`
-- 用途：把勾选的 **计入** 电商块源币汇总，在税表卡片上显示换算后的旁路数字
-- **禁止**：用这个财年汇率去 create/update `revenues`/`expenses`
-- 已知差异：同一财年多块外币流水可以有 **不同** `fx_to_merchant`；税表 overlay 目前仍用 **一个** 财年汇率。P&L 以管理记录为准；overlay 只是展示。实装时不要把 overlay 汇率「提升」成入账汇率而不做迁移
+- 汇率：各计入块自己的 `fx_to_merchant`（与入账同一字段）
+- 用途：把勾选的 **计入** 电商块源币汇总，按块换算后在税表卡片上显示旁路数字（`commerce` / `commerceCny`）
+- **禁止**：把 overlay 合计再加进税表 P&L（计入块已写入 `revenues`/`expenses`，P&L 以管理记录为准）
+- 同一财年多块可有不同汇率；overlay 按块分别换算后加总
 
 ### 不要引入第三套汇率
 
@@ -104,16 +113,18 @@ revenues / expenses.total_amount（记账货币，无币种列）
 | 来源 | 写入 |
 |------|------|
 | 电商 原材料 / 耗材 / 设备 / 海外 / 费用 | 支出 RAW_MATERIAL / PACKAGING / STUB_EQUIPMENT / TRANSPORT / DELIVERY |
-| 电商计入（上列支出合计） | 收入 LOAN_FROM_DIRECTOR（向董事借款，不进 P&L） |
-| 银行 收入（扣除向董事借款） | 收入 ORDER_SALES |
-| 银行 工资 | 支出 SALARY |
-| 银行 其余支出（扣除工资、借给董事） | 支出 OTHER |
-| 银行计入 向董事借款合计 | 收入 LOAN_FROM_DIRECTOR |
-| 待审、排除、退款、借给董事 | **不写**自动管理记录。本币手工：loan from → 收入管理，loan to → 支出管理 |
+| 银行 已分类商业收入（订单/结算/送货单/设备处置） | 对应收入类型各最多 1 条（有金额才写） |
+| 银行 已分类商业支出（含工资、运输等，须有 `expenseType`） | 对应支出类型各最多 1 条（有金额才写） |
+| 计入块 FX 配平 | 商业支出净额 → 收入 `LOAN_FROM_DIRECTOR`；商业收入净额 → 支出 `LOAN_TO_DIRECTOR`；再叠加行上已标的向董事借款/借给董事 |
+| 待审、排除、退款、平台提现、现金存现 | **不写**自动管理记录。本币手工：loan from → 收入管理，loan to → 支出管理 |
 
-日期：该财年结束日 `YYYY-06-30`（`date` 列，Type 1）。GST = 0。
+银行块头 `book_breakdown`（jsonb，可空）存 `expenseByType` / `revenueByType`。`NULL` = 旧块仍走工资+OTHER 聚合兼容；新保存写入（可为空对象）后按类型入账。
 
-收入 `source_type = LEDGER_BLOCK`。支出没有历史 source 列，只靠 `ledger_block_id`。
+日期：导入数据源日期范畴的**最后一天**（块头 `periodEnd` → `YYYY-MM-DD`，Type 1）。无 `periodEnd` 的旧块回退该财年结束日 `YYYY-06-30`。GST = 0。收支与配平用的 director loan 同一天。
+
+收入/支出自动账：`source_type = LEDGER_BLOCK`，`ledger_block_id = blockId`，`source_id = {blockId}:{revenueType|expenseType}`（一块可多类型；支出有 `uq_expenses_source`，不可再用裸 `blockId`）。
+
+**管理页只读**：`source_type=ledger_block` 的自动收支（含配套向董事借款）在收入/支出管理 **不可更新保存、不可删除**（后端 `LEDGER_AUTO_BOOK_IMMUTABLE`）；仅供查看与报税。流水计入同步仍走 repository，不受此限制。手工从流水预览创建的账本（`bank_row` 等）不受影响。
 
 不计入块（AUD–AUD）上银行、电商表都显示「创建」列，仍是 **手工** 收入/支出，**不要**带 `ledger_block_id`（否则删块会误删手工补记）。计入块不显示该列。
 
@@ -125,8 +136,8 @@ revenues / expenses.total_amount（记账货币，无币种列）
 | 块头 `*_total` / processed CSV 行金额 | 源货币 | 否 |
 | `fx_to_merchant` | 汇率 | — |
 | `revenues` / `expenses` 金额 | 记账货币 | 计入路径：是；手工/订单/结算单：本来就是记账货币 |
-| 税表 overlay `ledgerIntake.commerce` | 展示用记账货币 | 用 **财年** `fxCnyToAud`，可能与块汇率不同 |
-| 税表 overlay `commerceCny` | 源 CNY | 未换算，仅对照 |
+| 税表 overlay `ledgerIntake.commerce` | 展示用记账货币 | 按块 `fxToMerchant` 换算后加总 |
+| 税表 overlay `commerceCny` | 源货币 | 未换算，仅对照 |
 
 同一列里混进「有的 AUD、有的 RMB」且没有币种标记 = 数据损坏。
 
@@ -137,7 +148,7 @@ revenues / expenses.total_amount（记账货币，无币种列）
 1. **历史管理记录**：已按 AUD 写入。商户改成别的货币时，禁止只改设置不迁金额（否则旧 AUD 与新币数字会加在同一列）。
 2. **已上传流水块**：块头仍是源货币。重新保存会按 **当时** 商户货币重算「计不计入」。商户从 AUD 改为 CNY 后，旧支付宝块会从「计入」变成「不计入」并 **删掉** 自动管理记录——这是公式结果，必须在产品上明示，或改为「按块保存时快照的商户货币」判定（若改判定，要写迁移，不要静默改公式）。
 3. **`fx_to_merchant` 库方向不变**：永远是 记账/1源。界面已按「1 记账 = 多少源」填写并在存储前取倒数；商户变 CNY、块为 AUD 时仍走同一套 UI 倒数，不要再改库语义。
-4. **税表 `fxCnyToAud`**：要么降级为「仅当目标是 AUD 的 overlay」，要么迁到通用 `fxToMerchant` 并与块级汇率对齐；禁止长期三套汇率。
+4. **税表 overlay**：继续只用块级 `fxToMerchant`，不要再引入财年级第二套汇率。
 5. **枚举 / CHECK**：`ck_ledger_analysis_blocks_currency` 目前只允许 `AUD`,`CNY`。新币种要改 enum + CHECK + `selectOptions`。
 6. **`ledgerFxUtil` 命名**：去掉 CnyToAud 硬编码名，避免后人按名字再写一条 AUD 专用函数。
 7. **Phase**：改已入账金额或判定属于可能破坏生产的变更，按 post-deploy ledger 拆 Phase 1 / 清理。
