@@ -1,3 +1,34 @@
+## [4.2.0] - 2026-11-06
+
+### 🐛 修复
+
+- docs(devGuide): add ledger intake, merchant currency, and S3 private prefix guides
+
+### 📚 文档
+
+- docs: GST cutover, ledger intake, and partner summary payment notes
+- docs(fees): add Stripe/Omipay fee accounting notes
+- docs: update agent docs for ledger and GST work
+- docs(ledger): order date-amount match uses createdAt and cash/transfer
+- docs(ledger): expense supplier name bind and clear-bind UI
+- docs(ledger): date-amount match triggers after classify
+- docs(devGuide): rematch only pending-review rows and keep organize on the current filter
+- docs(ai): demo workflow has DeepSeek slot but secret is unset
+- docs(ai): production injects DeepSeek key; demo has no trial AI
+- docs(devGuide): document ledger FX UI invert vs stored rate
+- docs(devGuide): platform feedback and chat report updates
+- docs(devGuide): add OpenIM chat report and block design
+- docs(devGuide): catalog image direct upload and payment guide updates
+- docs(devGuide): openim offline push and planned-work updates
+- docs: note AASA Team ID FHUTTYDPQ8 for customer applinks
+- docs(devGuide): catalog image direct upload planned work
+- docs(devGuide): wechat account linking and post-deploy ledger updates
+
+### 🔧 构建/配置
+
+- chore(release): sync package-lock root version on version bump
+- chore(html): add image batch resize crop tool
+
 ## [4.1.0] - 2026-10-11
 
 ### 📚 文档

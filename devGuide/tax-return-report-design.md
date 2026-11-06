@@ -598,10 +598,28 @@ Response: {
 4. 显示审计比对结果
 5. 显示报表状态和版本
 
+## P&L / Balance Sheet 手改与同步（现行）
+
+- **本年利润**始终 = effective P&L（账本 overview + `pnlManual`）。生成/补报时服务端 stamp 进 `balanceSheet.equity.currentYearProfit`。
+- **一次保存**：`PUT /tax-return-report/:id/statements` 同时写 `pnlManual` + `balanceSheet`（服务端再强制利润）。旧 `/pnl`、`/balance-sheet` 已废弃。
+- CMS：保存按钮在核心报表 Tab 行右侧；不在各 Card 上分存。
+- **估算垫付**：`source_type=tax_return_pad` + `source_id=财年` 一笔 `LOAN_FROM_DIRECTOR`；创建/删除后 `POST .../sync-director-loans` 刷新 BS 向董事借款总计与明细。校验行非 0 / 借贷轧差口径另议。
+
+## BS 校验不平衡核对（diagnose）
+
+- **入口**：CMS Balance Sheet 不平衡 `Alert` 旁「核对」按钮（只诊断，不改数）。
+- **API**：`POST /tax-return-report/:id/balance-imbalance-diagnose`  
+  Body 可选 `pnlManual` + `balanceSheet`（**当前页 effective，含未保存手改**）；缺省回退库内 overview。
+- **三层**：Books live ↔ 生成快照 ↔ Effective（手改后）。`checkGap` 用 Effective + 董事借款轧差（与 CMS 表一致）。
+- **手改**：`effective ≠ snapshot` 且行在 `pnlManual`（或 BS 相对 GST 预填已覆盖）→ `manual_explained`，**不**标成多记/少记异常，**不**参与 `matchesGap`。
+- **未解释**：无手改行的账本漂移、**尚未创建**的估算垫付（`padRevenueId` 为空时）、借款账本 vs 报表、未覆盖的 GST other* 等；用其金额贴 `checkGap`。已有财年幂等 `TAX_RETURN_PAD` 时不再把未绑原材料合计报成「漏记垫付」。
+- **Modal**：未解释（贴近缺口置顶）为主；已手改默认折叠；结构 info 附后。
+
 ## 相关文档
 
 - [ledger-intake/README.md](ledger-intake/README.md) — 流水入账块头汇总如何进入税表
 - [merchant-currency/README.md](merchant-currency/README.md) — 商户货币、计入判定、块级 `fxToMerchant` 与税表 overlay（禁止 overlay 再写入收入支出 / P&L）
+- [revenue-expense-idempotency/README.md](revenue-expense-idempotency/README.md) — `TAX_RETURN_PAD` 等创建幂等键
 
 ## 注意事项
 

@@ -57,21 +57,27 @@ Skill checklist：`.cursor/skills/revenue-expense-idempotency/SKILL.md`。
 | 匹配支出金额：单据额优先于总金额 | 流水入账日期金额表 + `listExpensesForDateAmount` |
 | 创建查重键与 create 返回已有 | **本文** |
 | 公司外账户垫付 → 建 loan from | CMS 编辑支出一键生成（不看 `businessType`）；`source_type=expense` + `source_id=expenseId`；按钮即标记，无付款账户字段 |
+| 同币银行匹配/绑定已有（公司已付） | 表 `expense_bank_row_links`（**不**覆写 `source_type=bank_row`）；报税垫付估算认创建幂等或该表。解绑清 link；删块按 `bank_block_id` 清（FK CASCADE） |
+| 同币电商商品明细关联 | 支出列 `commerce_block_id` / `commerce_client_id`（辅关联，不参与公司已付）。删块时清空指向该块的列 |
+| 报税估算垫付汇总 loan-from | `source_type=tax_return_pad` + `source_id=financialYear`（每财年至多一笔 `LOAN_FROM_DIRECTOR`）；创建/删除后 `POST .../sync-director-loans` 刷新 BS 借款桶 |
+| 历史回填 | `npm run migrate:script:data-repair:expense-ledger-links`（读同币 processed CSV；不自动跑） |
 
 ## 禁止
 
 - 用金额或「日期+金额」当唯一幂等键。
 - 绑定已有账、OCR、收支管理手工创建写入 `ledger_block_id`（仅流水新建/批量与计入自动账可写）。
+- **绑定已有时覆写** `source_type/source_id=bank_row`（破坏创建幂等与「取消绑定已有不删账」）。
 - 仅靠行上已有 `revenueId`/`expenseId` 藏按钮、不做服务端查重（取消绑定 / 换浏览器会丢）。
 - 把订单多笔收款误做成「一单只能一条收入」。
 - 在流水 README 与本文各维护一份完整键表（改键只改本文，流水侧只留摘要链接）。
+- 用电商辅关联判定公司已付 / 漏记向董事借款。
 
 ## 规范代码
 
 | 件 | 路径 |
 |----|------|
 | 前缀 / 1:1 判定 | `xituan_codebase/utils/ledger-book-idempotency.util.ts` |
-| 收入 source 枚举 | `epRevenueSourceType`（含 `BANK_ROW`、`EXPENSE`） |
+| 收入 source 枚举 | `epRevenueSourceType`（含 `BANK_ROW`、`EXPENSE`、`TAX_RETURN_PAD`） |
 | 支出 source 枚举 | `epExpenseSourceType.BANK_ROW` |
 | 收入创建查重 | `RevenueService.createRevenue` / `RevenueRepository.findBySource*` |
 | 支出创建查重 | `ExpenseService.createExpense` / `ExpenseRepository.findBySourceIdempotent` |

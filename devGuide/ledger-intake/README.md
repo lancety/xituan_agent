@@ -1,13 +1,16 @@
 # 流水入账（最终方案）
 
-Last updated: 2026-11-02
+Last updated: 2026-11-04
 
 Skill checklist：`.cursor/skills/ledger-intake/SKILL.md`。货币 / 汇率 / 计不计入账目见 **[商户记账货币](../merchant-currency/README.md)**（权威，本文不重复公式）。从流水「创建收支」的管理账本防重复见 **[收入/支出创建幂等](../revenue-expense-idempotency/README.md)**（权威键表）。
 
 CMS 财年工具。分析在浏览器完成，再按**数据块**保存。电商 / 收支流水共用同一套货币规则，不要写进两套入账路径：
 
 - **同货币（块 = 商户）**：**复查对账** + **手动创建/绑定**；不自动写管理记录。
+  - **银行流水** → 支出上的**公司已付主关联**（`expense_bank_row_links`；从行创建仍写 `source_type=bank_row` 幂等，不混用）。
+  - **电商** → 支出上的**商品明细辅关联**（`commerce_block_id` + `commerce_client_id`）；**不**当作公司已付证明，也不与银行共用一套通用 link。
 - **不同货币（块 ≠ 商户）**：**计入**——已分类且有金额的类型各总 1 条收支（按块汇率换算），再用 **loan from / to director 配平**；自动账日期 = 导入数据源日期范畴**最后一天**（`periodEnd`）。
+  - **为何走自动账、电商或外币流水二选一即可**：海外电商进货往往只关心平台账单花费，不关心支付账号本身流水（账号常混有其它支出）。也可只导入外币收支账户；外币支出不是公司本币户流水，换算进本币自动账即可——不是拿异币块去绑公司 AUD 支出。
 
 税表 overlay 只读**已上传块头**汇总，不读行明细。计入块的 P&L 以自动管理记录为准。
 
@@ -77,7 +80,7 @@ flowchart LR
 | 仅统计 | 已上传且 `hasCloudFiles=false`（旧数据） | 状态「仅统计」 | **否**，须重新导入 | 可用同一 `blockId` 再 complete 补 processed（含计入同步） |
 | 已存文件 | 已上传且 `hasCloudFiles=true` | 状态「已存文件」 | 签名 GET processed；本地更新则提示上传才同步 | 「数据块更新」：processed PUT + PATCH |
 
-删除：整块删除。已上传则删 DB 行（CASCADE 自动管理记录）并尽力删 S3；草稿只删 IndexedDB。
+删除：整块删除。已上传则删 DB 行（`ledger_block_id` CASCADE 自动管理记录）并尽力删 S3；同时清同币关联——`expense_bank_row_links`（按 `bank_block_id`，另有块 FK `ON DELETE CASCADE`）以及支出上的 `commerce_block_id` / `commerce_client_id`。草稿只删 IndexedDB。行上解除匹配/绑定（不删支出）会 `DELETE` 对应 bank-row-link。打开/恢复编辑时若探测到收支管理记录已删，清行绑定；同币支出断链一并 `DELETE` bank-row-link（匹配绑定也会探测，不限 `bookLedgerBlockId`）。
 
 ### 保存须知（「保存流水」）
 
