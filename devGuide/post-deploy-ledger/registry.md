@@ -1,6 +1,6 @@
 # Post-Deploy Registry（巡检入口）
 
-Last updated: 2026-11-01
+Last updated: 2026-11-07
 
 **日常巡检：「检查 post-deploy」** — 打开本文件，活跃表行数应为 **0** 表示无待收尾部署债务。非 0 则点击 **Entry** 查看 Gate 与勾选清单。
 
@@ -10,6 +10,7 @@ Last updated: 2026-11-01
 
 | ID | 状态 | 已部署 | 待完成 | Gate 摘要 | 下一动作 | Entry | Last updated |
 |----|------|--------|--------|-----------|----------|-------|--------------|
+| `orders-reorder-preorder-retire` | `planned` | —（Phase 1：preview/confirm + 保留旧路由） | 微信/Site/Customer 新路径全量后 Phase N 删 `reorder-preorder` | 三端新再次购买全量；生产无旧调用 | 部署 Phase 1；Gate 后单独 PR 删旧路由 | [entry](./entries/2026-11-orders-reorder-preorder-retire.md) | 2026-11-07 |
 | `contact-name-server-gate` | `blocked` | Backend+WeChat 已推 production | WeChat 提审全量后 Phase N 开回门禁 | WeChat contact-name Modal/handler 全量 | 提审/全量 WeChat；Gate 后改 `true` | [entry](./entries/2026-11-contact-name-server-gate.md) | 2026-11-01 |
 | `summary-payment-from-revenues` | `planned` | — | Phase 1 收入派生付款状态；Phase N DROP 三列 | CMS+Merchant 无感用同名字段；无人写三列 | 部署 backend Phase 1 | [entry](./entries/2026-10-summary-payment-from-revenues.md) | 2026-10-30 |
 | `ledger-intake-manual-ledger-block-id` | `planned` | — | Phase 1：流水新建写 ledger_block_id + 删块预览；无 Phase N | CMS 流水页发版；生产确认删块范围 | 部署 backend+CMS | [entry](./entries/2026-10-ledger-intake-manual-ledger-block-id.md) | 2026-10-30 |
