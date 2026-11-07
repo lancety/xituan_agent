@@ -10,6 +10,7 @@ Last updated: 2026-11-07
 
 | ID | 状态 | 已部署 | 待完成 | Gate 摘要 | 下一动作 | Entry | Last updated |
 |----|------|--------|--------|-----------|----------|-------|--------------|
+| `platform-metadata-drop-cms-site-print-vis` | `planned` | —（Phase 1：平台三轴 UI/写类型清理；列恒 true 保留） | Phase N DROP `visible_in_cms/site/print` | Platform+Backend Phase 1 生产发版；无客户端依赖三轴响应 | 部署 Phase 1；Gate 后单独 PR DROP | [entry](./entries/2026-11-platform-metadata-drop-cms-site-print-vis.md) | 2026-11-07 |
 | `orders-reorder-preorder-retire` | `planned` | —（Phase 1：preview/confirm + 保留旧路由） | 微信/Site/Customer 新路径全量后 Phase N 删 `reorder-preorder` | 三端新再次购买全量；生产无旧调用 | 部署 Phase 1；Gate 后单独 PR 删旧路由 | [entry](./entries/2026-11-orders-reorder-preorder-retire.md) | 2026-11-07 |
 | `contact-name-server-gate` | `blocked` | Backend+WeChat 已推 production | WeChat 提审全量后 Phase N 开回门禁 | WeChat contact-name Modal/handler 全量 | 提审/全量 WeChat；Gate 后改 `true` | [entry](./entries/2026-11-contact-name-server-gate.md) | 2026-11-01 |
 | `summary-payment-from-revenues` | `planned` | — | Phase 1 收入派生付款状态；Phase N DROP 三列 | CMS+Merchant 无感用同名字段；无人写三列 | 部署 backend Phase 1 | [entry](./entries/2026-10-summary-payment-from-revenues.md) | 2026-10-30 |
