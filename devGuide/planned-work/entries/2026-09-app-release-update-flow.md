@@ -1,13 +1,13 @@
 # app-release-update-flow
 
-Last updated: 2026-10-09（本地签名验收完成；当前窗口先 iOS TF；prod OTA 延后）
+Last updated: 2026-11-07（基建已落地；每次打开提示 UX 见 `app-update-check-ux`；本条继续跟 iOS TF / prod OTA）
 
 ## 摘要
 
 为 `xituan_app_customer` / `xituan_app_merchant` 落地 **商店原生更新 + 自建 Expo OTA（content CDN）+ Platform 强制更新（minVersion）**。  
 **不是** post-deploy Phase N：方案已定稿；**ASC App 已创建 → 实施中（active）**。
 
-Cursor 方案原稿：`self-hosted_app_ota` plan（本机 `.cursor/plans`）。
+Cursor 方案原稿：`d:/projects/xituan_module/.cursor/plans_planned/self-hosted_app_ota_cf87f02d.plan.md`（提示 UX 同文件；基建验收仍本 entry）。
 
 ### 实施钉死（2026-10-08）
 
