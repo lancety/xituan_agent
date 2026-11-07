@@ -1,13 +1,13 @@
 # app-release-update-flow
 
-Last updated: 2026-11-07（基建已落地；每次打开提示 UX 见 `app-update-check-ux`；本条继续跟 iOS TF / prod OTA）
+Last updated: 2026-11-07（**done**：基建 + iOS TF / prod OTA 已验收；提示 UX 见 `app-update-check-ux`）
 
 ## 摘要
 
 为 `xituan_app_customer` / `xituan_app_merchant` 落地 **商店原生更新 + 自建 Expo OTA（content CDN）+ Platform 强制更新（minVersion）**。  
-**不是** post-deploy Phase N：方案已定稿；**ASC App 已创建 → 实施中（active）**。
+**done（2026-11-07）**。每次打开检测 / 一次性提示等产品 UX 不在本条，见 `app-update-check-ux`。
 
-Cursor 方案原稿：`d:/projects/xituan_module/.cursor/plans_planned/self-hosted_app_ota_cf87f02d.plan.md`（提示 UX 同文件；基建验收仍本 entry）。
+Cursor 方案原稿（现主要为 UX 增量，仍挂 planned）：`d:/projects/xituan_module/.cursor/plans_planned/self-hosted_app_ota_cf87f02d.plan.md`
 
 ### 实施钉死（2026-10-08）
 
@@ -27,10 +27,10 @@ Cursor 方案原稿：`d:/projects/xituan_module/.cursor/plans_planned/self-host
 |----|------|
 | 栈 | Expo ~57 + EAS Build（`development` / `preview` / `production`） |
 | 仓 | customer `au.com.xituan.customer`、merchant `au.com.xituan.merchant` |
-| OTA | 已接：`expo-updates` + 自建 manifest；本地 Android 强制更新 + OTA 已验收 |
-| 强制更新 | Platform minVersion；App 启动 Gate |
-| iOS | ASC App 已创建；待 TestFlight / production 验收 |
-| Android | 本地 USB / preview channel 已验 |
+| OTA | 已接：`expo-updates` + 自建 manifest；本地 Android + **prod OTA** 已验收 |
+| 强制更新 | Platform minVersion；App 启动 Gate（Customer 已有；Merchant 提示层见 `app-update-check-ux`） |
+| iOS | ASC App 已创建；TF / production 路径已走过 |
+| Android | 本地 USB / preview + prod channel 已验 |
 
 ### 更新分三层（已定）
 
@@ -83,22 +83,20 @@ App: updates.url → backend；asset → content CDN；启动比对 minVersion
 - [x] 各 App CLI `ota:prepare`；content 前缀 `app-ota/`；manifest `no-store`
 - [x] 跑 migration `1710000000365`；本地 Android 强制更新 + OTA（Platform 激活）两 App 已验收
 - [x] 本地包嵌入 code signing 公钥；`ota:prepare:local` 签名验收（`code signing: yes` + 冷启动验签）
-- [ ] iOS：`build:prod:ios` → App Store Connect / TestFlight（两 App；包内嵌 prod 公钥；**本步不测** prod OTA）
-- [ ] 本 entry → `done`（iOS TF 可达 + 下方 prod OTA 验收完成后；自由 channel 触发清单可仍未勾）
+- [x] iOS：`build:prod:ios` → App Store Connect / TestFlight（两 App；包内嵌 prod 公钥）
+- [x] production OTA 链路验收（`ota:prepare:prod` + 生产 Platform 激活 + TF/商店包冷启动）
+- [x] 本 entry → `done`（2026-11-07）
 
-### 触发后才做的
+### 触发后才做的（本 entry 不跟踪实施）
 
-- [ ] **production OTA 链路验收**（`ota:prepare:prod` + 生产 Platform 激活 + TF/商店包冷启动）  
-  - **触发**：本波相关改动（backend / Platform / 两 App / 签名）**一起上线生产之后**再测；勿在半截发版窗口单独打 prod OTA  
 - [ ] **OTA 自由 channel（方案 A）**  
   - **触发**：多人并行本地 OTA 互相抢同一 `preview` active，或明确需要个人 channel（`dev-a` / `dev-b`）  
   - **内容**：放宽 enum/校验为 slug 字符串；local 默认 `preview`→`dev`；App/CLI 读 `EXPO_PUBLIC_OTA_CHANNEL` / `OTA_CHANNEL`；第一次 `ota:prepare` 即出现该 channel；Platform 筛库中已出现 channel；保留 `production` 为唯一生产名；**不**建 channel 登记表  
-  - **备注**：改 channel 需重打原生包（写入 `updates.requestHeaders`）；实施时再决定本地已有 `preview` 行 migrate→`dev` 还是弃用
+  - **备注**：改 channel 需重打原生包（写入 `updates.requestHeaders`）；实施时再决定本地已有 `preview` 行 migrate→`dev` 还是弃用。需要时另开 entry。
 
 ## 触发条件 / 目标窗口
 
-**已触发（2026-10-08）：** ASC customer/merchant App 已创建。实现窗口：首商店包前落地，便于 JS 热修与强制更新。  
-**单项触发：** 见上节「触发后才做的」。
+**已完成（2026-11-07）。** 自由 channel 仍按触发另开。
 
 ## 实施备忘
 
@@ -119,4 +117,5 @@ App: updates.url → backend；asset → content CDN；启动比对 minVersion
 
 - [planned-work README](../README.md)
 - [planned-work registry](../registry.md)
+- [app-update-check-ux](./2026-11-app-update-check-ux.md)（每次打开检测 / 一次性提示）
 - [media-cdn-sih-domain-split](../../media-cdn-sih-domain-split.md)（content ≠ SIH）
