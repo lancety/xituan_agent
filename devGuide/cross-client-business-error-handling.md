@@ -1,6 +1,6 @@
 # 四端 BusinessError 统一处理
 
-Last updated: 2026-10-10
+Last updated: 2026-11-08
 
 服务端只回 **`code` + 结构化 payload**（及可选 `lineErrors`），不把某种语言的文案当作 API 契约。各端用本地 i18n 映射用户可见文案。
 
@@ -11,13 +11,10 @@ Last updated: 2026-10-10
 | 抛出 | `BusinessError` / `eBusinessErrorCode`，禁止 `throw new Error(中文)` 作为业务契约 |
 | Shape | A 单实例 / B 集合 `lineErrors` / AB 混合（见 `.cursor/rules/business-error-response.mdc`） |
 | 响应 | `error` 对象含 `code`、timestamp、可选 payload；客户端 `BusinessErrorUtil.extractErrorData` |
-| 双写例外 | 见 [post-deploy ledger](./post-deploy-ledger/entries/2026-10-refund-amount-exceeds-remaining-dual-write.md)：`REFUND_AMOUNT_EXCEEDS_REMAINING` Phase-1 另写 legacy 中文 `message` 兼容旧端 |
 
 ```mermaid
 flowchart LR
-  Biz[BusinessError code+payload] --> Dual[Phase1 optional legacy message]
-  Biz --> Parse[extractErrorData]
-  Dual -.->|old clients only| UI
+  Biz[BusinessError code+payload] --> Parse[extractErrorData]
   Parse --> I18n[businessError.CODE / errors.business]
   I18n --> UI[toast / Alert / line highlight]
 ```
@@ -46,17 +43,15 @@ flowchart LR
 | S7 | 特殊 code Handler | 可选导航 | `handlers[code]`（微信已有 CommonHandlers） |
 | S8 | 非 BusinessError | SDK / 权限文案 | 不伪造 code |
 
-## 退款超额 Phase-1（增量，不破旧端）
+## 退款超额
 
 - Code：`REFUND_AMOUNT_EXCEEDS_REMAINING`
 - Payload：`refundAmountExceedsRemaining`（requested / remaining / original / alreadyRefunded）
-- **旧端不变**：panel `error.message` / CMS 顶层 `message` 仍为历史同模板中文
-- **新端**：读 `code` → 本地插值（可忽略 `message`）
-- **Post-deploy todo（Phase N）**：Gate 后去掉 dual-write，见 [ledger entry](./post-deploy-ledger/entries/2026-10-refund-amount-exceeds-remaining-dual-write.md)
+- 各端读 `code` → 本地插值；Phase N 已去掉 legacy `message` 双写（2026-11-08）
 
 ## 相关文档
 
-- [post-deploy：退款双写](./post-deploy-ledger/entries/2026-10-refund-amount-exceeds-remaining-dual-write.md)
+- [post-deploy：退款双写（已归档）](./post-deploy-ledger/entries/2026-10-refund-amount-exceeds-remaining-dual-write.md)
 - [registry](./post-deploy-ledger/registry.md)
 - Skill：`.cursor/skills/business-error-line-errors/SKILL.md`
 - Rule：`.cursor/rules/business-error-response.mdc`

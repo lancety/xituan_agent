@@ -12,11 +12,9 @@ Last updated: 2026-11-08
 |----|------|--------|--------|-----------|----------|-------|--------------|
 | `platform-metadata-drop-cms-site-print-vis` | `planned` | —（Phase 1：平台三轴 UI/写类型清理；列恒 true 保留） | Phase N DROP `visible_in_cms/site/print` | Platform+Backend Phase 1 生产发版；无客户端依赖三轴响应 | 部署 Phase 1；Gate 后单独 PR DROP | [entry](./entries/2026-11-platform-metadata-drop-cms-site-print-vis.md) | 2026-11-07 |
 | `orders-reorder-preorder-retire` | `planned` | —（Phase 1：preview/confirm + 保留旧路由） | 微信/Site/Customer 新路径全量后 Phase N 删 `reorder-preorder` | 三端新再次购买全量；生产无旧调用 | 部署 Phase 1；Gate 后单独 PR 删旧路由 | [entry](./entries/2026-11-orders-reorder-preorder-retire.md) | 2026-11-07 |
-| `contact-name-server-gate` | `blocked` | Backend+WeChat 已推 production | WeChat 提审全量后 Phase N 开回门禁 | WeChat contact-name Modal/handler 全量 | 提审/全量 WeChat；Gate 后改 `true` | [entry](./entries/2026-11-contact-name-server-gate.md) | 2026-11-01 |
 | `summary-payment-from-revenues` | `planned` | — | Phase 1 收入派生付款状态；Phase N DROP 三列 | CMS+Merchant 无感用同名字段；无人写三列 | 部署 backend Phase 1 | [entry](./entries/2026-10-summary-payment-from-revenues.md) | 2026-10-30 |
 | `ledger-intake-manual-ledger-block-id` | `planned` | — | Phase 1：流水新建写 ledger_block_id + 删块预览；无 Phase N | CMS 流水页发版；生产确认删块范围 | 部署 backend+CMS | [entry](./entries/2026-10-ledger-intake-manual-ledger-block-id.md) | 2026-10-30 |
 | `wechat-account-link-legacy-autoregister` | `planned` | — | Phase 1 opt-in NEED_LINK + legacy 自动注册；Phase N 删 legacy | WeChat/Site/App 新流程全量 | 部署 Phase 1；Gate 后单独 PR 删自动注册 | [entry](./entries/2026-10-wechat-account-link-legacy-autoregister.md) | 2026-10-10 |
-| `refund-amount-exceeds-remaining-dual-write` | `active` | Phase 1 增量双写已落地（旧端仍读同模板 `message`） | Phase N：删 dual-write / 仅 `toApiResponse()` | 微信面板+Merchant+CMS 退款按 code→i18n 全量 | 生产确认 Phase1 → 等 Gate → 单独 PR 清 message | [entry](./entries/2026-10-refund-amount-exceeds-remaining-dual-write.md) | 2026-10-10 |
 | `merchant-panel-mixed-activities-retire` | `planned` | —（Phase 1：分接口客户端 + **保留** 混合 API） | Phase N 删 `GET /activities` + `listActivities` | WeChat 商家面板分接口版本全量后再删混合路由 | 部署 Phase 1；旧 WeChat 仍打混合 path；Gate 后单独 PR 清理 | [entry](./entries/2026-10-merchant-panel-mixed-activities-retire.md) | 2026-10-07 |
 | `metadata-rebind-provenance-batch` | `planned` | — | Phase 1 加表与解绑保留 MANUAL；Phase N 清洗 UNBIND_COPY | CMS 批次看板发版且抽查 MANUAL 不被改写 | 部署 migration 0363 与 backend 解绑行为 | [entry](./entries/2026-09-metadata-rebind-provenance-batch.md) | 2026-09-29 |
 | `sih-format-allowlist-webp-png` | `planned` | —（format 本期不动） | ① 手动 `SIZE_OPTS` ② **Gate 后 SIH 只留 webp\|png（终态不支持 jpeg/jpg）** | C4 回填完、DB 主 path 均为 webp/png | 部署 SIH 时改 `SIZE_OPTS`；format 收紧等 Gate | [entry](./entries/2026-09-sih-format-allowlist-webp-png.md) | 2026-09-06 |
@@ -28,7 +26,6 @@ Last updated: 2026-11-08
 | `wechat-c-order-item-list-section` | `planned` | — | Phase 1 + Phase 2 | WeChat 含 Phase 1 版本全量后再删 trade 内联列表与冗余组件 | 实施 Phase 1：6 页改用主包 `order-item-list-section` | [entry](./entries/2026-06-wechat-c-order-item-list-section.md) | 2026-06-16 |
 | `profile-error-copy-i18n` | `planned` | — | Phase 1 + Phase 2 | 所有 frontend consumer 已改用 enum/code + i18n；`xituan_codebase` 无内嵌中文 copy | 实施 Phase 1：新增 enum/code 并补齐前端 i18n | [entry](./entries/2026-06-profile-error-copy-i18n.md) | 2026-06-18 |
 | `order-terminal-status-inventory` | `planned` | — | Phase 1 + Phase 2 | 订单终态转换库存动作矩阵确认后再统一通用状态服务库存处理 | 完成 Phase 1 盘点：状态入口、付款状态、库存锁状态、退款路径 | [entry](./entries/2026-06-order-terminal-status-inventory.md) | 2026-06-18 |
-| `cms-merchant-panel-shipping-refund` | `planned` | WeChat + CMS 代码已落地 | CMS smoke + 发版确认 | 本地/生产 smoke 两入口后退款行为 | 做 CMS smoke；通过后改 `active`/`done` | [entry](./entries/2026-07-cms-merchant-panel-shipping-refund.md) | 2026-07-25 |
 
 ---
 
@@ -36,4 +33,7 @@ Last updated: 2026-11-08
 
 | ID | 状态 | 完成日 | Entry | 备注 |
 |----|------|--------|-------|------|
+| `cms-merchant-panel-shipping-refund` | `done` | 2026-11-08 | [entry](./entries/2026-07-cms-merchant-panel-shipping-refund.md) | CMS/WeChat 退运费两入口已上线；关台账 |
+| `contact-name-server-gate` | `done` | 2026-11-08 | [entry](./entries/2026-11-contact-name-server-gate.md) | WeChat 全量后开回 `ENFORCE_CONTACT_NAME_ON_SERVER`；随 backend 发版生效 |
+| `refund-amount-exceeds-remaining-dual-write` | `done` | 2026-11-08 | [entry](./entries/2026-10-refund-amount-exceeds-remaining-dual-write.md) | Phase N：删 dual-write util，退款 catch 仅 `toApiResponse()` |
 | `merchant-customer-pii-restriction` | `done` | 2026-11-08 | [entry](./entries/2026-08-merchant-customer-pii-restriction.md) | 邮箱/账户 PII 收尾；履约手机中间号 → planned `delivery-phone-merchant-mask` |

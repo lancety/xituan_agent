@@ -1,15 +1,16 @@
 # CMS：退运费 — 订单编辑模组 + 活动排号 modal
 
-Last updated: 2026-07-25
+Last updated: 2026-11-08
 
 | Field | Value |
 |-------|-------|
 | **ID** | `cms-merchant-panel-shipping-refund` |
-| **Status** | `planned` |
-| **Deployed** | WeChat 商户面板代码已落地（待发版确认）；CMS 未做 |
-| **Pending** | Phase CMS：两入口对齐退运费 + 共用 ManualRefundModal |
-| **Gate (CMS 可收尾)** | WeChat 退运费 smoke 通过；CMS 两入口上线且共用同一退款组件 |
+| **Status** | `done` |
+| **Deployed** | WeChat + CMS 两入口退运费已落地并使用中 |
+| **Pending** | — |
+| **Gate (CMS 可收尾)** | WeChat / CMS 退运费已上线；开发者确认关闭台账 ✅ |
 | **Created** | 2026-07-25 |
+| **Completed** | 2026-11-08 |
 
 ## Background
 
@@ -94,15 +95,15 @@ Codebase：`typing_entity/merchant-panel-refund-reason.enum.ts`
 
 | Phase | Scope | Deploy | Verify |
 |-------|-------|--------|--------|
-| **WeChat（代码已做）** | 商户金额弹层 + 退运费 + reason enum；backend 空原因默认 enum | 随 wechat/backend 发版 | WeChat smoke |
-| **CMS** | `OrderEditModal` + 活动排号 modal + 增强 `ManualRefundModal` | 待排期 | 两入口退运费/处理退款均走同一 modal |
+| **WeChat（代码已做）** | 商户金额弹层 + 退运费 + reason enum；backend 空原因默认 enum | 已发版 | WeChat smoke |
+| **CMS** | `OrderEditModal` + 活动排号 modal + 增强 `ManualRefundModal` | 已发版 | 两入口退运费/处理退款均走同一 modal |
 
 ## Post-deploy debt
 
 ### WeChat prod confirm
 
-- [ ] 运费左侧退运费；预填金额+enum 原因；二次确认；普通退款无预填污染
-- [ ] 空原因落库 `merchant_manual`；支付历史 enum→中文 / 旧中文原样
+- [x] 运费左侧退运费；预填金额+enum 原因；二次确认；普通退款无预填污染
+- [x] 空原因落库 `merchant_manual`；支付历史 enum→中文 / 旧中文原样
 
 ### CMS 移植（主待办）
 
@@ -111,8 +112,8 @@ Codebase：`typing_entity/merchant-panel-refund-reason.enum.ts`
 - [x] **活动排号 modal**（`ActivityOrderDetailModal`）：运费左侧「退运费」；支付区块同级最下「处理退款」（仅可退时显示）；均复用 `ManualRefundModal`
 - [x] 两入口：**不**加已收/已退/余额行
 - [x] CMS messages 补齐各 `epMerchantPanelRefundReason` 文案 key（zh_cn / zh_tw / en）
-- [ ] CMS 生产 / 本地 smoke：两入口退运费预填与二次确认；普通处理退款无预填污染
-- [ ] Entry → `done`；registry 归档（smoke 通过后）
+- [x] CMS 生产确认：两入口退运费可用（开发者 2026-11-08 关台账）
+- [x] Entry → `done`；registry 归档
 
 ## 参考路径
 
