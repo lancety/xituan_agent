@@ -53,6 +53,7 @@ Platform（ADMIN / SUPER_ADMIN）：仅 translate，`POST /api/admin/platform/ai
 
 ## 相关文档
 
+- [multilingual-ai-assist.md](./multilingual-ai-assist.md) — 长文本空槽翻译 + 可扩展数据块（product-desc 等）
 - [../ledger-intake/README.md](../ledger-intake/README.md) — 流水入账存储、页面、流转（权威）
 - [../tax-return-report-design.md](../tax-return-report-design.md)
 - [../cross-client-business-error-handling.md](../cross-client-business-error-handling.md)

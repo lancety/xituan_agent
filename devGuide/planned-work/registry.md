@@ -1,6 +1,6 @@
 # Planned Work Registry（巡检入口）
 
-Last updated: 2026-11-07
+Last updated: 2026-11-08
 
 **日常巡检：「检查规划」** — 打开本文件；需要细节再进 Entry。
 
@@ -12,6 +12,7 @@ Cursor plan 三桶：草稿 `C:/Users/lance/.cursor/plans/`；待做 / 已完成
 
 | ID | 状态 | 简述 | 目标阶段/触发 | 下一动作 | Entry | Last updated |
 |----|------|------|---------------|----------|-------|--------------|
+| `multilingual-ai-empty-locale-fill` | `planned` | 长文本空槽 AI 填充 + 数据块挖洞；保存前/语言切换批处理 | **high** | `fillEmptyLocales` + `MULTILINGUAL_TEXT_TRANSLATE` + shouldRunFill | [entry](./entries/2026-11-multilingual-ai-empty-locale-fill.md) | 2026-11-08 |
 | `auspost-mypost-dual-track` | `in_progress` | MyPost CSV+API 双轨；CMS+Merchant App | 当前窗口 | 连接 Token、API confirm、App CSV 分享 | [entry](./entries/2026-11-auspost-mypost-dual-track.md) | 2026-11-07 |
 | `wechat-c-business-error-i18n` | `planned` | 微信 C 端 code→i18n；禁 toast message | high | 审计 SimpleErrorHandler；「我的网店」不专项做 | [entry](./entries/2026-11-wechat-c-business-error-i18n.md) | 2026-11-07 |
 | `app-update-check-ux` | `in_progress` | 硬/soft 按 OS 拆；底部条按钮；OTA reload；4h | high | 真机/发版验收；Platform 填 recommended/apk | [entry](./entries/2026-11-app-update-check-ux.md) | 2026-11-07 |
