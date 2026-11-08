@@ -31,6 +31,7 @@ Last updated: 2026-10-10
 |----------|---------|
 | 旧 WeChat / 旧 Site / 旧 App | 不传 `accountLinkFlow` → 仍自动建号 |
 | 新 WeChat / Site / App | 传 `accountLinkFlow: true` + 绑定 UI |
+| Merchant App 登录后补绑 | 「更多」账号区 → `account-bind` channel=`merchant`（planned-work `merchant-app-account-bind-wechat`，2026-11-09） |
 
 ## 部署后债务（Post-deploy debt）
 

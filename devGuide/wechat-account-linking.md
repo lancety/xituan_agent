@@ -1,6 +1,6 @@
 # 微信 / 账号名邮箱：账号绑定（防双开）
 
-Last updated: 2026-10-10
+Last updated: 2026-11-09
 
 **部署尾项:** [post-deploy-ledger entry](./post-deploy-ledger/entries/2026-10-wechat-account-link-legacy-autoregister.md)
 
@@ -50,7 +50,7 @@ Last updated: 2026-10-10
 | 端 | NEED_LINK | 完善资料 | 设置页绑微信 |
 |----|-----------|----------|--------------|
 | Customer App | `CustomerLoginPanel` / `AuthScreens` | 登录后进账号信息（缺头像/昵称/手机） | 账号信息「绑定微信」→ `account-bind` channel=`customer` |
-| Merchant App | `AuthScreens` Alert + 绑定表单 | 提示完善资料 | （商户侧后续可对齐 CMS/账号页） |
+| Merchant App | `AuthScreens` Alert + 绑定表单 | 提示完善资料 | 「更多」账号区「绑定微信」→ `account-bind` channel=`merchant` |
 | 小程序 | 个人中心登录区 chooser/bind | 现有 `profile-completion-modal` | 已微信登录则已绑 mini；密码用户可再绑 |
 | Site | `wechat-callback` 页内 chooser/bind | `needCompleteProfile` → `/user/account-info` | 账号资料页（既有邮箱/密码补全） |
 

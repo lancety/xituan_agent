@@ -1,6 +1,6 @@
 # Planned Work Registry（巡检入口）
 
-Last updated: 2026-11-08
+Last updated: 2026-11-09
 
 **日常巡检：「检查规划」** — 打开本文件；需要细节再进 Entry。
 
@@ -35,6 +35,7 @@ Cursor plan 三桶：草稿 `C:/Users/lance/.cursor/plans/`；待做 / 已完成
 
 | ID | 状态 | 完成日 | Entry | 备注 |
 |----|------|--------|-------|------|
+| `merchant-app-account-bind-wechat` | `done` | 2026-11-09 | [entry](./entries/2026-11-merchant-app-account-bind-wechat.md) | 「更多」账号区登录后绑微信；对齐 Customer account-bind |
 | `app-release-update-flow` | `done` | 2026-11-07 | [entry](./entries/2026-09-app-release-update-flow.md) | 基建+iOS TF+prod OTA 已验；提示 UX 见 `app-update-check-ux`；自由 channel 未触发 |
 | `cms-refund-line-returns` | `done` | 2026-11-07 | [entry](./entries/2026-11-cms-refund-line-returns.md) | CMS+Backend 已上 production；App/微信对等 UI 未触发，另开 entry |
 | `image-normalize-full-backfill` | `done` | 2026-09-17 | [entry](./entries/2026-09-image-normalize-full-backfill.md) | 本机全量 IMAGE_NORMALIZE 已跑完；jpeg 主路径下线仍看 post-deploy `sih-format-allowlist-webp-png` |
