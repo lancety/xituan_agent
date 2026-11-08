@@ -12,6 +12,7 @@ Cursor plan 三桶：草稿 `C:/Users/lance/.cursor/plans/`；待做 / 已完成
 
 | ID | 状态 | 简述 | 目标阶段/触发 | 下一动作 | Entry | Last updated |
 |----|------|------|---------------|----------|-------|--------------|
+| `delivery-phone-merchant-mask` | `planned` | 履约手机对商户脱敏/中间号；自配送与 AusPost 各路径 | **mid** | 定场景矩阵；对齐 AusPost 双轨直传 | [entry](./entries/2026-11-delivery-phone-merchant-mask.md) | 2026-11-08 |
 | `multilingual-ai-empty-locale-fill` | `planned` | 长文本空槽 AI 填充 + 数据块挖洞；保存前/语言切换批处理 | **high** | `fillEmptyLocales` + `MULTILINGUAL_TEXT_TRANSLATE` + shouldRunFill | [entry](./entries/2026-11-multilingual-ai-empty-locale-fill.md) | 2026-11-08 |
 | `auspost-mypost-dual-track` | `in_progress` | MyPost CSV+API 双轨；CMS+Merchant App | 当前窗口 | 连接 Token、API confirm、App CSV 分享 | [entry](./entries/2026-11-auspost-mypost-dual-track.md) | 2026-11-07 |
 | `wechat-c-business-error-i18n` | `planned` | 微信 C 端 code→i18n；禁 toast message | high | 审计 SimpleErrorHandler；「我的网店」不专项做 | [entry](./entries/2026-11-wechat-c-business-error-i18n.md) | 2026-11-07 |

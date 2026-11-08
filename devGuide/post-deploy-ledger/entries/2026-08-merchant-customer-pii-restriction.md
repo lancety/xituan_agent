@@ -1,50 +1,43 @@
 # 商户侧客户 PII 限制（账号 / 邮箱 / 手机）
 
-Last updated: 2026-09-10
+Last updated: 2026-11-08
 
 | Field | Value |
 |-------|-------|
 | **ID** | `merchant-customer-pii-restriction` |
-| **Status** | `active` |
-| **Deployed** | Phase 1 大部：merchant-clients 去 email；下线 lookup/create/delete；OpenIM CUSTOMER 无 email；CMS/微信客户 UI；首次消费日；客户订单过滤 |
-| **Pending** | ManualOrderEditor 选人 email；OrderEditModal 收件电话边界；relay 代发；CLIENT_CREATE/DELETE 权限点清理 |
-| **Gate (可收尾)** | ManualOrderEditor/grep 清零；relay MVP；CMS + 小程序商户面板全量发版 |
+| **Status** | `done` |
+| **Deployed** | 账户邮箱脱敏、email 可空/停写 placeholder、软提示、ManualOrder 脱敏（CMS+Merchant）、收件电话边界、`CLIENT_*` 清理；schema `0406` + data-repair 清 placeholder 随发版窗口执行 |
+| **Pending** | —（不再作为 post-deploy 债） |
+| **Gate (可收尾)** | 本条产品范围已落地；履约手机「中间号/对商户隐藏」见 planned-work |
 | **Created** | 2026-08-27 |
+| **Completed** | 2026-11-08 |
 
-## Background
+## 产品边界（已定稿）
 
-**产品原则（已确认）：**
+| 信息 | 商户侧 |
+|------|--------|
+| 订单收货人 / 履约联系电话 / 地址 | 本轮仍明文（履约） |
+| 账户登录手机 | 不暴露于 OpenIM / 客户资料 / 订单嵌套 `user.phone` |
+| 账户邮箱 | 脱敏；无邮箱可空；订单联系邮箱可手填不写回账户 |
+| Platform | 仍可看完整账号 |
+| placeholder | 禁止新建；存量清 NULL（data-repair） |
 
-- **Platform（平台管理端）**：可查看客户账号（username）、邮箱、手机。
-- **CMS / 小程序商户面板**：不得直接查看客户登录账号、邮箱、手机号。
-- 触达走平台代发（Phase 2）。
+## 已完成（勾选）
 
----
+- [x] merchant-clients / OpenIM / 微信客户 UI 去账户 email
+- [x] email 可空 + 停写 `@placeholder.com` + `lacksDeliverableEmail`
+- [x] 软提示补邮箱（会话一次 + 7 天暂不提醒）
+- [x] ManualOrder hints/contact 脱敏（CMS + Merchant App）
+- [x] 订单嵌套 user 不带账户手机；履约用 snapshot `contactNumber`
+- [x] `CLIENT_CREATE` / `CLIENT_DELETE` 清理
+- [x] 台账从 post-deploy 收尾；手机中间号另开 planned-work
 
-## 已完成
+## 迁出（不再本条跟踪）
 
-| 区域 | 改动 |
+| 主题 | 去向 |
 |------|------|
-| `POST /admin/merchant-clients/batch` | 仅 id/nickname/avatarUrl |
-| CMS 订单列表 / ManualRefundModal | nickname + avatar |
-| `GET /admin/merchant-clients` list/get | 无 email/username；`firstOrderAt` |
-| lookup / create / DELETE merchant-clients | **已下线**（客户由下单 addClient 建立） |
-| OpenIM CUSTOMER profile | 无 email/username；附 clientSinceAt + 支付三态 + firstOrderAt |
-| CMS clients 列表/详情 | 无 email；首次消费；查看订单；无添加/删除 |
-| CMS/Site OpenIM 资料卡 | 商户侧客户富资料；Site 点自己精简、点店员保持 |
-| 微信商户面板 clients | 无 email；ActionSheet 订单/编辑/聊天；client-edit 页 |
-| 微信活动订单 serialize user | 无 email/phone |
-| 订单 list `userId` + `customerOrderScope` | 隐性客户过滤 |
-
-### 仍待（Phase 1 残留）
-
-- [ ] `ManualOrderEditor` — 选用户 label 含 email
-- [ ] `OrderEditModal` — 收件电话 vs 账号手机边界
-- [ ] 权限常量 `CLIENT_CREATE` / `CLIENT_DELETE` 从角色表清理（路由已不用）
-
-### Phase 2 — 平台代发（未做）
-
-- [ ] relay 短信/邮件
+| 履约手机中间号 / 对商户隐藏真实号（自行配送、手动/自动 AusPost 建单等） | planned-work `delivery-phone-merchant-mask` |
+| 平台 relay 代发短信/邮件 | 未排期；需要时另开 planned 或产品单 |
 
 ## Platform
 

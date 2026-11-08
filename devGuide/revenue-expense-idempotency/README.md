@@ -60,8 +60,6 @@ Skill checklist：`.cursor/skills/revenue-expense-idempotency/SKILL.md`。
 | 同币银行匹配/绑定已有（公司已付） | 表 `expense_bank_row_links`（**不**覆写 `source_type=bank_row`）；报税垫付估算认创建幂等或该表。解绑清 link；删块按 `bank_block_id` 清（FK CASCADE） |
 | 同币电商商品明细关联 | 支出列 `commerce_block_id` / `commerce_client_id`（辅关联，不参与公司已付）。删块时清空指向该块的列 |
 | 报税估算垫付汇总 loan-from | `source_type=tax_return_pad` + `source_id=financialYear`（每财年至多一笔 `LOAN_FROM_DIRECTOR`）；创建/删除后 `POST .../sync-director-loans` 刷新 BS 借款桶 |
-| 历史回填 | `npm run migrate:script:data-repair:expense-ledger-links`（读同币 processed CSV；不自动跑） |
-
 ## 禁止
 
 - 用金额或「日期+金额」当唯一幂等键。

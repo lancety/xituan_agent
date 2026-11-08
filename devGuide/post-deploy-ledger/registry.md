@@ -1,6 +1,6 @@
 # Post-Deploy Registry（巡检入口）
 
-Last updated: 2026-11-07
+Last updated: 2026-11-08
 
 **日常巡检：「检查 post-deploy」** — 打开本文件，活跃表行数应为 **0** 表示无待收尾部署债务。非 0 则点击 **Entry** 查看 Gate 与勾选清单。
 
@@ -29,7 +29,6 @@ Last updated: 2026-11-07
 | `profile-error-copy-i18n` | `planned` | — | Phase 1 + Phase 2 | 所有 frontend consumer 已改用 enum/code + i18n；`xituan_codebase` 无内嵌中文 copy | 实施 Phase 1：新增 enum/code 并补齐前端 i18n | [entry](./entries/2026-06-profile-error-copy-i18n.md) | 2026-06-18 |
 | `order-terminal-status-inventory` | `planned` | — | Phase 1 + Phase 2 | 订单终态转换库存动作矩阵确认后再统一通用状态服务库存处理 | 完成 Phase 1 盘点：状态入口、付款状态、库存锁状态、退款路径 | [entry](./entries/2026-06-order-terminal-status-inventory.md) | 2026-06-18 |
 | `cms-merchant-panel-shipping-refund` | `planned` | WeChat + CMS 代码已落地 | CMS smoke + 发版确认 | 本地/生产 smoke 两入口后退款行为 | 做 CMS smoke；通过后改 `active`/`done` | [entry](./entries/2026-07-cms-merchant-panel-shipping-refund.md) | 2026-07-25 |
-| `merchant-customer-pii-restriction` | `active` | Phase 1 大部已落地（clients/OpenIM/微信） | ManualOrderEditor email、relay、权限点清理 | ManualOrderEditor 清零 + relay MVP + 全量发版 | 继续 Phase 1 残留与 Phase 2 | [entry](./entries/2026-08-merchant-customer-pii-restriction.md) | 2026-09-10 |
 
 ---
 
@@ -37,4 +36,4 @@ Last updated: 2026-11-07
 
 | ID | 状态 | 完成日 | Entry | 备注 |
 |----|------|--------|-------|------|
-| *(none yet)* | | | | |
+| `merchant-customer-pii-restriction` | `done` | 2026-11-08 | [entry](./entries/2026-08-merchant-customer-pii-restriction.md) | 邮箱/账户 PII 收尾；履约手机中间号 → planned `delivery-phone-merchant-mask` |
