@@ -129,6 +129,17 @@ Resources:
               Service: cloudfront.amazonaws.com
             Action: s3:GetObject
             Resource: !Sub '${MediaBucket.Arn}/merchant/*/ledger-intake/*'
+          # Upload PUT distribution is CLI-managed (not this stack). Keep this Sid or the next
+          # demo-media deploy drops the only PutObject grant. Distribution: E3BQY4W5UZ9B6T
+          - Sid: AllowCloudFrontUploadOACPut
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:PutObject
+            Resource: !Sub '${MediaBucket.Arn}/upload-incoming/*'
+            Condition:
+              StringEquals:
+                AWS:SourceArn: arn:aws:cloudfront::594332420383:distribution/E3BQY4W5UZ9B6T
 
 Outputs:
   BucketName:

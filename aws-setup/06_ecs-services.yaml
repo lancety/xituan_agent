@@ -172,6 +172,18 @@ Parameters:
     Default: ''
     Description: Optional previous HMAC secret during rotation (JOB_CALLBACK_SECRET_PREVIOUS)
 
+  InternalCronApiKey:
+    Type: String
+    NoEcho: true
+    Default: ''
+    Description: API key for POST /api/internal/cron (INTERNAL_CRON_API_KEY; EventBridge Connection)
+
+  InternalCronApiKeyPrevious:
+    Type: String
+    NoEcho: true
+    Default: ''
+    Description: Optional previous cron API key (INTERNAL_CRON_API_KEY_PREVIOUS)
+
   MailEnabled:
     Type: String
     Default: 'false'
@@ -398,6 +410,10 @@ Resources:
               Value: !Ref JobCallbackSecret
             - Name: JOB_CALLBACK_SECRET_PREVIOUS
               Value: !Ref JobCallbackSecretPrevious
+            - Name: INTERNAL_CRON_API_KEY
+              Value: !Ref InternalCronApiKey
+            - Name: INTERNAL_CRON_API_KEY_PREVIOUS
+              Value: !Ref InternalCronApiKeyPrevious
             - Name: MAIL_ENABLED
               Value: !Ref MailEnabled
             - Name: MAIL_FROM

@@ -1,6 +1,6 @@
 # S3 桶访问模型与私有前缀
 
-Last updated: 2026-10-25
+Last updated: 2026-11-09
 
 Skill checklist：`.cursor/skills/s3-bucket-access/SKILL.md`。直传 PUT 主机与三步协议仍以 [S3 直传约定](../../.cursor/skills/s3-direct-upload/reference.md) 为准。本文管 **对象谁能 GET**、桶策略怎么改、以及私有前缀登记，避免以后 S3/CDN 改动漏掉「禁止匿名 GET」。
 
@@ -76,6 +76,8 @@ SIH Lambda 用 IAM `GetObject`，**不受**本 Deny 约束。私有 key 禁止�
 demo **没有** bucket policy 里的 IAM user Allow。应用读写靠身份策略（见下节），不靠这段资源策略。下次 deploy `demo-media-stack` 会整份替换 demo 策略，YAML 必须继续带 Allow OAC + 全部私有 Deny。
 
 已删除分布上的 Allow **目前无害**（条件永远匹配不到）。清理时只删那几条，保留加粗的现网 S3 CF Allow 与全部 Deny。不要为了「好看」重写整份策略。
+
+2026-11-09 四桶另有 Sid `AllowCloudFrontUploadOACPut`：对应环境的 **upload** 写分布只能 `s3:PutObject` 到 `upload-incoming/*`。分布 ID 见 [S3 直传约定](../../.cursor/skills/s3-direct-upload/reference.md)。合并策略时保留这条。demo 的同一 Sid 写在 `demo-media-stack.yaml`。这条分布没有 `GetObject`。
 
 ### CloudFront（S3 直读 vs SIH）
 
@@ -197,7 +199,7 @@ demo 的 `ContentBucketPolicy` 由 CloudFormation 管：只改 CLI 会在下次 
 ## 相关文档
 
 - [`.cursor/skills/s3-bucket-access/SKILL.md`](../../.cursor/skills/s3-bucket-access/SKILL.md) — agent checklist
-- [S3 直传约定](../../.cursor/skills/s3-direct-upload/reference.md) — PUT / content 写入 behavior
+- [S3 直传约定](../../.cursor/skills/s3-direct-upload/reference.md) — upload 写分布与 `upload-incoming/` 桶策略
 - [media / content / SIH](../media-cdn-sih-domain-split.md)
 - [流水入账](../ledger-intake/README.md) — 数据块与签名读；GET 策略仍以本文为准
 - [`demo-media-stack.yaml`](../../aws-setup/demo/demo-media-stack.yaml)
