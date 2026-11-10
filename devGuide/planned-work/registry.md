@@ -1,6 +1,6 @@
 # Planned Work Registry（巡检入口）
 
-Last updated: 2026-11-10（internal cron + track poll 定稿）
+Last updated: 2026-11-11（account deletion + merchant iOS IAP restore 入台账）
 
 **日常巡检：「检查规划」** — 打开本文件；需要细节再进 Entry。
 
@@ -12,6 +12,8 @@ Cursor plan 三桶：草稿 `C:/Users/lance/.cursor/plans/`；待做 / 已完成
 
 | ID | 状态 | 简述 | 目标阶段/触发 | 下一动作 | Entry | Last updated |
 |----|------|------|---------------|----------|-------|--------------|
+| `account-deletion-self-serve` | `planned` | 自助删号 7 天可取消；ADMIN 关店 inactive；用户 status=deleted | **high** App Store 5.1.1(v) | 重提前落地 API+双端+CMS/Site；iOS 去 PassKit | [entry](./entries/2026-11-account-deletion-self-serve.md) | 2026-11-11 |
+| `merchant-ios-iap-pay-restore` | `planned` | Merchant iOS 上 IAP 时恢复订阅购买；勿再开 Stripe 订阅结账 | **mid** | 产品拍板 IAP 商品与后端校验后再开 | [entry](./entries/2026-11-merchant-ios-iap-pay-restore.md) | 2026-11-11 |
 | `delivery-phone-merchant-mask` | `planned` | 履约手机对商户脱敏/中间号；自配送与 AusPost 各路径 | **mid** | 拍场景矩阵；先脱敏+AusPost 直传；中间号后置（勿用 AWS） | [entry](./entries/2026-11-delivery-phone-merchant-mask.md) | 2026-11-08 |
 | `multilingual-ai-empty-locale-fill` | `planned` | 长文本空槽 AI 填充 + 数据块挖洞；保存前/语言切换批处理 | **high** | `fillEmptyLocales` + `MULTILINGUAL_TEXT_TRANSLATE` + shouldRunFill | [entry](./entries/2026-11-multilingual-ai-empty-locale-fill.md) | 2026-11-08 |
 | `auspost-mypost-dual-track` | `in_progress` | MyPost **CMS MVP**（报价 B / 回滚 / attention / Sign Off） | **high** 当前窗口 | prices 预览+回滚+attention；再交 Sign Off | [entry](./entries/2026-11-auspost-mypost-dual-track.md) | 2026-11-09 |
