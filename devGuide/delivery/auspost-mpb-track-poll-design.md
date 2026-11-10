@@ -27,6 +27,11 @@ Last updated: 2026-11-10 (impl in progress: cron+tick+push+read APIs+CMS/Site/Cu
 
 ## 间隔算法
 
+### 出标本地首条（不调 Track）
+
+- API 出标成功后立刻写入 `shipment_track_snapshots` 本地事件：`Label created` / 「标签已生成」。
+- **不**因此提前首查；首查仍为 `label_booked_at + 1h`。Track 尚无有效数据时保留本地首条。
+
 ### 出标后前 4 小时
 
 - 默认约第 1/2/3/4 小时各查；首查 `label_booked_at + 1h`。
