@@ -79,6 +79,7 @@ JOBS=(
   "homepage-cache-sync|rate(15 minutes)"
   "openim-unread-email|rate(15 minutes)"
   "subscription-expiration|cron(0 16 * * ? *)"
+  "account-deletion-anonymize|cron(0 0,12 * * ? *)"
 )
 
 for entry in "${JOBS[@]}"; do

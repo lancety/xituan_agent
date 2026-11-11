@@ -1,0 +1,11 @@
+{
+  "_source": "GET https://backend-demo.xituan.com.au/api/admin/auspost-mpb/connection",
+  "success": true,
+  "data": {
+    "status": "connected",
+    "account_number_masked": "••••d13b",
+    "last_validated_at": "2026-11-10T12:26:33.271Z",
+    "subject_type": "merchant",
+    "subject_id": "4cc36f41-631a-4963-97d1-f34102a7a38a"
+  }
+}

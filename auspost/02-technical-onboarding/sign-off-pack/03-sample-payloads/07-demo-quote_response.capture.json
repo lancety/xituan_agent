@@ -1,0 +1,26 @@
+{
+  "_source": "GET/POST https://backend-demo.xituan.com.au/api/admin/dispatch/auspost-mpb/quote",
+  "_note": "Xituan admin quote wrapper; flat-rate EXP box S",
+  "success": true,
+  "data": {
+    "currency": "AUD",
+    "lines": [
+      {
+        "product_id": "BE9PB1",
+        "packaging_type": "AP_BOX_S",
+        "delivery_service": "EXP",
+        "price_inc_gst": 15.2,
+        "price_ex_gst": 13.82,
+        "gst": 1.38,
+        "currency": "AUD",
+        "source": "flat_rate_table",
+        "product_type": "Express Post",
+        "error": null
+      }
+    ],
+    "total_inc_gst": 15.2,
+    "total_ex_gst": 13.82,
+    "total_gst": 1.38,
+    "ok": true
+  }
+}

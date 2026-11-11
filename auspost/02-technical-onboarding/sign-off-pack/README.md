@@ -18,8 +18,8 @@ Last updated: 2026-11-11
 | 2 | Lodgement / 工作流说明 | 已写 | [`01-lodgement-workflow.md`](./01-lodgement-workflow.md) |
 | 3 | 已实现 API 勾选说明 | 已写 | 同文件 §API Calls |
 | 4 | 错误处理 / 地址校验 / basket | 已写 | [`02-error-handling.md`](./02-error-handling.md) |
-| 5 | 样例 JSON（request/response） | **待从 testbed/demo 抓真实响应粘贴** | [`03-sample-payloads/`](./03-sample-payloads/) |
-| 6 | 标签 PDF 样例（A6 + A4-4pp；PP/EXP 尽量各一） | **待放入** | [`04-label-pdfs/`](./04-label-pdfs/) |
+| 5 | 样例 JSON（request/response） | 模板 + demo admin 抓包 + **本地 AusPost 原始 HTTP**（shipments/orders/labels） | [`03-sample-payloads/`](./03-sample-payloads/)（`07-demo-*` + `09-local-*`） |
+| 6 | 标签 PDF 样例（A6 + A4-4pp；PP/EXP 尽量各一） | **A6 + A4-4pp 均已有（EXP）**；另有本地 A6 | [`04-label-pdfs/`](./04-label-pdfs/) |
 | 7 | 开发验证方式 | 建议 **a) Sandbox/Web staging** | demo CMS + backend；凭证另附邮件，勿进 git |
 | 8 | 填好并签字的 `MPB Tech Sign Off.PDF` | **人工填 PDF** | 打印/Adobe 填后另存 `MPB Tech Sign Off - Galaxy108 SIGNED.pdf` |
 

@@ -1,0 +1,15 @@
+{
+  "_source": "PUT https://digitalapi.auspost.com.au/test/shipping/v1/orders",
+  "_captured_at": "2026-11-11T09:09:06.975Z",
+  "_status": 201,
+  "_partnerId": "TESTBED-XITUAN-8745",
+  "_note": "Local backend AUSPOST_MPB_LOG_PAYLOADS=1; tokens/account redacted",
+  "request": {
+    "payment_method": "STORED_PAYMENT",
+    "shipments": [
+      {
+        "shipment_id": "aMUK0Ehgn7gAAAGhhjgFk8ne"
+      }
+    ]
+  }
+}

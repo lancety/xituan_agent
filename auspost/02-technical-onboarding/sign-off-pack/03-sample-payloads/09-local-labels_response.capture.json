@@ -1,0 +1,36 @@
+{
+  "_source": "POST https://digitalapi.auspost.com.au/test/shipping/v1/labels",
+  "_captured_at": "2026-11-11T09:09:08.591Z",
+  "_status": 200,
+  "_partnerId": "TESTBED-XITUAN-8745",
+  "_note": "Local backend AUSPOST_MPB_LOG_PAYLOADS=1; tokens/account/label URL redacted",
+  "response": {
+    "labels": [
+      {
+        "request_id": "26e4c828-de29-4ba2-af9a-e9c844b46183",
+        "url": "[redacted AusPost temporary PDF URL — see 04-label-pdfs/label-A6-1pp-express-post-AP_BOX_S-local-dev.pdf]",
+        "status": "AVAILABLE",
+        "request_date": "11-11-2026 20:09:07",
+        "url_creation_date": "11-11-2026 20:09:08",
+        "shipments": [
+          {
+            "shipment_id": "aMUK0Ehgn7gAAAGhhjgFk8ne",
+            "items": [
+              {
+                "item_id": "n5YK0EhgLvgAAAGhhzgFk8ne"
+              }
+            ],
+            "options": {}
+          }
+        ],
+        "shipment_ids": [
+          "aMUK0Ehgn7gAAAGhhjgFk8ne"
+        ],
+        "label_properties": {
+          "format": "PDF",
+          "page_size": "A6"
+        }
+      }
+    ]
+  }
+}

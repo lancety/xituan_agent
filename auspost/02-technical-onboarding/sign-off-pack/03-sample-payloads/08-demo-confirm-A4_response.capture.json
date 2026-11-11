@@ -1,0 +1,17 @@
+{
+  "_source": "POST https://backend-demo.xituan.com.au/api/admin/dispatch/confirm",
+  "_note": "XT261111000002 · AP_BOX_S · EXP · A4-4pp; label_url redacted",
+  "success": true,
+  "data": {
+    "batch_id": "8e98f2e5-1d68-416d-9927-adcbf88f43b2",
+    "shipment_ids": ["fa223158-4463-46f5-a2fa-971c705c2c4a"],
+    "already_processed": false,
+    "api_labels": [
+      {
+        "shipment_id": "fa223158-4463-46f5-a2fa-971c705c2c4a",
+        "tracking_number": "99703102155301004900902",
+        "label_url": "[redacted — see 04-label-pdfs/label-A4-4pp-express-post-AP_BOX_S.pdf]"
+      }
+    ]
+  }
+}

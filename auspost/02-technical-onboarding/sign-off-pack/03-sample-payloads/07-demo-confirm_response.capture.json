@@ -1,0 +1,17 @@
+{
+  "_source": "POST https://backend-demo.xituan.com.au/api/admin/dispatch/confirm",
+  "_note": "Xituan confirm → MPB Create Shipments / Order / Labels; label_url redacted (PDF saved under 04-label-pdfs)",
+  "success": true,
+  "data": {
+    "batch_id": "d2811d23-7d48-4d7f-b6e9-0031e0719ffe",
+    "shipment_ids": ["dc21edb8-0ff8-475e-b2ce-ab5bcceda1f1"],
+    "already_processed": false,
+    "api_labels": [
+      {
+        "shipment_id": "dc21edb8-0ff8-475e-b2ce-ab5bcceda1f1",
+        "tracking_number": "99703102155201004900905",
+        "label_url": "[redacted AusPost temporary PDF URL — see 04-label-pdfs/label-A6-1pp-express-post-AP_BOX_S.pdf]"
+      }
+    ]
+  }
+}

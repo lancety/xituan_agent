@@ -80,6 +80,7 @@ Redis SET NX+TTL 可作为后续加速层；**失败或未配置时回落 DB**�
 | `metadata-search-outbox` | `MetadataSearchIndexCronService` | ~1 min |
 | `subscription-expiration` | `SubscriptionExpirationCronService` | daily |
 | `openim-unread-email` | `OpenimUnreadEmailCronService` | ~15 min |
+| `account-deletion-anonymize` | `AccountDeletionService.anonymizeDueAccounts` | UTC 00:00 / 12:00；申请时 `due_at` 对齐到满 7 天后下一槽 |
 
 production：各 job 一条 EB Rule + API Destination。dev/demo：进程内按原频率 HTTP 自调。
 
