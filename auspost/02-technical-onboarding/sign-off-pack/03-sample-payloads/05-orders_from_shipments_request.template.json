@@ -1,0 +1,8 @@
+{
+  "_note": "PUT /orders — consolidate all shipment_ids from the same confirm action; STORED_PAYMENT only",
+  "payment_method": "STORED_PAYMENT",
+  "shipments": [
+    { "shipment_id": "<shipment_id_1>" },
+    { "shipment_id": "<shipment_id_2>" }
+  ]
+}

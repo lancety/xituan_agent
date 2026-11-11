@@ -1,6 +1,6 @@
 # Planned Work Registry（巡检入口）
 
-Last updated: 2026-11-11（account deletion + merchant iOS IAP restore 入台账）
+Last updated: 2026-11-11（MPB Sign Off 材料包；void/track demo 验收记入 track-poll）
 
 **日常巡检：「检查规划」** — 打开本文件；需要细节再进 Entry。
 
@@ -16,7 +16,7 @@ Cursor plan 三桶：草稿 `C:/Users/lance/.cursor/plans/`；待做 / 已完成
 | `merchant-ios-iap-pay-restore` | `planned` | Merchant iOS 上 IAP 时恢复订阅购买；勿再开 Stripe 订阅结账 | **mid** | 产品拍板 IAP 商品与后端校验后再开 | [entry](./entries/2026-11-merchant-ios-iap-pay-restore.md) | 2026-11-11 |
 | `delivery-phone-merchant-mask` | `planned` | 履约手机对商户脱敏/中间号；自配送与 AusPost 各路径 | **mid** | 拍场景矩阵；先脱敏+AusPost 直传；中间号后置（勿用 AWS） | [entry](./entries/2026-11-delivery-phone-merchant-mask.md) | 2026-11-08 |
 | `multilingual-ai-empty-locale-fill` | `planned` | 长文本空槽 AI 填充 + 数据块挖洞；保存前/语言切换批处理 | **high** | `fillEmptyLocales` + `MULTILINGUAL_TEXT_TRANSLATE` + shouldRunFill | [entry](./entries/2026-11-multilingual-ai-empty-locale-fill.md) | 2026-11-08 |
-| `auspost-mypost-dual-track` | `in_progress` | MyPost **CMS MVP**（报价 B / 回滚 / attention / Sign Off） | **high** 当前窗口 | prices 预览+回滚+attention；再交 Sign Off | [entry](./entries/2026-11-auspost-mypost-dual-track.md) | 2026-11-09 |
+| `auspost-mypost-dual-track` | `in_progress` | MyPost **CMS MVP**（加固已齐；Sign Off 交 Production Request） | **high** 当前窗口 | 补真实 JSON/标签 PDF + 签 Tech Sign Off → 回传 Abdul | [entry](./entries/2026-11-auspost-mypost-dual-track.md) | 2026-11-11 |
 | `auspost-mypost-app-mvp` | `planned` | MyPost **Merchant App MVP**（连接+打包台+CSV 分享） | **high** | CMS 加固后启动；微信面板仍 CSV | [entry](./entries/2026-11-auspost-mypost-app-mvp.md) | 2026-11-09 |
 | `auspost-mypost-oauth-pickup` | `planned` | MyPost **OAuth（生产）+ Pickup Phase 2** | **high** 后置 | Production 凭证后 OAuth；出标稳后再 Pickup | [entry](./entries/2026-11-auspost-mypost-oauth-pickup.md) | 2026-11-09 |
 | `wechat-c-business-error-i18n` | `planned` | 微信 C 端 code→i18n；禁 toast message | high | 审计 SimpleErrorHandler；「我的网店」不专项做 | [entry](./entries/2026-11-wechat-c-business-error-i18n.md) | 2026-11-07 |
@@ -40,7 +40,7 @@ Cursor plan 三桶：草稿 `C:/Users/lance/.cursor/plans/`；待做 / 已完成
 | ID | 状态 | 完成日 | Entry | 备注 |
 |----|------|--------|-------|------|
 | `backend-internal-cron` | `done` | 2026-11-10 | [entry](./entries/2026-11-backend-internal-cron.md) | EB+框架+迁旧 cron；待发版镜像与跑 0408 |
-| `auspost-mpb-track-poll` | `done` | 2026-11-10 | [entry](./entries/2026-11-auspost-mpb-track-poll.md) | tick+读API+全端 UI；0409/正式 MPB key 随部署与认证 |
+| `auspost-mpb-track-poll` | `done` | 2026-11-10 | [entry](./entries/2026-11-auspost-mpb-track-poll.md) | tick+读API+全端 UI；demo 已验 Delivered/异常通知；生产仍待 0408/0409+镜像 |
 | `merchant-app-account-bind-wechat` | `done` | 2026-11-09 | [entry](./entries/2026-11-merchant-app-account-bind-wechat.md) | 「更多」账号区登录后绑微信；对齐 Customer account-bind |
 | `app-release-update-flow` | `done` | 2026-11-07 | [entry](./entries/2026-09-app-release-update-flow.md) | 基建+iOS TF+prod OTA 已验；提示 UX 见 `app-update-check-ux`；自由 channel 未触发 |
 | `cms-refund-line-returns` | `done` | 2026-11-07 | [entry](./entries/2026-11-cms-refund-line-returns.md) | CMS+Backend 已上 production；App/微信对等 UI 未触发，另开 entry |

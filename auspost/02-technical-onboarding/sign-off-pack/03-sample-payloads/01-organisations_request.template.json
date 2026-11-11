@@ -1,0 +1,5 @@
+{
+  "_note": "GET /organisations — no body; headers: authorization (Basic partner), auspost-partner-id, auspost-merchant-token",
+  "method": "GET",
+  "path": "/organisations"
+}

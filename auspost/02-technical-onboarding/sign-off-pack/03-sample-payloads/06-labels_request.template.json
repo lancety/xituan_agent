@@ -1,0 +1,29 @@
+{
+  "_note": "POST /labels — layout A6-1pp or A4-4pp; both Parcel Post and Express Post groups set",
+  "wait_for_label_url": true,
+  "unlabelled_articles_only": false,
+  "preferences": [
+    {
+      "type": "PRINT",
+      "groups": [
+        {
+          "group": "Parcel Post",
+          "layout": "A6-1pp",
+          "branded": true,
+          "left_offset": 0,
+          "top_offset": 0
+        },
+        {
+          "group": "Express Post",
+          "layout": "A6-1pp",
+          "branded": true,
+          "left_offset": 0,
+          "top_offset": 0
+        }
+      ]
+    }
+  ],
+  "shipments": [
+    { "shipment_id": "<shipment_id_1>" }
+  ]
+}

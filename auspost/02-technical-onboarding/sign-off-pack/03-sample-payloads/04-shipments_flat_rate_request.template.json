@@ -1,0 +1,31 @@
+{
+  "_note": "POST /shipments — AP flat-rate: no weight/dims on Create Shipments",
+  "shipments": [
+    {
+      "shipment_reference": "xt-order-demo-002",
+      "email_tracking_enabled": false,
+      "from": {
+        "name": "Demo Sender",
+        "lines": ["1 Example St"],
+        "suburb": "MELBOURNE",
+        "state": "VIC",
+        "postcode": "3000"
+      },
+      "to": {
+        "name": "Demo Receiver",
+        "lines": ["2 Sample Rd"],
+        "suburb": "SYDNEY",
+        "state": "NSW",
+        "postcode": "2000"
+      },
+      "items": [
+        {
+          "product_id": "BE1PB2",
+          "item_description": "Goods",
+          "packaging_type": "AP_BOX_M",
+          "contains_dangerous_goods": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # auspost-mypost-dual-track
 
-Last updated: 2026-11-09
+Last updated: 2026-11-11
 
 ## 摘要
 
@@ -15,6 +15,7 @@ Cursor plan：`d:/projects/xituan_module/.cursor/plans_planned/csv_mode_retentio
 - OAuth + Pickup：[`./2026-11-auspost-mypost-oauth-pickup.md`](./2026-11-auspost-mypost-oauth-pickup.md)
 - Track 轮询：[`./2026-11-auspost-mpb-track-poll.md`](./2026-11-auspost-mpb-track-poll.md)（算法见 [`../../delivery/auspost-mpb-track-poll-design.md`](../../delivery/auspost-mpb-track-poll-design.md)）
 - 统一定时任务：[`./2026-11-backend-internal-cron.md`](./2026-11-backend-internal-cron.md)（[`../../backend-internal-cron-design.md`](../../backend-internal-cron-design.md)）
+- Sign Off 材料包：[`../../../auspost/02-technical-onboarding/sign-off-pack/`](../../../auspost/02-technical-onboarding/sign-off-pack/)
 
 ## 当前掌握的信息
 
@@ -22,6 +23,7 @@ Cursor plan：`d:/projects/xituan_module/.cursor/plans_planned/csv_mode_retentio
 - Flat-rate 箱勿传 weight/dims；`.env` 密码需 `\$` 防 dotenv-expand。
 - **不做** S3 备份 PDF（AusPost 链接约 48h；超时回 MyPost 后台）。
 - 微信一期仍 CSV；Charge Account 不做。
+- **2026-11-11**：CMS MVP 加固项已齐；Sign Off 材料包已建于 `auspost/.../sign-off-pack/`；demo 已部署。仍缺：真实 JSON 响应抓取、标签 PDF 放入目录、人工填签 Tech Sign Off PDF → 交 Abdul。
 
 ### 2026-11-09 拍板（报价 / 出标闸门）
 
@@ -44,7 +46,6 @@ Cursor plan：`d:/projects/xituan_module/.cursor/plans_planned/csv_mode_retentio
 - `Create Labels` 时带所选 layout；返回 URL 为该次固定 PDF。
 - 确认出标请求需传 `label_layout`（或等价字段）→ Core preferences。
 - **每次出标前可选**；默认：**本地缓存该商户最近一次选择**（无缓存则 A6）；不写服务端。
-- 现状代码写死 `A4-1pp`，实现时改为上表映射。
 
 ## 期望目标结果
 
@@ -58,7 +59,8 @@ Cursor plan：`d:/projects/xituan_module/.cursor/plans_planned/csv_mode_retentio
 - [x] **错误码**：QUOTE / PAYMENT / LABEL_UNAVAILABLE / PACKAGING 等
 - [x] **绑卡/扣款文案** + 打包台扣款说明
 - [x] **标签 layout**：A6 / A4-4pp + 本地缓存最近选择
-- [ ] **Sign Off 材料**：工作流/样例 JSON/标签 PDF/错误处理 → Production Request
+- [x] **Sign Off 材料包骨架**：工作流 / 错误处理 / JSON 模板 / PDF 目录（`sign-off-pack/`）
+- [ ] **补齐证据并交 Production Request**：真实 JSON 响应、A6+A4-4pp 标签 PDF、填签 `MPB Tech Sign Off.PDF` → 回传 Abdul
 
 ### 已完成（CMS）
 
@@ -76,4 +78,4 @@ Cursor plan：`d:/projects/xituan_module/.cursor/plans_planned/csv_mode_retentio
 
 ## 触发条件 / 目标窗口
 
-当前窗口先收齐上表「仍缺」再交 Sign Off；App / OAuth / Pickup 不挡 CMS 提交包。
+当前窗口：补齐 Sign Off 证据 → 交 Production Request；App / OAuth / Pickup 不挡。

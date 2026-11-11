@@ -26,6 +26,7 @@
 | `MyPost Business API Integration Guide.PDF` | **MPB API 集成说明**（报价 / 建单 / 出标 / 追踪等）。我们主技术文档。 |
 | `MPB Partner Verification Test Cases v1.1.XLSX` | 上线前验收用例清单；按表测完再提交验证。 |
 | `MPB Tech Sign Off.PDF` | 技术验收签字 / 确认表；验证通过后的正式 sign-off。 |
+| `sign-off-pack/` | **提交包草稿**：工作流、错误处理、JSON 模板、标签 PDF 目录；交 Production Request 前补真实响应与签字 PDF。 |
 
 ### `03-merchant-sender-support` — 给商户看的连接指南
 
@@ -84,6 +85,6 @@
 
 1. 签并回传 `01-legal-agreement` 协议；同时回 Abdul 三个联系人（含 support + 通用邮箱）。
 2. 精读 `02-technical-onboarding` 四份材料，按 Onboarding Guide 申请 testbed，实现时 header 带 `XITUAN-8745`。
-3. 按 `MPB Partner Verification Test Cases` 自测，再填 `MPB Tech Sign Off`。
+3. 按 `MPB Partner Verification Test Cases` 自测；用 `sign-off-pack/` 填齐证据后，再签 `MPB Tech Sign Off` 交 Production Request。
 4. 商户连接流程对齐 `03-merchant-sender-support`（尤其 MPB Token + 绑卡）。
 5. 对外品牌与 CMS/App 展示前再看 `04`；产品话术与旺季运营看 `05` / `06`。
