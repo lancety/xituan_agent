@@ -17,7 +17,7 @@ Last updated: 2026-11-11
 4) PUT  /orders                 — Create Order from Shipments；payment_method=STORED_PAYMENT
 5) POST /labels                 — wait_for_label_url=true；layout=A6-1pp 或 A4-4pp
 6) DELETE /shipments/{id}       — 建单失败时回滚未入单 shipment；管理 basket
-7) GET  /track                  — 平台侧轮询（auspost-track-tick）；客户端不直打 AusPost
+7) GET  /track                  — 运单轨迹状态（终端用户不直打 AusPost）
 ```
 
 失败策略摘要：估价失败禁止出标；Order 失败则 DELETE 已建 shipment；Labels 失败保留 tracking 并提示商户回 MyPost 后台取标（`AUSPOST_MPB_LABEL_UNAVAILABLE`）。

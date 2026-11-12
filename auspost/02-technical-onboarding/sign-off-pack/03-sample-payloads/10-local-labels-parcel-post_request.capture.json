@@ -1,0 +1,37 @@
+{
+  "_source": "POST https://digitalapi.auspost.com.au/test/shipping/v1/labels",
+  "_captured_at": "2026-11-12T00:31:33.761Z",
+  "_status": 200,
+  "_partnerId": "TESTBED-XITUAN-8745",
+  "_note": "Local AUSPOST_MPB_LOG_PAYLOADS=1; tokens/account/label URL redacted",
+  "request": {
+    "wait_for_label_url": true,
+    "unlabelled_articles_only": false,
+    "preferences": [
+      {
+        "type": "PRINT",
+        "groups": [
+          {
+            "group": "Parcel Post",
+            "layout": "A6-1pp",
+            "branded": true,
+            "left_offset": 0,
+            "top_offset": 0
+          },
+          {
+            "group": "Express Post",
+            "layout": "A6-1pp",
+            "branded": true,
+            "left_offset": 0,
+            "top_offset": 0
+          }
+        ]
+      }
+    ],
+    "shipments": [
+      {
+        "shipment_id": "ancK0Ehg0g4AAAGh2b0Fk80q"
+      }
+    ]
+  }
+}

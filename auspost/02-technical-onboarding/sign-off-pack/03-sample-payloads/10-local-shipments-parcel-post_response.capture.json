@@ -1,0 +1,71 @@
+{
+  "_source": "POST https://digitalapi.auspost.com.au/test/shipping/v1/shipments",
+  "_captured_at": "2026-11-12T00:31:32.298Z",
+  "_status": 201,
+  "_partnerId": "TESTBED-XITUAN-8745",
+  "_note": "Local AUSPOST_MPB_LOG_PAYLOADS=1; tokens/account/label URL redacted",
+  "response": {
+    "shipments": [
+      {
+        "shipment_id": "ancK0Ehg0g4AAAGh2b0Fk80q",
+        "shipment_reference": "signoff-pp-mwctbnlz",
+        "shipment_creation_date": "2026-11-12T11:31:32+11:00",
+        "email_tracking_enabled": false,
+        "items": [
+          {
+            "prices": [
+              {
+                "promotion_details": [
+                  {
+                    "discount": {
+                      "gst": 0.27,
+                      "gross_price": 2.92
+                    },
+                    "discount_plan": "Band 2 Zone 1 - Same Major City"
+                  }
+                ]
+              }
+            ],
+            "contains_dangerous_goods": false,
+            "item_id": "XaIK0EhgySwAAAGh2r0Fk80q",
+            "tracking_details": {
+              "article_id": "99703102334501000840904",
+              "consignment_id": "997031023345"
+            },
+            "product_id": "BE1PB1",
+            "item_summary": {
+              "total_cost": 8.78,
+              "total_cost_ex_gst": 7.98,
+              "total_gst": 0.8,
+              "status": "Created",
+              "total_discount": {
+                "gst": 0.27,
+                "gross_price": 2.92
+              }
+            },
+            "item_contents": [],
+            "packaging_type": "AP_BOX_S"
+          }
+        ],
+        "options": {},
+        "shipment_summary": {
+          "total_cost": 8.78,
+          "total_cost_ex_gst": 7.98,
+          "total_gst": 0.8,
+          "status": "Created",
+          "tracking_summary": {
+            "Created": 1
+          },
+          "total_discount": {
+            "gst": 0.27,
+            "gross_price": 2.92
+          },
+          "number_of_items": 1
+        },
+        "movement_type": "DESPATCH",
+        "charge_to_account": "…d13b",
+        "shipment_modified_date": "2026-11-12T11:31:32+11:00"
+      }
+    ]
+  }
+}

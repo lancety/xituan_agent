@@ -1,0 +1,47 @@
+{
+  "_source": "POST https://digitalapi.auspost.com.au/test/shipping/v1/shipments",
+  "_captured_at": "2026-11-12T00:31:32.298Z",
+  "_status": 201,
+  "_partnerId": "TESTBED-XITUAN-8745",
+  "_note": "Local AUSPOST_MPB_LOG_PAYLOADS=1; tokens/account/label URL redacted",
+  "request": {
+    "shipments": [
+      {
+        "shipment_reference": "signoff-pp-mwctbnlz",
+        "email_tracking_enabled": false,
+        "from": {
+          "name": "LuLin",
+          "business_name": "Pickup",
+          "lines": [
+            "29 Norfolk Street"
+          ],
+          "suburb": "KILLARA",
+          "state": "NSW",
+          "postcode": "2071",
+          "country": "AU",
+          "phone": "0413507623"
+        },
+        "to": {
+          "name": "lance",
+          "type": "STANDARD_ADDRESS",
+          "country": "AU",
+          "lines": [
+            "29 Norfolk Street"
+          ],
+          "suburb": "KILLARA",
+          "state": "NSW",
+          "postcode": "2071",
+          "phone": "0413507623"
+        },
+        "items": [
+          {
+            "product_id": "BE1PB1",
+            "item_description": "signoff parcel post sample",
+            "packaging_type": "AP_BOX_S",
+            "contains_dangerous_goods": false
+          }
+        ]
+      }
+    ]
+  }
+}

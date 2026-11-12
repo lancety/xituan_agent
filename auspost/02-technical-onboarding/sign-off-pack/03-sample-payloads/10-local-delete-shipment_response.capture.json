@@ -1,0 +1,8 @@
+{
+  "_source": "DELETE https://digitalapi.auspost.com.au/test/shipping/v1/shipments/LeMK0EhgzqkAAAGhgcQFk80q",
+  "_captured_at": "2026-11-12T00:31:34.140Z",
+  "_status": 200,
+  "_partnerId": "TESTBED-XITUAN-8745",
+  "_note": "Local AUSPOST_MPB_LOG_PAYLOADS=1; tokens/account/label URL redacted",
+  "response": null
+}

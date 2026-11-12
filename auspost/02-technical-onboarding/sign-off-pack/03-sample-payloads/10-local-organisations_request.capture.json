@@ -1,0 +1,8 @@
+{
+  "_source": "GET https://digitalapi.auspost.com.au/test/shipping/v1/organisations",
+  "_captured_at": "2026-11-12T00:31:31.099Z",
+  "_status": 200,
+  "_partnerId": "TESTBED-XITUAN-8745",
+  "_note": "No request body; headers: Basic partner auth + auspost-partner-id + auspost-merchant-token (redacted)",
+  "request": null
+}

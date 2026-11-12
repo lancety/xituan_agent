@@ -60,12 +60,12 @@ Last updated: 2026-11-11
 - 仅国内、STORED_PAYMENT、无 Charge Account / Pickup / International。
 - Flat-rate Create Shipments **省略** weight/dims；OWN **强制**重量+三边。
 - PDF 不长期存 S3（AusPost URL ~48h）；超时引导 MyPost 后台。
-- Track 由平台 cron 轮询；商户/客户 App 只读我方快照 API。
+- 轨迹通过 Track Items API 获取，并在商户/顾客端展示。
 
 ---
 
 ## §15 Service Availability
 
 - 订阅 AusPost developer status（运营侧）。
-- 平台自身：demo/prod 健康检查 + 内部 cron 单飞锁；计划内维护走现有商户/状态通知渠道（与全站一致）。
+- 平台自身：常规健康检查；计划内维护走现有商户/状态通知渠道（与全站一致）。
 - 表单「是否有正式对外沟通计划」：勾 **Yes**（沿用平台运维通知；细节可邮件补充）。

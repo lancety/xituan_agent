@@ -1,0 +1,20 @@
+{
+  "_source": "GET https://digitalapi.auspost.com.au/test/shipping/v1/organisations",
+  "_captured_at": "2026-11-12T00:31:31.099Z",
+  "_status": 200,
+  "_partnerId": "TESTBED-XITUAN-8745",
+  "_note": "Local AUSPOST_MPB_LOG_PAYLOADS=1; tokens/account/label URL redacted",
+  "response": {
+    "organisations": [
+      {
+        "accounts": [
+          {
+            "account_number": "…d13b",
+            "expired": false,
+            "credit_blocked": false
+          }
+        ]
+      }
+    ]
+  }
+}

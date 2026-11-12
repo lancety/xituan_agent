@@ -10,8 +10,9 @@ Last updated: 2026-11-11
 | 前缀 | 来源 |
 |------|------|
 | `07-demo-*` | demo CMS admin quote/confirm（非 AusPost 原始 HTTP） |
-| `09-local-*` | 本地 backend `AUSPOST_MPB_LOG_PAYLOADS=1` → **AusPost 原始** shipments / orders / labels |
+| `09-local-*` | Express lodgement：shipments / orders / labels |
+| `10-local-*` | organisations / prices / delete / track + Parcel Post lodgement |
 
-可选补抓：OWN packaging、`GET track`、Parcel Post。
+已齐，可交 Production Request。
 
 **禁止**把真实 `auspost-merchant-token` / API Key 写入本目录。

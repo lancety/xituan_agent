@@ -11,7 +11,7 @@
         "email_tracking_enabled": false,
         "from": {
           "name": "LuLin",
-          "business_name": "取货地点",
+          "business_name": "Pickup Location",
           "lines": [
             "29 Norfolk Street"
           ],
