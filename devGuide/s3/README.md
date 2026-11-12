@@ -79,6 +79,8 @@ demo **没有** bucket policy 里的 IAM user Allow。应用读写靠身份策�
 
 2026-11-09 四桶另有 Sid `AllowCloudFrontUploadOACPut`：对应环境的 **upload** 写分布只能 `s3:PutObject` 到 `upload-incoming/*`。分布 ID 见 [S3 直传约定](../../.cursor/skills/s3-direct-upload/reference.md)。合并策略时保留这条。demo 的同一 Sid 写在 `demo-media-stack.yaml`。这条分布没有 `GetObject`。
 
+IAM 组 `s3_xituan` 另有内联策略 `CloudFrontUploadSigningSecretRead`：可读 Secrets Manager `xituan/cloudfront/upload-signing`（backend 签 `putUrl`）。
+
 ### CloudFront（S3 直读 vs SIH）
 
 | 环境 | 现网 S3 直读 CF | 别名（实测） | SIH CF（APIGW origin，一般不进桶策略） |

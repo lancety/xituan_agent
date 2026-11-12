@@ -1,6 +1,6 @@
 # openim-attachment-direct-upload
 
-Last updated: 2026-10-17
+Last updated: 2026-11-13
 
 ## 摘要
 
@@ -50,12 +50,14 @@ Last updated: 2026-10-17
 
 ## 触发条件 / 目标窗口
 
-主动启动「OpenIM 附件直传」实施时（写分布已在，做 presign/complete 与各端 PUT）。  
+主动启动「OpenIM 附件直传」实施时（通用直传框架已在，本项加 purpose + 聊天 UI）。  
+**Cursor plan（业务清单）**：[`direct_upload_business_migration_2026-11.plan.md`](../../../../.cursor/plans_planned/direct_upload_business_migration_2026-11.plan.md)  
 **现在不实施**业务迁移（2026-09 已回退直传，先维持 multipart + 回 webp）。
 
 ## 实施备忘（可选草稿）
 
 控制面可对标 CMS 支出：`expense-batch.service.ts` 的 presign + notify，但 OpenIM 的 `putUrl` 按 [S3 直传约定](../../../../.cursor/skills/s3-direct-upload/reference.md) 签 upload 分布，不签 `amazonaws.com`。  
+上传面总表与差异：[image-upload-surface-inventory.md](../../image-upload-surface-inventory.md)。  
 展示仍用现有 `openimAttachmentCdnUtil` → `media` / `wechatMedia`。  
 相关：[`media-cdn-sih-domain-split.md`](../../media-cdn-sih-domain-split.md)、[`docs/openim-aws-and-production-config.md`](../../../docs/openim-aws-and-production-config.md)。  
 目录/业务 Form 图直传（同一条 upload 分布）：[`catalog-image-direct-upload`](./2026-10-catalog-image-direct-upload.md)；多端分层标准：[`catalog-image-direct-upload-standard.md`](../../catalog-image-direct-upload-standard.md)。主机约定：[S3 直传约定](../../../../.cursor/skills/s3-direct-upload/reference.md)。

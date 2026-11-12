@@ -29,8 +29,8 @@ Cursor plan 三桶：草稿 `C:/Users/lance/.cursor/plans/`；待做 / 已完成
 | `platform-feedback-ai-triage` | `planned` | 多类型反馈 AI 预处理 + 自动/人工裁定 | IM 举报/屏蔽上架后主动启动设计 | 先写反馈类型/报告 schema；Phase 1 IM 勿接真模型 | [entry](./entries/2026-10-platform-feedback-ai-triage.md) | 2026-10-20 |
 | `async-jobs-retention` | `planned` | `platform.async_jobs` 终态行定期清理 | 统一替换 ECS cron 调度后，或表明显变大前 | 勿加 Backend cron；调度方案落地后再做 purge | [entry](./entries/2026-09-async-jobs-retention.md) | 2026-09-05 |
 | `node-runtime-upgrade-22` | `planned` | 全平台 Node 20 → **22 LTS**（本机/CI、Backend ECS、Lambda） | 下次 Backend 发版窗口，或升 AWS SDK / 退出 nodejs20.x 前 | 先本机 22 烟测，再 Dockerfile，再统一改 Lambda runtime；勿长期 ECS22+Lambda20 双轨 | [entry](./entries/2026-09-node-runtime-upgrade-22.md) | 2026-09-17 |
-| `openim-attachment-direct-upload` | `planned` | OpenIM 附件全端直传 | 主动启动直传实施时（现维持 multipart） | 写分布已建；业务 presign 用户将专项做，暂不排期 | [entry](./entries/2026-09-openim-attachment-direct-upload.md) | 2026-11-09 |
-| `catalog-image-direct-upload` | `planned` | 目录/业务图直传 | 主动启动或与 OpenIM 同窗口 | 写分布已建；业务 presign 用户将专项做，暂不排期 | [entry](./entries/2026-10-catalog-image-direct-upload.md) | 2026-11-09 |
+| `openim-attachment-direct-upload` | `planned` | OpenIM 附件全端直传 | 主动启动直传实施时（现维持 multipart） | 框架已 completed；业务清单 [plan](../../../.cursor/plans_planned/direct_upload_business_migration_2026-11.plan.md) | [entry](./entries/2026-09-openim-attachment-direct-upload.md) | 2026-11-13 |
+| `catalog-image-direct-upload` | `planned` | 目录/业务图直传 | 主动启动或与 OpenIM 同窗口 | 框架已 completed；业务清单 [plan](../../../.cursor/plans_planned/direct_upload_business_migration_2026-11.plan.md) | [entry](./entries/2026-10-catalog-image-direct-upload.md) | 2026-11-13 |
 | `openim-voice-message` | `planned` | OpenIM 语音气泡 | 主动启动语音实施时（现暂不排期） | 先 Customer Phase A | [entry](./entries/2026-10-openim-voice-message.md) | 2026-10-13 |
 
 ---

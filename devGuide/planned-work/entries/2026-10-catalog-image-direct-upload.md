@@ -1,6 +1,6 @@
 # catalog-image-direct-upload
 
-Last updated: 2026-10-17
+Last updated: 2026-11-13
 
 ## 摘要
 
@@ -65,7 +65,8 @@ Last updated: 2026-10-17
 ## 触发条件 / 目标窗口
 
 - **主动启动**「目录图直传」或「减轻 backend 上传带宽」时实施。  
-- **建议依赖**：upload 写分布已存在（见直传约定）。本项做的是 presign/complete 与端上 transport。  
+- **建议依赖**：通用直传框架已落地（见 [S3 直传约定](../../../../.cursor/skills/s3-direct-upload/reference.md) 框架模块）。本项加 `purpose`、IMAGE_NORMALIZE complete hook、业务 UI。  
+- **Cursor plan（业务清单）**：[`direct_upload_business_migration_2026-11.plan.md`](../../../../.cursor/plans_planned/direct_upload_business_migration_2026-11.plan.md)  
 - **现在不实施**（2026-10：仅修好商家面板回 canonical；CMS 仍 FormData）。
 
 ## 实施备忘
@@ -76,6 +77,7 @@ CMS as-is：[`FormData-Image-Management-System.md`](../../FormData-Image-Managem
 
 ## 相关文档
 
+- **[上传面清单与迁移差异](../../image-upload-surface-inventory.md)** — bind×通道总表、典型流程、不可避免差异
 - **[S3 直传约定](../../../../.cursor/skills/s3-direct-upload/reference.md)** — PUT 主机与安全约束（权威）
 - **[标准](../../catalog-image-direct-upload-standard.md)** — 契约、MVC 分层、codebase/backend/端上复用
 - [openim-attachment-direct-upload](./2026-09-openim-attachment-direct-upload.md) — 附件直传；共用 upload 写分布

@@ -2,9 +2,9 @@
 
 Last updated: 2026-10-17
 
-> **规划状态**：尚未实施。台账见 [`planned-work/entries/2026-10-catalog-image-direct-upload.md`](./planned-work/entries/2026-10-catalog-image-direct-upload.md)。  
-> 本文是 **契约 + 分层标准**；实施时按本文件建可复用模块，禁止各端各写一套 presign/complete。  
-> **PUT 主机与安全约束**以 [S3 直传约定](../../.cursor/skills/s3-direct-upload/reference.md) 为准。写分布已建，本文不再另定主机。
+> **规划状态**：通用直传框架已落地（见直传约定「框架模块」）；本文目录图业务迁移尚未实施。台账见 [`planned-work/entries/2026-10-catalog-image-direct-upload.md`](./planned-work/entries/2026-10-catalog-image-direct-upload.md)。  
+> 业务接入时复用 `directUploadUtil` + 各端 transport，禁止再造三步状态机。  
+> **PUT 主机与安全约束**以 [S3 直传约定](../../.cursor/skills/s3-direct-upload/reference.md) 为准。
 
 ## 1. 目标
 
@@ -153,6 +153,7 @@ CMS 现有 FormData 图片文档（[`FormData-Image-Management-System.md`](./For
 
 ## 相关文档
 
+- [上传面清单与迁移差异](./image-upload-surface-inventory.md) — 全仓 bind×通道、迁移顺序、差异化边界
 - [S3 直传约定](../../.cursor/skills/s3-direct-upload/reference.md) — PUT 主机、暂存前缀、为何不拆 media/content 两套上传
 - [planned-work entry](./planned-work/entries/2026-10-catalog-image-direct-upload.md)
 - [openim-attachment-direct-upload](./planned-work/entries/2026-09-openim-attachment-direct-upload.md)
