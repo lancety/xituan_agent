@@ -62,7 +62,7 @@ C3 接线说明：[async-lambda-jobs-framework.md](./async-lambda-jobs-framework
 | `user_avatar` | 头像 | **微信/Site/顾客 App 已直传**（complete 落库） | direct | **C** | waitNormalize；端上后 getMe |
 | `expense_receipt` | 费用收据 | CMS 支出 OCR | **已直传 amazonaws.com** | **不迁** | 保持 SigV4；不进 upload CF |
 | `print_temp_image` | 打印模板图 | CMS 编辑器直传 | **direct wait** | **CMS done** | png；path 嵌模板 JSON；商家 App 仅只读选模板 |
-| `openim_chat_image` | 聊天图片 | **CMS/Site 已直传**；微信/App 仍 multipart | direct / multipart | **B OpenIM** | CMS/Site：域内 presign→PUT→complete；GIF 跳过 normalize；PDF 不 enqueue |
+| `openim_chat_image` | 聊天图片 | **CMS/Site/顾客App/商家App 已直传**；微信仍 multipart | direct / multipart | **B OpenIM** | 域内 presign→PUT→complete；GIF 跳过 normalize；PDF 不 enqueue |
 | `barcode` | 店面码等 | 多为系统生成 | — | 通常不迁 | 非用户选图主路径 |
 
 ### 通道 as-is（横切）
@@ -71,7 +71,7 @@ C3 接线说明：[async-lambda-jobs-framework.md](./async-lambda-jobs-framework
 |------|------|------|
 | CMS 实体编辑 | 创建/更新 **同一请求 FormData** 带图 | 先直传拿 path → 实体 save 只交文本 |
 | 微信 / Expo 商家 | **两步**：`POST .../images/:kind` multipart → 再 PUT 文本 | 删两步中的 multipart；直传 + 文本 save |
-| OpenIM | CMS/Site：`attachments/presign`→PUT→`complete`；微信/App：`POST .../attachments` multipart | complete 回 canonical / cdnUrl；multipart 保留至 Gate |
+| OpenIM | CMS/Site/顾客App/商家App：`attachments/presign`→PUT→`complete`；微信：`POST .../attachments` multipart | complete 回 canonical / cdnUrl；multipart 保留至 Gate |
 | 支出 OCR / OTA | 已 SigV4 → `amazonaws.com` | **维持**；勿并入 upload CF |
 
 Multer 路由枚举（排障用）：[request-context-multer-audit.md](../docs/request-context-multer-audit.md)。
@@ -88,7 +88,7 @@ Multer 路由枚举（排障用）：[request-context-multer-audit.md](../docs/r
 | 1 | purpose=`image` + bindKind + complete 双模式（promote 出 upload-incoming → IMAGE_NORMALIZE） | **backend done**（端上未接） |
 | 2 | 孤儿 TTL = **24h**（lifecycle 脚本已备；桶上待执行） | **script done** |
 | 3 | **一次一端**：微信（顾客）→ Site → 顾客 App → CMS → 商家 App；备注图/头像并入 | **微信顾客 done**；**Site done**；**顾客 App done**；**CMS catalog/logo/compliance/preset done**（no-wait）；商家 App catalog **done**（并行已落地） |
-| 4 | **打印模板 + OpenIM** 同批后置 | **打印模板 CMS done**；**OpenIM CMS+Site done**；微信/App 仍 multipart |
+| 4 | **打印模板 + OpenIM** 同批后置 | **打印模板 CMS done**；**OpenIM CMS+Site+顾客/商家 App done**；微信仍 multipart |
 | 5 | 发版无流量后 **post-deploy** 下线旧 multipart | planned |
 
 **忽略（不排期）**：微信商家「我的网店」深链下的全部功能。OCR 决定搁置。
