@@ -134,14 +134,21 @@ CMS 现有 FormData 图片文档（[`FormData-Image-Management-System.md`](./For
 
 **不要**把支出 OCR 强行并进本 util（bind/鉴权不同）；**要**复用「presign→PUT→complete→canonical」形状。主机不要抄支出的 `amazonaws.com`。
 
-## 9. 实施顺序（降维护成本）
+## 9. 实施顺序（2026-11-13 已确认）
 
-1. codebase：类型 + `uploadOne` + transport 接口（无 UI）  
-2. backend：统一 presign/complete service + 路由  
-3. 一端打通（建议微信商家 Offer 头图/轮播）验契约  
-4. Expo 商家换 transport  
-5. CMS 换薄组件，实体逐个去 FormData 文件字段  
-6. post-deploy：删旧 multipart 收文件 API  
+框架（codebase util + backend 路由 + transport）已完成。业务迁移顺序：
+
+1. purpose / bindKind + complete 挂 IMAGE_NORMALIZE sync  
+2. 按端迁目录图等（Expo / CMS / 顾客端…）；**备注图/头像随该端合并**，不抢先单独立项  
+3. 打印模板 + OpenIM 同批后置；post-deploy 拆旧 multipart  
+
+**忽略**：微信商家「我的网店」深链全部功能（不迁直传）。  
+
+
+
+总表：[image-upload-surface-inventory.md](./image-upload-surface-inventory.md)。  
+
+
 
 ## 10. 验收（标准级）
 

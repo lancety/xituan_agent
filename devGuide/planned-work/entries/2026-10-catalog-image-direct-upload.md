@@ -67,7 +67,9 @@ Last updated: 2026-11-13
 - **主动启动**「目录图直传」或「减轻 backend 上传带宽」时实施。  
 - **建议依赖**：通用直传框架已落地（见 [S3 直传约定](../../../../.cursor/skills/s3-direct-upload/reference.md) 框架模块）。本项加 `purpose`、IMAGE_NORMALIZE complete hook、业务 UI。  
 - **Cursor plan（业务清单）**：[`direct_upload_business_migration_2026-11.plan.md`](../../../../.cursor/plans_planned/direct_upload_business_migration_2026-11.plan.md)  
-- **现在不实施**（2026-10：仅修好商家面板回 canonical；CMS 仍 FormData）。
+- **顺序已确认（修订）**：按端迁目录图；备注图/头像随各端合并；打印模板与 IM 同批后置。  
+- **忽略**：微信商家「我的网店」深链下全部功能不迁直传。  
+- **现在不实施**（先 planned；CMS 仍 FormData）。
 
 ## 实施备忘
 

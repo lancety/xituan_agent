@@ -82,16 +82,17 @@ Multer 路由枚举（排障用）：[request-context-multer-audit.md](../docs/r
 
 统一原则：**扩展现有 `DirectUploadService` + `directUploadUtil`**，不要平行再建 `CatalogImageDirectUploadService` 状态机。
 
-| 步 | 内容 |
-|----|------|
-| 0 | 框架已完成（本表不重复） |
-| 1 | 扩 `purpose` / 传入 `bindKind`；`complete` 挂 IMAGE_NORMALIZE **sync**（目录图） |
-| 2 | 一端打通：**微信商家 Offer 头图/轮播**（验契约最快） |
-| 3 | Expo 商家换同一 util（仅 transport 已有） |
-| 4 | CMS 薄 Upload；Offer/Preorder → Product/News → logo/preset |
-| 5 | OpenIM purpose + 会话权限 + 附件表（可与 2–4 并行） |
-| 6 | 孤儿 TTL（`upload-incoming` 未 complete） |
-| 7 | 发版无流量后 **post-deploy** 下线旧 multipart |
+| 步 | 内容 | 状态 |
+|----|------|------|
+| 0 | 框架已完成（本表不重复） | done |
+| 1 | 扩 `purpose` / 传入 `bindKind`；`complete` 挂 IMAGE_NORMALIZE **sync** | planned |
+| 2 | **按端**迁目录图等（Expo 商家、CMS、Site/顾客 App、微信顾客包…） | planned |
+| 2b | **备注图 / 头像**：不单独立项；**随该端步 2 一并合并** | planned |
+| 3 | **打印模板 + OpenIM** 同批后置 | planned |
+| 4 | 孤儿 TTL（`upload-incoming` 未 complete） | planned |
+| 5 | 发版无流量后 **post-deploy** 下线旧 multipart | planned |
+
+**忽略（不排期）**：微信商家「我的网店」深链下的全部功能。OCR 决定搁置。
 
 台账：
 
