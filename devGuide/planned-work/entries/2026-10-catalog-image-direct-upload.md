@@ -68,9 +68,9 @@ Last updated: 2026-11-13
 - **建议依赖**：通用直传框架已落地（见 [S3 直传约定](../../../../.cursor/skills/s3-direct-upload/reference.md) 框架模块）。本项加 `purpose`、IMAGE_NORMALIZE complete hook、业务 UI。  
 - **Cursor plan（业务清单）**：[`direct_upload_business_migration_2026-11.plan.md`](../../../../.cursor/plans_planned/direct_upload_business_migration_2026-11.plan.md)  
 - **顺序已确认（修订）**：complete+normalize（等终态）→ TTL 24h → 一端一端：微信→Site→顾客App→CMS→商家App → 打印+IM → post-deploy。  
-- **进度（2026-11-13）**：微信顾客 / Site / **顾客 App** 备注图+头像已直传；下一步 CMS。  
+- **进度（2026-11-13）**：微信顾客 / Site / 顾客 App 备注图+头像已直传；**CMS** 商品/团购/预定/新闻/logo/合规/预设预览已直传（no-wait）；商家 App 目录图已直传。  
 - **忽略**：微信商家「我的网店」深链下全部功能不迁直传。  
-- **现在不实施**（先 planned；CMS 仍 FormData）。
+- **剩余**：打印模板 + OpenIM；post-deploy 下线 multipart。
 
 ## 实施备忘
 

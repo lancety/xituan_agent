@@ -87,7 +87,7 @@ Multer 路由枚举（排障用）：[request-context-multer-audit.md](../docs/r
 | 0 | 框架已完成（本表不重复） | done |
 | 1 | purpose=`image` + bindKind + complete 双模式（promote 出 upload-incoming → IMAGE_NORMALIZE） | **backend done**（端上未接） |
 | 2 | 孤儿 TTL = **24h**（lifecycle 脚本已备；桶上待执行） | **script done** |
-| 3 | **一次一端**：微信（顾客）→ Site → 顾客 App → CMS → 商家 App；备注图/头像并入 | **微信顾客 done**；**Site done**；**顾客 App done**（备注 no-wait+原图回退；头像 wait）；CMS / 商家 App planned |
+| 3 | **一次一端**：微信（顾客）→ Site → 顾客 App → CMS → 商家 App；备注图/头像并入 | **微信顾客 done**；**Site done**；**顾客 App done**；**CMS catalog/logo/compliance/preset done**（no-wait）；商家 App catalog **done**（并行已落地） |
 | 4 | **打印模板 + OpenIM** 同批后置 | planned |
 | 5 | 发版无流量后 **post-deploy** 下线旧 multipart | planned |
 
