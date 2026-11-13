@@ -141,6 +141,8 @@ CMS 现有 FormData 图片文档（[`FormData-Image-Management-System.md`](./For
 1. purpose / bindKind + complete 挂 IMAGE_NORMALIZE（prod=Lambda；**等终态**）  
 2. 孤儿 TTL = 24h  
 3. 一次一端：微信（顾客）→ Site → 顾客 App → CMS → 商家 App；备注图/头像并入  
+   - **已完成**：微信顾客、Site、顾客 App（备注 no-wait+原图回退；头像 wait）  
+   - **待做**：CMS、商家 App  
 4. 打印模板 + OpenIM 同批后置；post-deploy 拆旧 multipart  
 
 **忽略**：微信商家「我的网店」深链全部功能（不迁直传）。  

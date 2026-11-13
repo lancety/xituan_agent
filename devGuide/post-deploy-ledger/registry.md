@@ -1,6 +1,6 @@
 # Post-Deploy Registry（巡检入口）
 
-Last updated: 2026-11-08
+Last updated: 2026-11-13
 
 **日常巡检：「检查 post-deploy」** — 打开本文件，活跃表行数应为 **0** 表示无待收尾部署债务。非 0 则点击 **Entry** 查看 Gate 与勾选清单。
 
@@ -10,6 +10,7 @@ Last updated: 2026-11-08
 
 | ID | 状态 | 已部署 | 待完成 | Gate 摘要 | 下一动作 | Entry | Last updated |
 |----|------|--------|--------|-----------|----------|-------|--------------|
+| `multipart-image-upload-retire` | `planned` | —（Phase 1：`direct-upload` 已加；**保留** multer 收图） | 各端直传全量后 Phase N 清 backend `req.files` | Customer/Merchant/WeChat/Site/CMS 图传均直传+path；multipart 调用≈0 | 继续各端直传；Gate 后单独 PR 清收图 | [entry](./entries/2026-11-multipart-image-upload-retire.md) | 2026-11-13 |
 | `platform-metadata-drop-cms-site-print-vis` | `planned` | —（Phase 1：平台三轴 UI/写类型清理；列恒 true 保留） | Phase N DROP `visible_in_cms/site/print` | Platform+Backend Phase 1 生产发版；无客户端依赖三轴响应 | 部署 Phase 1；Gate 后单独 PR DROP | [entry](./entries/2026-11-platform-metadata-drop-cms-site-print-vis.md) | 2026-11-07 |
 | `orders-reorder-preorder-retire` | `planned` | —（Phase 1：preview/confirm + 保留旧路由） | 微信/Site/Customer 新路径全量后 Phase N 删 `reorder-preorder` | 三端新再次购买全量；生产无旧调用 | 部署 Phase 1；Gate 后单独 PR 删旧路由 | [entry](./entries/2026-11-orders-reorder-preorder-retire.md) | 2026-11-07 |
 | `summary-payment-from-revenues` | `planned` | — | Phase 1 收入派生付款状态；Phase N DROP 三列 | CMS+Merchant 无感用同名字段；无人写三列 | 部署 backend Phase 1 | [entry](./entries/2026-10-summary-payment-from-revenues.md) | 2026-10-30 |
