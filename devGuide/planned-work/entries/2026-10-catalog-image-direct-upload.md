@@ -70,7 +70,7 @@ Last updated: 2026-11-13
 - **顺序已确认（修订）**：complete+normalize（等终态）→ TTL 24h → 一端一端：微信→Site→顾客App→CMS→商家App → 打印+IM → post-deploy。  
 - **进度（2026-11-13）**：微信顾客 / Site / 顾客 App 备注图+头像已直传；**CMS** 商品/团购/预定/新闻/logo/合规/预设预览已直传（no-wait）；商家 App 目录图已直传。  
 - **忽略**：微信商家「我的网店」深链下全部功能不迁直传。  
-- **剩余**：打印模板 + OpenIM；post-deploy 下线 multipart。
+- **剩余**：OpenIM；post-deploy 下线 multipart。（CMS 打印模板图已直传 2026-11-13）
 
 ## 实施备忘
 

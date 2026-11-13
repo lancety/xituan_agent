@@ -61,7 +61,7 @@ C3 接线说明：[async-lambda-jobs-framework.md](./async-lambda-jobs-framework
 | `order_note_images` | 订单行备注图 | 下单自 cart 转移 | 非独立上传 UI | — | 一般不新开上传 |
 | `user_avatar` | 头像 | **微信/Site/顾客 App 已直传**（complete 落库） | direct | **C** | waitNormalize；端上后 getMe |
 | `expense_receipt` | 费用收据 | CMS 支出 OCR | **已直传 amazonaws.com** | **不迁** | 保持 SigV4；不进 upload CF |
-| `print_temp_image` | 打印模板图 | CMS `/:id/images` | multipart | **D 另议** | png；path 常嵌模板 JSON |
+| `print_temp_image` | 打印模板图 | CMS 编辑器直传 | **direct wait** | **CMS done** | png；path 嵌模板 JSON；商家 App 仅只读选模板 |
 | `openim_chat_image` | 聊天图片 | 各端 OpenIM attachments | multipart | **B OpenIM** | GIF 跳过 normalize；PDF 不 enqueue |
 | `barcode` | 店面码等 | 多为系统生成 | — | 通常不迁 | 非用户选图主路径 |
 
@@ -88,7 +88,7 @@ Multer 路由枚举（排障用）：[request-context-multer-audit.md](../docs/r
 | 1 | purpose=`image` + bindKind + complete 双模式（promote 出 upload-incoming → IMAGE_NORMALIZE） | **backend done**（端上未接） |
 | 2 | 孤儿 TTL = **24h**（lifecycle 脚本已备；桶上待执行） | **script done** |
 | 3 | **一次一端**：微信（顾客）→ Site → 顾客 App → CMS → 商家 App；备注图/头像并入 | **微信顾客 done**；**Site done**；**顾客 App done**；**CMS catalog/logo/compliance/preset done**（no-wait）；商家 App catalog **done**（并行已落地） |
-| 4 | **打印模板 + OpenIM** 同批后置 | planned |
+| 4 | **打印模板 + OpenIM** 同批后置 | **打印模板 CMS done**；OpenIM planned |
 | 5 | 发版无流量后 **post-deploy** 下线旧 multipart | planned |
 
 **忽略（不排期）**：微信商家「我的网店」深链下的全部功能。OCR 决定搁置。
