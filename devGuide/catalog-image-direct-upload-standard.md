@@ -138,9 +138,10 @@ CMS 现有 FormData 图片文档（[`FormData-Image-Management-System.md`](./For
 
 框架（codebase util + backend 路由 + transport）已完成。业务迁移顺序：
 
-1. purpose / bindKind + complete 挂 IMAGE_NORMALIZE sync  
-2. 按端迁目录图等（Expo / CMS / 顾客端…）；**备注图/头像随该端合并**，不抢先单独立项  
-3. 打印模板 + OpenIM 同批后置；post-deploy 拆旧 multipart  
+1. purpose / bindKind + complete 挂 IMAGE_NORMALIZE（prod=Lambda；**等终态**）  
+2. 孤儿 TTL = 24h  
+3. 一次一端：微信（顾客）→ Site → 顾客 App → CMS → 商家 App；备注图/头像并入  
+4. 打印模板 + OpenIM 同批后置；post-deploy 拆旧 multipart  
 
 **忽略**：微信商家「我的网店」深链全部功能（不迁直传）。  
 

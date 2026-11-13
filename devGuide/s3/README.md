@@ -79,6 +79,12 @@ demo **没有** bucket policy 里的 IAM user Allow。应用读写靠身份策�
 
 2026-11-09 四桶另有 Sid `AllowCloudFrontUploadOACPut`：对应环境的 **upload** 写分布只能 `s3:PutObject` 到 `upload-incoming/*`。分布 ID 见 [S3 直传约定](../../.cursor/skills/s3-direct-upload/reference.md)。合并策略时保留这条。demo 的同一 Sid 写在 `demo-media-stack.yaml`。这条分布没有 `GetObject`。
 
+**孤儿 TTL（2026-11-13）**：`upload-incoming/` 前缀对象 **1 天后过期**（未 complete 的暂存）。`complete`（purpose=image）会先 **copy** 到 `merchant/…` 或 `user/…` 再跑 IMAGE_NORMALIZE，因此终态不依赖该前缀。应用规则：
+
+`cd xituan_backend && NODE_ENV=development|demo|… npx ts-node --transpile-only scripts/s3-upload-incoming-lifecycle-24h.ts`
+
+（会 merge 写入名为 `xituan-upload-incoming-expire-1d` 的 lifecycle rule；对生产桶需显式确认后再跑。）
+
 IAM 组 `s3_xituan` 另有内联策略 `CloudFrontUploadSigningSecretRead`：可读 Secrets Manager `xituan/cloudfront/upload-signing`（backend 签 `putUrl`）。
 
 ### CloudFront（S3 直读 vs SIH）

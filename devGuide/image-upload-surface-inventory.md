@@ -85,14 +85,94 @@ Multer 路由枚举（排障用）：[request-context-multer-audit.md](../docs/r
 | 步 | 内容 | 状态 |
 |----|------|------|
 | 0 | 框架已完成（本表不重复） | done |
-| 1 | 扩 `purpose` / 传入 `bindKind`；`complete` 挂 IMAGE_NORMALIZE **sync** | planned |
-| 2 | **按端**迁目录图等（Expo 商家、CMS、Site/顾客 App、微信顾客包…） | planned |
-| 2b | **备注图 / 头像**：不单独立项；**随该端步 2 一并合并** | planned |
-| 3 | **打印模板 + OpenIM** 同批后置 | planned |
-| 4 | 孤儿 TTL（`upload-incoming` 未 complete） | planned |
+| 1 | purpose=`image` + bindKind + complete 双模式（promote 出 upload-incoming → IMAGE_NORMALIZE） | **backend done**（端上未接） |
+| 2 | 孤儿 TTL = **24h**（lifecycle 脚本已备；桶上待执行） | **script done** |
+| 3 | **一次一端**：微信（顾客）→ Site → 顾客 App → CMS → 商家 App；备注图/头像并入 | planned |
+| 4 | **打印模板 + OpenIM** 同批后置 | planned |
 | 5 | 发版无流量后 **post-deploy** 下线旧 multipart | planned |
 
 **忽略（不排期）**：微信商家「我的网店」深链下的全部功能。OCR 决定搁置。
+
+### complete 双模式（已定方向）
+
+契约：`complete`（或等价参数）支持 **`waitNormalize: true | false`**（名称实施时再定）。
+
+| 模式 | 行为 | 适用直觉 |
+|------|------|----------|
+| **wait** | `mode: sync` + `waitForTerminal`；成功只回 **canonical**（及可选 cdnUrl） | 返回后立刻要用 **CDN/kind URL** 给人看（含他端、消息体、公开页） |
+| **no-wait** | enqueue async 后尽快返回；可带 `jobId`；**编辑页用本地 blob/file 预览** | 本会话能靠本地缓存出图；最终落库仍须 job 成功后的 canonical（save 前等 job，或 completion 回写后再对外可见） |
+
+**硬约束（两模式共用）**
+
+- 禁止把源 `.jpg/.png` 当**最终**业务 path 持久化。  
+- no-wait：UI **不得**在 job 完成前把返回的临时 key 塞进「只认 `_w*`/canonical」的展示组件当正式 src（除非明确占位）。  
+- wait 失败 → complete 失败，表单不出现源 path。
+
+#### 按清单 case：能否 no-wait（按「行级保活」重判）
+
+判定规则：该端**能否在正常切布局/子树 remount 下仍持有稳定本地句柄**？不能 → **必须 wait**。整页刷新本来就不保证本地源。
+
+| bind / 场景 | 模式 | 保活是否成立 | 说明 |
+|-------------|------|--------------|------|
+| **CMS 目录图**（product/news/offer/preorder/preset） | **no-wait** | 能 | 已有 Form / `currentImages` + `originFileObj`（File）挂在表单层；叶子 Upload 可 remount。save 前行须 `ready` |
+| **CMS logo** | **no-wait** | 能 | 同上，设置表单持 File |
+| **商家 App 目录图** | **no-wait** | 能（须遵守） | 选图后已有/应有 **cacheDirectory 稳定 uri** + **编辑屏/store 行模型**；禁止未 ready 打 CDN；离开编辑栈且清 store 则只能占位或改 wait |
+| **Site 备注图** | **no-wait** | 能 | cart/page store 持 `File`；同会话购物车流程。去结算前须 `ready` |
+| **顾客 App 备注图** | **no-wait** | 能（须 copy 缓存） | 与商家 App 相同：先稳定 `file://` 再挂行模型 |
+| **微信顾客 备注图** | **wait**（默认）或条件 no-wait | **偏弱** | `tempFilePath` 易随页面卸载丢失；除非**立刻拷用户目录**且行状态在 page/store、预览不依赖仍存活的 temp。做不到就 **wait** |
+| **user_avatar（各端）** | **wait** | 不能靠本地 | Header/个人中心/列表等多处只认 URL；无法把 File 注入所有展示点；返回后即用 CDN |
+| **print_temp_image** | **wait** | 偏不能 | 画布/JSON 重渲染多，objectURL 易断或未进统一资产表；除非编辑器先有资产库行模型，否则 wait |
+| **openim_chat_image** | **wait** | 不能 | 对端无本地源；消息体必须可展示 URL |
+| **openim 非图** | 不跑 normalize | — | 与 wait 无关 |
+| **order_note_images** | — | — | 无独立上传 |
+| **expense / barcode / 我的网店** | 搁置/忽略 | — | — |
+
+**一句话**：no-wait 只留给「**单编辑会话 + 表单/store 级 File 或稳定文件副本**」——CMS 目录图/logo、商家 App 目录图、Site/顾客 App 备注图。头像、OpenIM、打印模板、微信备注图（未做用户目录拷贝前）→ **wait**。
+
+#### 与「按端迁移」的对应（步 3）
+
+| 端 | no-wait | wait |
+|----|---------|------|
+| 微信顾客 | 仅当备注图已做用户目录拷贝+行保活；否则备注也 **wait** | 头像；备注（默认） |
+| Site | 备注图 | 头像 |
+| 顾客 App | 备注图（cache 副本） | 头像 |
+| CMS | 目录图、logo | 头像若有；打印模板；OpenIM（后置） |
+| 商家 App | 目录图 | （无 OpenIM 则无强制 wait 项；有则 wait） |
+
+微信商家「我的网店」深链：**忽略**。
+
+#### no-wait：本地源如何在正常操作里不丢（必守）
+
+**问题**：预览若只靠叶子组件里的 `blob:` / 临时 `tempFilePath`，一遇重渲染、切 Tab、换布局、子树 remount、路由再进，就可能 revoke/丢 state → 裂图或空白，即使用户没离开编辑页。
+
+**原则：预览句柄跟「表单行状态」走，不跟「某个 UI 组件实例」走。**
+
+| 风险 | 为何丢 | 保活做法 |
+|------|--------|----------|
+| 子组件 remount / 换布局 | `useState` 在叶子里；或 `useEffect` cleanup 里 `revokeObjectURL` | **File / Blob / 稳定 uri 存在 Form 行 / page store / 列表 item 模型**（与 `currentImages` 同级）；叶子只读 props |
+| `blob:` 被 revoke 太早 | job 未完或 canonical 未写入就 revoke | **仅在**「已换成 canonical 且 UI 已切到 CDN」或「用户删掉该行 / 放弃编辑」后 revoke |
+| RN `content://` / 相册临时 uri | 系统回收、权限会话结束 | 选图后立刻 **copy 到 `cacheDirectory` 稳定 `file://`**（现有 product upload normalize 同思路），预览与 PUT 都用这份 |
+| 微信 `tempFilePath` | 临时文件被清 | 需要跨页面时拷到 **用户目录**；或至少在本页生命周期内不依赖 remount 后重建 |
+| 整页刷新 / 杀进程 | 内存全没 | no-wait **无法**恢复本地预览 → 占位 + 跟 `jobId`；成功后只显示 canonical；未成功可提示重选。跨会话不承诺本地源 |
+| 只存了 pending `sourceKey` 就去打 CDN | `_w*` 还不存在 | 未终态前预览 **只许**本地句柄或占位，**禁止**用 kind CDN URL |
+
+**推荐行模型（概念）**
+
+```text
+{ localPreview: File|blobUrl|fileUri, jobId?, canonicalPath?, status: local|uploading|normalizing|ready|failed }
+```
+
+- 渲染预览：`ready` → CDN(canonical)；否则 → `localPreview` 或占位。  
+- 提交实体：仅当 `status===ready` 且有 `canonicalPath`（或提交前对未 ready 的行改为 wait/轮询到 ready）。  
+- 布局切换：只销毁视图，**不**清行模型、**不** revoke。
+
+**与 wait 的关系**：做不到「行级保活」的端/页，不要用 no-wait，改 **wait**，避免赌临时路径。
+
+#### 实施备忘
+
+- API：`waitNormalize` 由客户端按上表传；服务端也可按 `bindKind` 设默认，客户端可覆盖。  
+- no-wait 返回：`jobId` + 可选 `sourceKey`（仅供关联，**禁止当表单最终值**）；job 成功后再把 canonical 写入行模型。  
+- 多图：每行独立 `localPreview` + `jobId`；批量常用 no-wait + 上表保活。
 
 台账：
 
