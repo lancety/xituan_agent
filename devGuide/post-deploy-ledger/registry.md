@@ -10,7 +10,9 @@ Last updated: 2026-11-13
 
 | ID | 状态 | 已部署 | 待完成 | Gate 摘要 | 下一动作 | Entry | Last updated |
 |----|------|--------|--------|-----------|----------|-------|--------------|
-| `multipart-image-upload-retire` | `planned` | —（Phase 1：`direct-upload` 已加；**保留** multer 收图） | 各端直传全量后 Phase N 清 backend `req.files` | Customer/Merchant/WeChat/Site/CMS 图传均直传+path；multipart 调用≈0 | 继续各端直传；Gate 后单独 PR 清收图 | [entry](./entries/2026-11-multipart-image-upload-retire.md) | 2026-11-13 |
+| `multipart-image-upload-retire` | `planned` | —（Phase 1：`direct-upload` 已加；**保留** multer 收图） | 各端目录/业务图直传全量后 Phase N 清 backend `req.files` | Customer/Merchant/WeChat/Site/CMS 图传均直传+path；multipart 调用≈0 | 继续各端直传；Gate 后单独 PR 清收图 | [entry](./entries/2026-11-multipart-image-upload-retire.md) | 2026-11-13 |
+| `openim-attachment-multipart-retire` | `planned` | —（Phase 1：CMS/Site OpenIM presign+complete；**保留** multipart attachments） | WeChat/App 附件直传全量后 Phase N 删 OpenIM multer | 五端聊天附件均直传；multipart≈0 | 实施 CMS/Site 直传；Gate 后单独 PR 清 OpenIM multipart | [entry](./entries/2026-11-openim-attachment-multipart-retire.md) | 2026-11-13 |
+| `openim-cdn-lane-util-cleanup` | `planned` | —（Phase 1：增量 cdnLane + 上传显式传端；**保留**默认 WECHAT） | Phase N 去掉 CDN util 静默默认 / 对外以 lane 为主 | 全端拼 URL 均显式 lane 或 clientApp | 与 OpenIM 直传同批 Phase 1；Gate 后单独 PR 收紧 util | [entry](./entries/2026-11-openim-cdn-lane-util-cleanup.md) | 2026-11-13 |
 | `platform-metadata-drop-cms-site-print-vis` | `planned` | —（Phase 1：平台三轴 UI/写类型清理；列恒 true 保留） | Phase N DROP `visible_in_cms/site/print` | Platform+Backend Phase 1 生产发版；无客户端依赖三轴响应 | 部署 Phase 1；Gate 后单独 PR DROP | [entry](./entries/2026-11-platform-metadata-drop-cms-site-print-vis.md) | 2026-11-07 |
 | `orders-reorder-preorder-retire` | `planned` | —（Phase 1：preview/confirm + 保留旧路由） | 微信/Site/Customer 新路径全量后 Phase N 删 `reorder-preorder` | 三端新再次购买全量；生产无旧调用 | 部署 Phase 1；Gate 后单独 PR 删旧路由 | [entry](./entries/2026-11-orders-reorder-preorder-retire.md) | 2026-11-07 |
 | `summary-payment-from-revenues` | `planned` | — | Phase 1 收入派生付款状态；Phase N DROP 三列 | CMS+Merchant 无感用同名字段；无人写三列 | 部署 backend Phase 1 | [entry](./entries/2026-10-summary-payment-from-revenues.md) | 2026-10-30 |

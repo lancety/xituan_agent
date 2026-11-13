@@ -12,7 +12,7 @@ Last updated: 2026-11-13
 | **创建日** | 2026-11-13 |
 
 **部署尾项:** 本 entry  
-**相关:** `.cursor/skills/s3-direct-upload`；customer 头像/购物车备注已直传；merchant 仍 multipart（仅对齐上传前压缩）
+**相关:** `.cursor/skills/s3-direct-upload`；customer 头像/购物车备注已直传；CMS/商家 App 目录图已直传；**OpenIM 附件 multipart 另见** [openim-attachment-multipart-retire](./2026-11-openim-attachment-multipart-retire.md)（勿与本 entry 混清）
 
 ## 背景
 
@@ -35,11 +35,12 @@ Phase 1 **禁止**删除 multer 收图：未切完的端（尤其 Merchant App�
 
 | Consumer | Phase 1 行为 |
 |----------|----------------|
-| **Customer App** | 头像 / 购物车备注：直传；OpenIM 附件等仍可能 multipart |
-| **Merchant App** | 商品 / 活动 / logo：仍 multipart（+ 压缩）；直传待做 |
-| **CMS / Site** | 部分已有 transport；产品等编辑器可能仍 FormData+文件 |
-| **WeChat** | 多数业务图仍走既有上传，未全量直传 |
-| **Backend** | 双路径并存直至 Phase N |
+| **Customer App** | 头像 / 购物车备注：直传；OpenIM 附件仍 multipart（见 openim entry） |
+| **Merchant App** | 商品 / 活动 / logo：已直传（path）；OpenIM 附件仍 multipart |
+| **CMS** | 目录图 / logo / 打印模板图：已直传；OpenIM 附件 Phase 1 改直传（见 openim entry） |
+| **Site** | 备注图 / 头像：已直传；OpenIM 附件 Phase 1 改直传 |
+| **WeChat** | 顾客备注/头像等已直传；商家网店忽略；OpenIM 附件仍 multipart |
+| **Backend** | 目录图双路径并存直至 Phase N；OpenIM 附件双路径见独立 entry |
 
 ## 部署后债务（Post-deploy debt）
 
