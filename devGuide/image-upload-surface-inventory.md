@@ -57,9 +57,9 @@ C3 接线说明：[async-lambda-jobs-framework.md](./async-lambda-jobs-framework
 | `preorder_carousel_images` | 预定轮播 | 同上 | 同上 | **A 优先** | |
 | `product_preset_preview` | 选项预览图 | CMS preset | multipart single | **A** | |
 | `merchant_logo` / `merchant_logo_rect` | 商户 logo | CMS/设置 | multer fields | **A** | policy 为 **png** |
-| `cart_note_images` | 购物车备注图 | Site multipart；**微信顾客已直传** | multipart / **微信 direct** | **C 顾客侧** | user-scoped；微信 waitNormalize |
+| `cart_note_images` | 购物车备注图 | **微信/Site 已直传** | direct | **C 顾客侧** | 微信 wait；Site **no-wait** + 购物车 `_w*` onError→原图 |
 | `order_note_images` | 订单行备注图 | 下单自 cart 转移 | 非独立上传 UI | — | 一般不新开上传 |
-| `user_avatar` | 头像 | Site multipart；**微信顾客已直传**（complete 落库） | multipart / **微信 direct** | **C** | user-scoped；微信 waitNormalize |
+| `user_avatar` | 头像 | **微信/Site 已直传**（complete 落库） | direct | **C** | waitNormalize；Site 后 getMe |
 | `expense_receipt` | 费用收据 | CMS 支出 OCR | **已直传 amazonaws.com** | **不迁** | 保持 SigV4；不进 upload CF |
 | `print_temp_image` | 打印模板图 | CMS `/:id/images` | multipart | **D 另议** | png；path 常嵌模板 JSON |
 | `openim_chat_image` | 聊天图片 | 各端 OpenIM attachments | multipart | **B OpenIM** | GIF 跳过 normalize；PDF 不 enqueue |
@@ -87,7 +87,7 @@ Multer 路由枚举（排障用）：[request-context-multer-audit.md](../docs/r
 | 0 | 框架已完成（本表不重复） | done |
 | 1 | purpose=`image` + bindKind + complete 双模式（promote 出 upload-incoming → IMAGE_NORMALIZE） | **backend done**（端上未接） |
 | 2 | 孤儿 TTL = **24h**（lifecycle 脚本已备；桶上待执行） | **script done** |
-| 3 | **一次一端**：微信（顾客）→ Site → 顾客 App → CMS → 商家 App；备注图/头像并入 | **微信顾客 done**（备注图+头像 wait）；其余端 planned |
+| 3 | **一次一端**：微信（顾客）→ Site → 顾客 App → CMS → 商家 App；备注图/头像并入 | **微信顾客 done**；**Site done**（备注 no-wait+原图回退；头像 wait）；其余 planned |
 | 4 | **打印模板 + OpenIM** 同批后置 | planned |
 | 5 | 发版无流量后 **post-deploy** 下线旧 multipart | planned |
 
@@ -105,7 +105,8 @@ Multer 路由枚举（排障用）：[request-context-multer-audit.md](../docs/r
 **硬约束（两模式共用）**
 
 - 禁止把源 `.jpg/.png` 当**最终**业务 path 持久化。  
-- no-wait：UI **不得**在 job 完成前把返回的临时 key 塞进「只认 `_w*`/canonical」的展示组件当正式 src（除非明确占位）。  
+- no-wait：落库 `path \|\| promotedKey`；只认 `_w*` 的展示须 **`onError` → 原图 URL**（skill 标准），或本地 File 预览；禁止把 `upload-incoming` sourceKey 当正式 src。  
+
 - wait 失败 → complete 失败，表单不出现源 path。
 
 #### 按清单 case：能否 no-wait（按「行级保活」重判）
@@ -117,7 +118,7 @@ Multer 路由枚举（排障用）：[request-context-multer-audit.md](../docs/r
 | **CMS 目录图**（product/news/offer/preorder/preset） | **no-wait** | 能 | 已有 Form / `currentImages` + `originFileObj`（File）挂在表单层；叶子 Upload 可 remount。save 前行须 `ready` |
 | **CMS logo** | **no-wait** | 能 | 同上，设置表单持 File |
 | **商家 App 目录图** | **no-wait** | 能（须遵守） | 选图后已有/应有 **cacheDirectory 稳定 uri** + **编辑屏/store 行模型**；禁止未 ready 打 CDN；离开编辑栈且清 store 则只能占位或改 wait |
-| **Site 备注图** | **no-wait** | 能 | cart/page store 持 `File`；同会话购物车流程。去结算前须 `ready` |
+| **Site 备注图** | **no-wait** | 能（CDN 原图） | 加购存 promotedKey；购物车 `_w64` **onError→原图**；normalize 回写后再缩略 |
 | **顾客 App 备注图** | **no-wait** | 能（须 copy 缓存） | 与商家 App 相同：先稳定 `file://` 再挂行模型 |
 | **微信顾客 备注图** | **wait**（默认）或条件 no-wait | **偏弱** | `tempFilePath` 易随页面卸载丢失；除非**立刻拷用户目录**且行状态在 page/store、预览不依赖仍存活的 temp。做不到就 **wait** |
 | **user_avatar（各端）** | **wait** | 不能靠本地 | Header/个人中心/列表等多处只认 URL；无法把 File 注入所有展示点；返回后即用 CDN |
@@ -127,14 +128,14 @@ Multer 路由枚举（排障用）：[request-context-multer-audit.md](../docs/r
 | **order_note_images** | — | — | 无独立上传 |
 | **expense / barcode / 我的网店** | 搁置/忽略 | — | — |
 
-**一句话**：no-wait 只留给「**单编辑会话 + 表单/store 级 File 或稳定文件副本**」——CMS 目录图/logo、商家 App 目录图、Site/顾客 App 备注图。头像、OpenIM、打印模板、微信备注图（未做用户目录拷贝前）→ **wait**。
+**一句话**：no-wait 留给「本地 File 保活」或「promote 后原图已可读 + 展示可回退原图」——CMS 目录图/logo、商家 App 目录图、Site 备注（购物车 onError→原图）。头像、OpenIM、打印、微信备注（默认）→ **wait**。
 
 #### 与「按端迁移」的对应（步 3）
 
 | 端 | no-wait | wait |
 |----|---------|------|
 | 微信顾客 | 仅当备注图已做用户目录拷贝+行保活；否则备注也 **wait** | 头像；备注（默认） |
-| Site | 备注图 | 头像 |
+| Site | 备注（no-wait + 原图回退） | 头像 |
 | 顾客 App | 备注图（cache 副本） | 头像 |
 | CMS | 目录图、logo | 头像若有；打印模板；OpenIM（后置） |
 | 商家 App | 目录图 | （无 OpenIM 则无强制 wait 项；有则 wait） |
