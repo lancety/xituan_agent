@@ -57,9 +57,9 @@ C3 接线说明：[async-lambda-jobs-framework.md](./async-lambda-jobs-framework
 | `preorder_carousel_images` | 预定轮播 | 同上 | 同上 | **A 优先** | |
 | `product_preset_preview` | 选项预览图 | CMS preset | multipart single | **A** | |
 | `merchant_logo` / `merchant_logo_rect` | 商户 logo | CMS/设置 | multer fields | **A** | policy 为 **png** |
-| `cart_note_images` | 购物车备注图 | Site/微信 `POST .../upload-images` | multipart | **C 顾客侧** | user-scoped；可无 merchantId |
+| `cart_note_images` | 购物车备注图 | Site multipart；**微信顾客已直传** | multipart / **微信 direct** | **C 顾客侧** | user-scoped；微信 waitNormalize |
 | `order_note_images` | 订单行备注图 | 下单自 cart 转移 | 非独立上传 UI | — | 一般不新开上传 |
-| `user_avatar` | 头像 | Site/微信 auth | multipart | **C** | user-scoped |
+| `user_avatar` | 头像 | Site multipart；**微信顾客已直传**（complete 落库） | multipart / **微信 direct** | **C** | user-scoped；微信 waitNormalize |
 | `expense_receipt` | 费用收据 | CMS 支出 OCR | **已直传 amazonaws.com** | **不迁** | 保持 SigV4；不进 upload CF |
 | `print_temp_image` | 打印模板图 | CMS `/:id/images` | multipart | **D 另议** | png；path 常嵌模板 JSON |
 | `openim_chat_image` | 聊天图片 | 各端 OpenIM attachments | multipart | **B OpenIM** | GIF 跳过 normalize；PDF 不 enqueue |
@@ -87,7 +87,7 @@ Multer 路由枚举（排障用）：[request-context-multer-audit.md](../docs/r
 | 0 | 框架已完成（本表不重复） | done |
 | 1 | purpose=`image` + bindKind + complete 双模式（promote 出 upload-incoming → IMAGE_NORMALIZE） | **backend done**（端上未接） |
 | 2 | 孤儿 TTL = **24h**（lifecycle 脚本已备；桶上待执行） | **script done** |
-| 3 | **一次一端**：微信（顾客）→ Site → 顾客 App → CMS → 商家 App；备注图/头像并入 | planned |
+| 3 | **一次一端**：微信（顾客）→ Site → 顾客 App → CMS → 商家 App；备注图/头像并入 | **微信顾客 done**（备注图+头像 wait）；其余端 planned |
 | 4 | **打印模板 + OpenIM** 同批后置 | planned |
 | 5 | 发版无流量后 **post-deploy** 下线旧 multipart | planned |
 
