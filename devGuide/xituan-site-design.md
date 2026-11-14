@@ -1,5 +1,7 @@
 # xituan_site Design
 
+> UI/UX 规范入口：[`../devDesign/site.md`](../devDesign/site.md)（继承 client → platform-wide）。本文偏产品与技术栈。
+
 Consumer-facing web application providing similar functionality to xituan_wechat_app. Uses the same backend Public/Auth APIs. Served at `site-domain.website` (e.g. https://xituan.com.au).
 
 ---

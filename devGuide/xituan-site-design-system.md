@@ -1,5 +1,7 @@
 # Site Design System
 
+> **跨端入口**：[`../devDesign/README.md`](../devDesign/README.md) · Site L2：[`../devDesign/site.md`](../devDesign/site.md)。本文仍为 Site token **现状详表**；收敛前以 `devDesign` 为阅读入口。
+
 ## Overview
 
 Reusable component styles and theme tokens. Uses CSS variables for light/dark themes. All class names use `site-` prefix (no xituan prefix).

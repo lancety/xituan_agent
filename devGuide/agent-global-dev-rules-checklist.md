@@ -14,6 +14,7 @@
 | **分阶段部署 / 部署后待清理尾项** | **`xituan_agent/devGuide/post-deploy-ledger/`**（[`registry.md`](post-deploy-ledger/registry.md) 巡检）；见 **§11** |
 | **编写 devGuide 的流程与去重** | 遵循 **`.cursor/skills/devguide-documentation/SKILL.md`**（中文、选目录、扫重复、更新引用） |
 | **跨项目规范/契约**（如 metadata JSON 形状表） | 放在 **`xituan_agent/devStandard/`**；运行时共用 **代码** 放 **`xituan_codebase`** |
+| **跨端 UI / UX / 视觉合同** | 放在 **`xituan_agent/devDesign/`**（扁平：L0 全端 → L1 客户/商户 → L2 各项目）；索引见 [`../devDesign/README.md`](../devDesign/README.md) |
 | 不要随意新建 `.md`** | 除非用户或任务明确要求 |
 | 与用户对话语言 | 工作区规则：**中文**（chat） |
 

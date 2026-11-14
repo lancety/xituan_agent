@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XITUAN 喜团｜本地商户经营一站式系统</title>
+<style>
+@page{size:A4;margin:0}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#e9f0f2;color:#12335c;font-family:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",Arial,sans-serif}
+.page{
+  width:210mm;height:297mm;margin:12px auto;background:#fff;position:relative;overflow:hidden;
+  padding:6mm 6.2mm 4mm;box-shadow:0 4px 22px #173d5026;
+}
+.page::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(circle,#c9d6de .7px,transparent .8px);
+  background-size:7px 7px;opacity:.18;
+  mask-image:linear-gradient(to bottom,#000 0%,transparent 16%,transparent 84%,#000 100%);
+}
+.page > *{position:relative;z-index:1}
+:root{
+  --cyan:#1dc7ca;
+  --cyan-ink:#14999d;
+  --cyan-ink-soft:#1a8f93;
+  --cyan-ui:#16b0b4;
+  --cyan-border:#70c9ce;
+  --cyan-soft:#7fd4d7;
+  --cyan-mid:#2eb8bc;
+  --cyan-pale:#eefbfc;
+  --cyan-wash:29,199,202;
+  --navy:#14365e;
+  --orange:#f5a313;
+  --line:var(--cyan-border);
+  --pale:var(--cyan-pale);
+}
+.topdots{height:4mm;display:flex;align-items:center;gap:3mm;padding:0 1mm}
+.topline{height:.3mm;background:var(--cyan);flex:1}
+.dots{display:flex;gap:1.5mm}.dot{width:2.7mm;height:2.7mm;border-radius:50%;background:#f4b323}.dot:nth-child(2){background:#8ba8ef}.dot:nth-child(3){background:var(--cyan)}
+.brand{height:15mm;display:flex;align-items:center;padding:0 19mm 0 18mm;gap:4mm}
+.logo{height:12.5mm;width:auto;display:block;object-fit:contain}
+.brandline{height:11mm;width:.4mm;background:var(--cyan-ink)}
+.brandcopy{font-size:3.35mm;color:var(--cyan-ink);font-weight:800;line-height:1.55}
+.brandcopy small{display:block;font-size:2.8mm;font-weight:500;color:var(--cyan-ink-soft)}
+.hero{
+  height:60mm;border-radius:6mm;padding:3mm 4.5mm;position:relative;display:flex;overflow:hidden;
+  background:
+    linear-gradient(to left, rgba(var(--cyan-wash),.22) 0%, rgba(var(--cyan-wash),.10) 35%, rgba(var(--cyan-wash),.03) 62%, transparent 82%),
+    linear-gradient(110deg,#f7fdfe,var(--cyan-pale) 55%,#f7fdfe);
+}
+.hero-left{width:54%;position:relative;z-index:2}
+h1{margin:0 0 2mm;color:var(--cyan-ink);font-size:8.1mm;line-height:1.28;font-weight:900;letter-spacing:.1mm}
+.swoosh{width:64mm;height:3mm;border-top:1.5mm solid var(--orange);border-radius:50%;transform:rotate(-1deg);margin:0 0 1.6mm}
+.hero p{font-size:3.55mm;line-height:1.65;margin:0;font-weight:650;color:#193a62}
+.orange{color:#e99700;font-weight:900}
+.hero-art{
+  position:absolute;right:1mm;top:1mm;width:88mm;height:56mm;
+  object-fit:contain;object-position:right center;pointer-events:none;
+}
+.section-title{
+  font-size:5.8mm;color:var(--cyan-ink);font-weight:900;margin:6.4mm 0 1.2mm;
+  display:flex;align-items:center;justify-content:flex-start;gap:2.8mm;
+  padding-left:1mm;position:relative;width:100%;
+}
+.section-title .txt{flex:none;white-space:nowrap}
+.section-title .spark{
+  width:7.5mm;height:7mm;flex:none;display:block;overflow:visible;
+  transform:scaleY(-1);
+}
+.cards{display:grid;gap:1.5mm}
+.three{grid-template-columns:repeat(3,1fr)}
+.card{border:.35mm solid var(--cyan-border);border-radius:4mm;padding:2mm 2.6mm 1.8mm;position:relative;background:linear-gradient(145deg,#fff,#fbffff);min-width:0}
+.cardhead{display:flex;align-items:center;gap:2mm;color:var(--cyan-ui);font-size:4.7mm;font-weight:900;margin-bottom:1.2mm;white-space:nowrap}
+.num{width:9mm;height:9mm;flex:none;border-radius:50%;background:#f5a116;color:white;font-size:5.2mm;display:grid;place-items:center;font-weight:900}
+.card p{font-size:3.05mm;line-height:1.58;margin:0;color:#19385f;font-weight:400}
+.mini-icon{margin-left:auto;width:13mm;height:12mm;flex:none}
+.cost{height:41mm}
+.flow-title{margin-top:6mm}
+.flow-wrap{position:relative;margin-bottom:1mm}
+.flowcards{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5mm}
+.flowcard{
+  height:44mm;border:.35mm solid var(--cyan-border);border-radius:4mm;padding:1.8mm 2.5mm 8mm;
+  position:relative;overflow:hidden;background:linear-gradient(150deg,#fff 55%,var(--cyan-pale));
+}
+.flowcard .cardhead{font-size:4.25mm}
+.flowcard p{font-size:2.95mm;line-height:1.55;position:relative;z-index:2}
+.flowart{position:absolute;bottom:.6mm;left:0;width:100%;height:16mm;opacity:.95;z-index:1;pointer-events:none}
+.ribbon{
+  position:relative;z-index:4;margin:2mm 3mm 0;height:6.5mm;border-radius:5mm;
+  background:#f7c64e;color:var(--navy);text-align:center;font-size:3.4mm;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+}
+.why{height:24mm;margin-top:2.5mm;border:.35mm solid var(--cyan-border);border-radius:4mm;padding:1.4mm 3mm;position:relative}
+.why h2{font-size:5.5mm;color:var(--cyan-ui);margin:0 0 1mm;font-weight:900;display:flex;align-items:center;gap:1.6mm}
+.why-icon{width:7.8mm;height:7.8mm;flex:none;display:block}
+.whygrid{display:grid;grid-template-columns:1fr 1fr;gap:1mm 5mm;width:80%}
+.whyitem{font-size:3.2mm;color:#17385f;font-weight:400;white-space:nowrap}
+.tick{color:var(--cyan-ui);font-weight:900;font-size:4mm;margin-right:1mm}
+.seal{position:absolute;right:2mm;top:-2mm;width:28mm;height:28mm;background:#f5a313;color:white;clip-path:polygon(50% 0%,61% 7%,74% 2%,82% 13%,96% 18%,93% 32%,100% 44%,94% 56%,99% 70%,87% 79%,85% 93%,70% 92%,58% 100%,47% 93%,33% 99%,24% 88%,10% 87%,11% 72%,1% 61%,8% 48%,1% 35%,13% 25%,14% 11%,30% 11%,40% 1%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-weight:900;line-height:1.35;padding-top:1.85mm;box-sizing:border-box}
+.seal strong,.seal small{padding-left:1mm}
+.seal strong{font-size:5.3mm}.seal small{font-size:3.7mm;margin-top:1.5mm}
+.bottom{
+  height:42mm;margin-top:2.5mm;border:.35mm solid var(--cyan-border);border-radius:4mm;padding:1.4mm 2mm 1.2mm;
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) 1.45fr;gap:0;align-items:center;
+}
+.qrbox{
+  height:38mm;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:1.2mm;border-right:.3mm solid var(--cyan-border);padding:0 1.5mm;min-width:0;
+}
+.qrbox img.qr{
+  width:26.4mm;height:26.4mm;object-fit:contain;display:block;border-radius:1mm;background:#fff;
+}
+.qrbox img.qr.round{border-radius:50%}
+.qrlabel{font-size:2.8mm;background:var(--cyan-ui);color:white;border-radius:5mm;padding:1.9mm 4.2mm;white-space:nowrap;font-weight:800;line-height:1.15}
+.contact{
+  height:38mm;display:flex;flex-direction:column;align-items:stretch;justify-content:center;
+  gap:1.2mm;padding:0 1.5mm 0 2.2mm;min-width:0;
+}
+.contact-top{display:flex;align-items:center;gap:2.6mm}
+.contact img.avatar{
+  width:18.6mm;height:18.6mm;border-radius:1.4mm;object-fit:cover;flex:none;
+  border:none;background:#fff;
+}
+.contact-meta{display:flex;flex-direction:column;gap:.66mm;min-width:0;line-height:1.15}
+.contact-meta b{font-size:3.7mm;color:var(--cyan-ui);font-weight:800}
+.contact-meta strong{font-size:3.85mm;color:#173b70;font-weight:800}
+.contact-meta small{font-size:3.25mm;color:#476b9a}
+.contactbtn{
+  background:#f2a315;color:white;border-radius:5mm;padding:2.4mm 1.5mm;
+  font-size:2.75mm;white-space:nowrap;text-align:center;font-weight:800;line-height:1.3;
+}
+.footer{height:6mm;margin-top:2mm;display:flex;align-items:center;gap:3mm;color:var(--cyan-ui);font-size:2.4mm;justify-content:center}
+.footer:before,.footer:after{content:"";height:.3mm;background:var(--cyan);flex:1}
+.footdots{display:flex;gap:1mm}.footdots i{width:2.5mm;height:2.5mm;border-radius:50%;background:#f4b323}.footdots i:nth-child(2){background:#9aaff0}.footdots i:nth-child(3){background:var(--cyan)}
+@media print{
+  html,body{background:white;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
+  .page{margin:0;box-shadow:none;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
+  img,.logo,.hero-art,.qr,.avatar,svg,.mini-icon,.flowart,.why-icon,.spark{
+    display:block!important;visibility:visible!important;opacity:1!important;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;
+  }
+  .mini-icon,.flowart,.why-icon,.spark{display:block!important}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
+}
+@media screen and (max-width:700px){.page{transform-origin:top left;margin:0}}
+</style>
+</head>
+<body>
+<main class="page">
+<div class="topdots"><div class="dots"><i class="dot"></i><i class="dot"></i><i class="dot"></i></div><div class="topline"></div><div class="dots"><i class="dot"></i><i class="dot"></i><i class="dot"></i></div></div>
+<header class="brand">
+  <img class="logo" src="poster-assets/logo-xituan-text.png" alt="XITUAN"><div class="brandline"></div>
+  <div class="brandcopy">喜团 · 线上活动预定零售 · 线下供货履约 · 全渠道一站式<small>Commerce OS for Local Merchants — Orders, Supply &amp; Ops in One System</small></div>
+</header>
+<section class="hero">
+ <div class="hero-left">
+  <h1>老板，还在用群聊天、<br>截图、Excel 和纸质单据<br>硬撑生意？</h1>
+  <div class="swoosh"></div>
+  <p>漏单、对价扯皮、库存对不上、物流不知道到哪了、<br>采购收据堆成山、客户一问就翻聊天记录……<br>这些不是「小麻烦」，<span class="orange">是每天在烧的数据管理成本和沟通成本。</span></p>
+ </div>
+ <img class="hero-art" src="poster-assets/hero.png" alt="从群聊单据到系统订单">
+</section>
+
+<h2 class="section-title">
+  <svg class="spark" viewBox="0 0 28 26" aria-hidden="true"><line x1="3" y1="22" x2="13" y2="4" stroke="#f5bd35" stroke-width="3.2" stroke-linecap="round"/><line x1="13" y1="22" x2="23" y2="4" stroke="#f5bd35" stroke-width="3.2" stroke-linecap="round"/></svg>
+  <span class="txt">每天最贵的，不是软件——是<span class="orange">隐形成本</span></span>
+  <svg class="spark" viewBox="0 0 28 26" aria-hidden="true"><line x1="5" y1="4" x2="15" y2="22" stroke="#f5bd35" stroke-width="3.2" stroke-linecap="round"/><line x1="15" y1="4" x2="25" y2="22" stroke="#f5bd35" stroke-width="3.2" stroke-linecap="round"/></svg>
+</h2>
+
+<section class="cards three cost">
+ <article class="card"><div class="cardhead"><span class="num">01</span>数据管理成本<svg class="mini-icon" viewBox="0 0 60 55"><ellipse cx="25" cy="10" rx="18" ry="7" fill="#7fd4d7"/><path d="M7 10v30q18 15 36 0V10" fill="#2eb8bc"/><path d="M7 20q18 13 36 0M7 30q18 13 36 0" fill="none" stroke="#d8f5fc" stroke-width="2"/><circle cx="48" cy="39" r="11" fill="#f5ae25"/><path d="M48 31v9l6 3" stroke="white" stroke-width="2" fill="none"/></svg></div><p>产品、订单、收款、打款、快递、单据、财务报表样样都靠表格和纸质单据。<br>喜团把线上活动与线下供货串成同一条业务链，录入一次，全流程复用，减少重复抄表和人工对账。</p></article>
+ <article class="card"><div class="cardhead"><span class="num">02</span>沟通协作成本<svg class="mini-icon" viewBox="0 0 60 55"><path d="M5 10q0-8 10-8h28q12 0 12 10v17q0 10-12 10H27L15 48v-9Q5 37 5 27z" fill="#14999d"/><circle cx="20" cy="21" r="3" fill="white"/><circle cx="31" cy="21" r="3" fill="white"/><circle cx="42" cy="21" r="3" fill="white"/></svg></div><p>客户问进度、对接、催单、发凭证全靠聊天、找截图、口头对齐。<br>内置 IM 客服，一键关联相关订单 / 批发产品，直接发图片与文件，业务沟通更快、少返工。</p></article>
+ <article class="card"><div class="cardhead"><span class="num">03</span>漏跟进和慢响应<svg class="mini-icon" viewBox="0 0 60 55"><path d="M30 4q-15 0-15 18v10l-7 9h44l-7-9V22Q45 4 30 4" fill="#16b0b4"/><circle cx="30" cy="46" r="5" fill="#f4a51b"/><circle cx="49" cy="9" r="9" fill="#ed4b42"/><text x="49" y="13" text-anchor="middle" font-size="12" fill="white">1</text></svg></div><p>新订单、收款、物流状态需人盯；已发货、已送达、问题件需人查。<br>业务实时通知 + 状态自动更新推送，关键节点不等待「想起来」，系统先提醒。</p></article>
+</section>
+
+<h2 class="section-title flow-title">
+  <svg class="spark" viewBox="0 0 28 26" aria-hidden="true"><line x1="3" y1="22" x2="13" y2="4" stroke="#f5bd35" stroke-width="3.2" stroke-linecap="round"/><line x1="13" y1="22" x2="23" y2="4" stroke="#f5bd35" stroke-width="3.2" stroke-linecap="round"/></svg>
+  <span class="txt">一套系统，线上线下一起管</span>
+  <svg class="spark" viewBox="0 0 28 26" aria-hidden="true"><line x1="5" y1="4" x2="15" y2="22" stroke="#f5bd35" stroke-width="3.2" stroke-linecap="round"/><line x1="15" y1="4" x2="25" y2="22" stroke="#f5bd35" stroke-width="3.2" stroke-linecap="round"/></svg>
+</h2>
+
+<div class="flow-wrap">
+<section class="flowcards">
+ <article class="flowcard"><div class="cardhead"><span class="num">01</span>线上零售 · 团购 · 预定</div><p>团购 / 预定 / 零售订单统一承接，<br>收款进自己账户，产品属性可实时定制，<br>生鲜、小商品、收费服务等均可适配定义。</p><svg class="flowart" viewBox="0 0 300 100"><path d="M0 88h300" stroke="#d0f0f1" stroke-width="5"/><path d="M22 35h92l-9-20H32z" fill="#f4b334"/><path d="M25 35l-5 16h100l-8-16" fill="#f5a91c"/><path d="M35 36l-5 14M55 36l-3 14M77 36v14M99 36l4 14" stroke="#fff" stroke-width="7"/><rect x="31" y="52" width="74" height="37" fill="#5fc8cb"/><rect x="39" y="58" width="24" height="22" fill="#fff"/><rect x="70" y="58" width="25" height="22" fill="#fff"/><path d="M168 50c0-14 9-22 17-22s17 8 17 22" fill="none" stroke="#5fc8cb" stroke-width="5" stroke-linecap="round"/><path d="M155 50h64l8 39H147z" fill="#5fc8cb"/><path d="M163 62h48M163 72h36" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".55"/></svg></article>
+ <article class="flowcard"><div class="cardhead"><span class="num">02</span>履约 · 供货 · 配送 · 快递</div><p>从下单到打款，供货 / 配送 / 快递，<br>状态自动流转，异常主动推送，<br>多单配送路线智能规划。</p><svg class="flowart" viewBox="0 0 300 100"><rect x="28" y="18" width="100" height="76" rx="8" fill="#7fd4d7"/><rect x="36" y="27" width="84" height="60" rx="5" fill="#fff"/><g fill="#dff4f8"><rect x="45" y="38" width="30" height="14" rx="5"/><rect x="45" y="61" width="30" height="14" rx="5"/></g><g fill="#14999d"><circle cx="100" cy="45" r="10"/><path d="M95 45l4 4 7-9" stroke="white" stroke-width="3" fill="none"/><circle cx="100" cy="68" r="10"/><path d="M95 68l4 4 7-9" stroke="white" stroke-width="3" fill="none"/></g><path d="M205 35l42-18 42 18v50l-42 16-42-16z" fill="#efb64c"/><path d="M205 35l42 18 42-18M247 53v48M226 26l42 18" stroke="#d99024" stroke-width="3" fill="none"/></svg></article>
+ <article class="flowcard"><div class="cardhead"><span class="num">03</span>单据管理 · 财务总结</div><p>批量一键录入采购收据；一键发送发票邮件，<br>收入支出账簿与流水导入自动对账，<br>单据与财务在同一后台沉淀。</p><svg class="flowart" viewBox="0 0 300 100"><rect x="34" y="12" width="88" height="82" rx="5" fill="#7fd4d7"/><rect x="42" y="20" width="72" height="66" rx="3" fill="#fff"/><path d="M53 35h48M53 49h48M53 63h38" stroke="#b8e8ea" stroke-width="6"/><path d="M170 83l20-64h90l-20 64z" fill="#0f8f94"/><path d="M180 75l15-48h75l-15 48z" fill="#dff8fb"/><path d="M193 65l13-11 10 4 18-22" stroke="#16b0b4" stroke-width="4" fill="none"/></svg></article>
+</section>
+<div class="ribbon">省的不是「多几个功能」——是每天重复的数据管理，对单沟通和状态跟进。</div>
+</div>
+
+<section class="why">
+ <h2>
+  <svg class="why-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <g transform="translate(12 12) scale(1.28 1) translate(-12 -12)">
+      <path fill="#1dc7ca" d="M12 2.2c2.1 1.4 4.5 2.2 7.1 2.3v7.1c0 4.7-3.1 8.9-7.1 10.2-4-1.3-7.1-5.5-7.1-10.2V4.5C7.5 4.4 9.9 3.6 12 2.2z"/>
+    </g>
+    <path fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M7.8 12.1l2.7 2.7 5.7-5.9"/>
+  </svg>
+  为什么选择喜团
+ </h2>
+ <div class="whygrid">
+  <div class="whyitem"><span class="tick">✔</span>专为本地华人商户场景设计，全流程工具一体。</div>
+  <div class="whyitem"><span class="tick">✔</span>推广分享的客流会被锁定在独立店铺面，不会分流。</div>
+  <div class="whyitem"><span class="tick">✔</span>微信，安卓/苹果App，网页多平台一致体验。</div>
+  <div class="whyitem"><span class="tick">✔</span>成本可控；订阅制，不抽成；随时订阅，费用透明。</div>
+ </div>
+ <div class="seal"><strong>首月半价</strong><small>零成本试用<br>测试版本</small></div>
+</section>
+
+<section class="bottom">
+  <div class="qrbox">
+    <img class="qr round" src="poster-assets/qr-miniprogram.png" alt="体验小程序二维码">
+    <span class="qrlabel">体验小程序</span>
+  </div>
+  <div class="qrbox">
+    <img class="qr" src="poster-assets/qr-client.png" alt="体验客户端二维码">
+    <span class="qrlabel">体验客户端</span>
+  </div>
+  <div class="qrbox">
+    <img class="qr" src="poster-assets/qr-cms.png" alt="体验后台CMS二维码">
+    <span class="qrlabel">体验后台CMS</span>
+  </div>
+  <div class="qrbox">
+    <img class="qr" src="poster-assets/qr-wechat.jpg" alt="联系客服二维码">
+    <span class="qrlabel">联系客服</span>
+  </div>
+  <div class="contact">
+    <div class="contact-top">
+      <img class="avatar" src="poster-assets/avatar-xituan.png" alt="xituan2024">
+      <div class="contact-meta">
+        <b>澳洲本地服务</b>
+        <strong>xituan2024</strong>
+        <small>澳大利亚 悉尼</small>
+      </div>
+    </div>
+    <div class="contactbtn">加微信，开启陪跑第一场线上活动</div>
+  </div>
+</section>
+
+<footer class="footer"><span class="footdots"><i></i><i></i><i></i></span><span>XITUAN · backology studio / 喜团品牌策划</span><span class="footdots"><i></i><i></i><i></i></span></footer>
+</main>
+</body>
+</html>

@@ -11,3 +11,5 @@ Cross-project **normative docs** (contracts, JSON shapes, checklists) that are *
 | [`metadata-phase3-engineering-defaults.md`](./metadata-phase3-engineering-defaults.md) | **Chosen defaults** for DDL types, revision hash, outbox table |
 
 Runtime-shared **code** for the same contract should live in **`xituan_codebase`** and be imported by backend/CMS/site as needed.
+
+**UI / UX / visual** cross-app contracts live in **`xituan_agent/devDesign/`** (not here). See [`../devDesign/README.md`](../devDesign/README.md).
