@@ -1,25 +1,32 @@
-# L2 · Site（`xituan_site`）差异
+# L2 · Site 索引（`xituan_site`）
 
-Last updated: 2026-11-14
+Last updated: 2026-11-15
 
 继承：[`00-platform-wide.md`](./00-platform-wide.md) → [`client.md`](./client.md)
 
-## 本端差异（相对 L1）
+## 全站硬约束（极短）
 
-| 项 | 约定 |
-|----|------|
-| 栈 | Next.js · Ant Design · next-intl · Font Awesome 5 |
-| 类名 | `site-` 前缀 |
-| Token | CSS 变量；详表见 [`../devGuide/xituan-site-design-system.md`](../devGuide/xituan-site-design-system.md)（待迁入本节时以本节为入口摘要） |
-| 卡片栅格 | flex；宽度区间见 design-system 文档 |
-| 字号基线 | 偏紧凑（如 base 13px）— 以 design-system 为准 |
+- **Mobile first**；移动 / 平板 / 桌面宽屏均可完成关键任务  
+- 双主题 light/dark，且**两套都须用上主青（及副黄紫点缀）**——见 [`brand.md`](./brand.md)  
+- 语义变量；`site-`；≥14px；Operate 不换皮；businessError i18n  
+- Badge：[`badge.md`](./badge.md)
 
-## 待补
+## 按任务只读一篇
 
-- 从 `xituan-site-design-system.md` 抽「只属于 Site」的实现表到本节，避免双权威。
-- 与 Customer / WeChat 对齐的店面模块对照表（可选）。
+| 改什么 | 打开 |
+|--------|------|
+| 品牌色 / 亮暗用色债 | [`brand.md`](./brand.md) |
+| 色 / token / 栅格 / 字号 | [`site-theme.md`](./site-theme.md) |
+| 平台首页推荐轨 / 搜索 / 首屏 / 小程序 A·B | [`site-platform-home.md`](./site-platform-home.md) |
+| 商户卡普通店·品牌店 | [`site-merchant-trust.md`](./site-merchant-trust.md) |
+| Badge 通用 | [`badge.md`](./badge.md) |
 
-## 相关文档
+**禁止**默认把上表全部灌进 context。
 
-- [`../devGuide/xituan-site-design.md`](../devGuide/xituan-site-design.md)
-- [`../devGuide/xituan-site-design-system.md`](../devGuide/xituan-site-design-system.md)
+## 栈（一行）
+
+Next.js · Ant Design · next-intl · FA5 · `theme.css` + `badge-style.css`
+
+## Impeccable
+
+仓内薄 [`../../xituan_site/DESIGN.md`](../../xituan_site/DESIGN.md)：先读本索引，再按表面打开对应专题；可选 `.impeccable/surfaces/` 与专题对齐。

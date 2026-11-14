@@ -1,19 +1,21 @@
-# L2 · Merchant App（`xituan_app_merchant`）差异
+# L2 · Merchant App 索引（`xituan_app_merchant`）
 
-Last updated: 2026-11-14
+Last updated: 2026-11-15
 
 继承：[`00-platform-wide.md`](./00-platform-wide.md) → [`merchant.md`](./merchant.md)
 
-## 本端差异（相对 L1）
+## 硬约束（极短）
 
-| 项 | 约定 |
-|----|------|
-| 栈 | Expo / React Native |
-| 主题 | 对齐商户端语义色与状态；触控尺寸可大于 CMS |
-| 订单等 | 订单卡片语义对齐 CMS（`cms-order-card` skill） |
-| 聊天 | OpenIM merchant UX skill；不另起视觉品牌 |
+双主题；订单卡语义对齐 CMS；聊天 openim skill。
 
-## 待补
+## 按任务只读
 
-- Tab / 现场履约流程的主 CTA 约定。
-- 与 CMS 共享状态色的 RN 映射表。
+| 改什么 | 打开 |
+|--------|------|
+| 主题 | [`merchant-app-theme.md`](./merchant-app-theme.md) |
+| Badge | [`badge.md`](./badge.md) |
+| 订单卡 | skill `cms-order-card`（跨端语义） |
+
+## 栈（一行）
+
+Expo / RN

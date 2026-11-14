@@ -1,39 +1,106 @@
 # L0 · 全端统一设计规范
 
-Last updated: 2026-11-14
+Last updated: 2026-11-15
 
-适用范围：Site、Customer App、WeChat、CMS、Merchant App（及后续同品牌前端）。下级文档只补充任务与平台差异，不另起品牌。
+适用范围：Site、Customer App、WeChat、CMS、Merchant App、Platform（及后续同品牌前端）。  
+下级（L1 / L2 索引 / 专题）只补充差异，**不得推翻**本节硬约束。
 
-## 原则（摘要）
+Impeccable / 各仓薄 `DESIGN.md`：**先读本文件**，再按任务打开一篇专题（见 [`README.md`](./README.md)）。
+
+---
+
+## 1. Mobile first + 三档布局（全端）
+
+**所有项目**的界面设计与实现均以 **移动端为起点（mobile first）**，再增强平板与桌面/宽屏；禁止只做桌面、移动「以后再说」。
+
+| 档位 | 意图 | Web 参考断点（可按端微调，须成体系） |
+|------|------|--------------------------------------|
+| **移动** | 默认设计面；单列、底栏/主操作可达、触控热区 | &lt; 768px |
+| **平板** | 中等宽度；可双列/侧栏萌芽，勿直接套桌面顶栏 | 768px – 1199px |
+| **桌面 / 宽屏** | 顶栏 + 多列；最大内容宽（如 Site 1600px） | ≥ 1200px |
+
+硬约束：
+
+- 同一功能在三档均可完成关键任务（发现、下单、履约等按产品）。  
+- 断点行为写进各端专题（如顶栏仅桌面显示时，移动须有等价入口——例：平台首页小程序 A/B）。  
+- 验收：至少 **移动 + 桌面** 各看 light/dark；平板抽查关键页。
+
+---
+
+## 2. 亮色 + 暗色双主题（全端）
+
+**每一个**面向用户的前端都必须同时提供 **light** 与 **dark**，成对语义 token，禁止单主题交付。
+
+| 要求 | 说明 |
+|------|------|
+| 成对定义 | 同名 token，两套值 |
+| 切换 | 可切换或跟随系统 + 可覆盖；Web：`body[data-theme='light'|'dark']` |
+| 验收 | 改 UI 必过目两套主题 |
+| 暗色底 | 分层表面；**忌大面积纯黑糊屏**（可用深炭/蓝灰） |
+
+---
+
+## 3. 色板合同：商标基调 + Badge 功能色
+
+详规：[`brand.md`](./brand.md) · [`badge.md`](./badge.md)
+
+### 3.1 喜团商标基调（亮暗共用「角色」，各主题调值）
+
+| 角色 | 色 |
+|------|-----|
+| **主** | 青 Cyan（字标主色，约 `#18C0C8`） |
+| **副** | 黄 Yellow · 紫 Purple |
+| **辅** | 棕 · 黑 · 白 |
+
+**无论 light 还是 dark**，界面上必须能辨认出主青（主 CTA / 链接 / 选中），副黄紫可作克制点缀；**禁止**暗色主题做成「纯中性灰蓝、完全无品牌色」。
+
+### 3.2 Badge / 状态功能色
+
+红 · 橙 · 黄 · 绿 · 青 · 蓝 · 紫 · 黑 · 白 · 灰 —— 用于状态/实心 badge（[`badge.md`](./badge.md)），与基调色同一设计体系，不另起皮肤。
+
+### 3.3 已知缺口（须在主题演进中还债）
+
+| 主题 | 问题 |
+|------|------|
+| **亮色** | 普遍缺「套用基调色」的整体感与设计感，易呈默认蓝灰/组件库默认皮 |
+| **暗色** | 几乎未在控件/强调上系统应用主青与副黄紫 |
+
+新页面与主题 PR：**不得加剧**上述缺口；主路径应朝 [`brand.md`](./brand.md) 收敛（例如 Site 勿长期用与商标无关的 `#0969da` 顶替主青）。
+
+---
+
+## 4. 语义 token（跨端同名优先）
+
+| 语义族 | 典型名 | 用途 |
+|--------|--------|------|
+| 文本 | `text-primary` / `secondary` / `tertiary` / `on-primary` | 层级；正文不用品牌色刷字 |
+| 背景 | `bg-base` / `raised` / `overlay` / `main` / `block` | 分层 |
+| 边框 | `border-default` / hover / active | 分割 |
+| 品牌 | `color-primary` (+ hover/active) **= 主青角色** | 主按钮、链接 |
+| 副品牌 | `color-accent-yellow` / `color-accent-purple`（或等价） | 点缀 |
+| 语义态 | success / error / warn / info | 提示 |
+| Badge | `badge-state-*` / `badge-btn-*` | 见 badge.md |
+
+业务 UI 禁止随意写死 `#fff`/`#000` 当长期表面色（logo/插画除外）。
+
+---
+
+## 5. 原则与禁止
 
 | 原则 | 说明 |
 |------|------|
-| 语义色优先 | 文本/背景/边框/成功失败用语义 token（如 `--text-primary`、`--bg-*`），禁止业务正文乱涂品牌色 |
-| 一屏一事 | 首屏/主操作区只突出一个主行动；避免标题与主按钮抢视线 |
-| 少卡片堆叠 | 默认非卡片；卡片仅用于可交互容器；禁止 card-in-card 装饰 |
-| 反 AI 套路 | 禁用紫渐变、AI beige、斜体衬线 hero、状态 chip 汤、无意义 glow / 多层阴影 |
-| 状态可区分 | Active / Pending / Disabled 等视觉必须可辨；用既有 badge state / btn 体系 |
-| 错误可本地化 | 用户可见错误走 `businessError` code + 客户端 i18n，不展示原料中文 `Error.message` |
-| 列表→详情 | 跨端导航与首屏预算遵循既有 list-to-detail / render-budget 约定 |
+| Mobile first | 先移动，再平板/桌面增强 |
+| 一屏一事 | 主操作不抢戏 |
+| 少卡片堆叠 | 禁止装饰性 card-in-card |
+| 反 AI 套路 | 禁无意义紫渐变皮肤、AI beige、斜体衬线 hero、chip 汤 |
+| 错误 | businessError + i18n |
 
-## 语义色与主题
+**禁止**：单主题；暗色零品牌色；另起第二套品牌；只做桌面；用 emoji 堆层级。
 
-- Light / Dark（或等价主题）成对定义；固定色值只允许品牌主色等少数例外。
-- Web：`body[data-theme]` + CSS 变量；RN / 微信：同一语义映射到主题对象，命名尽量对齐。
-- 细则与变量表：Site 现状见 [`../devGuide/xituan-site-design-system.md`](../devGuide/xituan-site-design-system.md)；CMS badge 见 skill `badge-style-conventions`。后续收敛进本文件或 L2。
+---
 
-## 组件与文案
+## 相关
 
-- 同一业务概念跨端用同一套状态文案 key / 语义（订单态、支付态等），展示样式可按端密度调整。
-- 密度：客户端偏浏览与转化；商户端偏效率与信息密度——见 L1，不在此拆两套色板。
-
-## 禁止（全端）
-
-- 为「好看」在某一端引入第二套色板或展示字体体系。
-- 营销落地页式装饰默认套到 CMS / 履约工具页。
-- 用 emoji / 贴纸 / 浮动 badge 堆叠代替真实信息层级。
-
-## 相关文档
-
-- 索引：[`README.md`](./README.md)
+- 总索引：[`README.md`](./README.md)  
+- 品牌色：[`brand.md`](./brand.md) · Badge：[`badge.md`](./badge.md)  
 - L1：[`client.md`](./client.md) · [`merchant.md`](./merchant.md)

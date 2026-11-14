@@ -5,7 +5,7 @@ Last updated: 2026-11-13（CMS+Site 直传落地）
 ## 摘要
 
 把 OpenIM 聊天附件从「经 backend multipart 收文件再写 S3」迁到 **全端直传**：申请签名 → 客户端 PUT → 确认后转码并回 canonical URL。  
-**进度**：CMS + Site + 顾客 App + 商家 App 已走 OpenIM 域 `attachments/presign` → PUT → `complete`；微信仍 multipart。multipart 下线与 CDN util 清理见 post-deploy。
+**进度**：**全端**已走 OpenIM 域 `attachments/presign` → PUT → `complete`（含微信顾客 `openim-chat.api` + 商家面板 `merchant-panel-openim-chat.api`）。multipart 下线与 CDN util 清理见 post-deploy。
 
 ## 当前掌握的信息
 
@@ -13,8 +13,8 @@ Last updated: 2026-11-13（CMS+Site 直传落地）
 
 | 项 | 现状 |
 |----|------|
-| OpenIM 上传 | **CMS/Site/顾客App/商家App**：`POST .../attachments/presign|complete` + PUT upload 分布；微信：`POST .../attachments` multipart；落库仍经 `OpenimAttachmentService` → `im/conversations/...` |
-| 小程序 | `wx.uploadFile` → 已备案 `backend.lancety.com`（合法域名） |
+| OpenIM 上传 | **全端**：`POST .../attachments/presign|complete` + PUT upload 分布（微信 `clientApp=wechat`）；落库仍经 `OpenimAttachmentService` → `im/conversations/...` |
+| 小程序 | `wx.request` PUT → `upload.lancety.com`（request 合法域名已备）；旧 `wx.uploadFile` multipart 待 Gate 下线 |
 | 转 webp | IMAGE_NORMALIZE **sync** 完成后，接口返回 **canonical webp** `s3Key` / `cdnUrl` / `mimeType`（避免 OpenIM Mongo `pictureElem` 冻住 `.png` 名） |
 | 展示 CDN | `media[-env].lancety.com` → CloudFront → S3（OAC）；**只读**：AllowedMethods `GET/HEAD/OPTIONS`，桶策略仅 `s3:GetObject` |
 | 支出批量 OCR | CMS **已直传**，但是 `s3UploadManager.getSignedPutUrl` → 浏览器 PUT **`amazonaws.com`**，**不走 media** |
@@ -43,18 +43,18 @@ Last updated: 2026-11-13（CMS+Site 直传落地）
 - [x] upload 写分布已建（见直传约定）。业务侧 OpenIM presign 签 `upload-incoming/.../openim/`；`media` / `content` 保持只读
 - [x] backend OpenIM 域 `presign` / `complete`（admin + customer）；`putUrl` Host 为 `upload`（微信端仍可走 wechatUpload）
 - [x] **CMS / Site / 顾客 App / 商家 App** 已改为该协议；发消息仍用 complete 返回的 canonical webp URL
-- [ ] 微信改为该协议
+- [x] 微信改为该协议（顾客 + 商家面板 IM）
 - [x] 未 complete 对象可按 TTL 清理（通用 upload-incoming TTL；OpenIM 失败删除 best-effort）
 - [x] 微信后台：`upload.lancety.com` 已加入 **request 合法域名**（2026-11-09）
 - [ ] 旧 multipart `POST .../attachments` 的下线 → post-deploy [`openim-attachment-multipart-retire`](../../post-deploy-ledger/entries/2026-11-openim-attachment-multipart-retire.md)
 - [ ] CDN util 默认 WECHAT / clientApp 混用收敛 → post-deploy [`openim-cdn-lane-util-cleanup`](../../post-deploy-ledger/entries/2026-11-openim-cdn-lane-util-cleanup.md)（Phase 1 已增量 `epOpenimCdnLane`）
-- [ ] 本 entry → `done`，registry 归档（待微信/App 迁完）
+- [ ] 本 entry → `done`，registry 归档（待 multipart Gate / post-deploy）
 
 ## 触发条件 / 目标窗口
 
 主动启动「OpenIM 附件直传」实施时（通用直传框架已在）。  
-**本轮范围**：CMS + Site 直传（OpenIM 域 presign/complete）；微信/App 仍 multipart。  
-**Cursor plan**：OpenIM CMS/Site direct-upload；总清单 [`direct_upload_business_migration_2026-11.plan.md`](../../../../.cursor/plans_planned/direct_upload_business_migration_2026-11.plan.md)。  
+**本轮范围**：全端直传已落地（含微信顾客 + 商家面板 IM）；旧 multipart 待 Gate。  
+**Cursor plan**：总清单 [`direct_upload_business_migration_2026-11.plan.md`](../../../../.cursor/plans_planned/direct_upload_business_migration_2026-11.plan.md)。  
 **部署尾项:** [openim-attachment-multipart-retire](../../post-deploy-ledger/entries/2026-11-openim-attachment-multipart-retire.md)；[openim-cdn-lane-util-cleanup](../../post-deploy-ledger/entries/2026-11-openim-cdn-lane-util-cleanup.md)。
 
 ## 实施备忘（可选草稿）

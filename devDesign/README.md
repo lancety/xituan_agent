@@ -1,48 +1,47 @@
-# Xituan 界面 / UX 设计规范（索引）
+# Xituan 界面 / UX 设计规范（总索引）
 
-Last updated: 2026-11-14
+Last updated: 2026-11-15
 
-> **权威目录**：`xituan_agent/devDesign/`（扁平，无子文件夹）。  
-> 各 `xituan_*` 应用仓不另建平行「总规范」；产品差异只写本目录对应的 L2 文件。
+> **权威目录**：`xituan_agent/devDesign/`（扁平）。  
+> **读法**：L0 → L1 → **L2 索引（短）** → **只开 1 个专题 md**。禁止默认灌入某端全部专题。  
+> **全端硬规矩**（详见 [`00-platform-wide.md`](./00-platform-wide.md)）：  
+> **Mobile first** · 移动 / 平板 / 桌面宽屏 · **亮+暗** · 商标基调 **主青 + 副黄紫 + 棕黑白** · Badge 功能色谱（见 [`brand.md`](./brand.md) / [`badge.md`](./badge.md)）。
 
-## 继承（读文档顺序）
+## 继承
 
-| 层级 | 文件 | 范围 |
+| 层级 | 文件 | 说明 |
 |------|------|------|
-| **L0** | [`00-platform-wide.md`](./00-platform-wide.md) | 全端统一（客户端 + 商户端） |
-| **L1** | [`client.md`](./client.md) / [`merchant.md`](./merchant.md) | 客户端总体 / 商户端总体 |
-| **L2** | 各项目文件 | 仅写与上两层的**差异**与平台实现映射 |
+| L0 | [`00-platform-wide.md`](./00-platform-wide.md) | 全端硬约束 |
+| L1 | [`client.md`](./client.md) / [`merchant.md`](./merchant.md) | 客户 / 商户侧基线 |
+| L2 索引 | `site.md` / `cms.md` / `customer-app.md` / … | **按仓入口，短** |
+| 专题 | `site-theme.md`、`badge.md`、… | **按任务打开** |
 
-Agent 改 UI：先 L0 → 再对应 L1 → 再对应 L2，再动代码。下级**不得推翻**上级；重复内容删掉、改链接。
+## L2 索引 → 专题
 
-## 文件一览
+| 仓索引 | 专题 |
+|--------|------|
+| [`site.md`](./site.md) | [`site-theme.md`](./site-theme.md) · [`site-platform-home.md`](./site-platform-home.md) · [`site-merchant-trust.md`](./site-merchant-trust.md) |
+| [`cms.md`](./cms.md) | [`cms-theme.md`](./cms-theme.md) |
+| [`customer-app.md`](./customer-app.md) | [`customer-app-theme.md`](./customer-app-theme.md) |
+| [`wechat-app.md`](./wechat-app.md) | [`wechat-app-theme.md`](./wechat-app-theme.md) |
+| [`merchant-app.md`](./merchant-app.md) | [`merchant-app-theme.md`](./merchant-app-theme.md) |
+| （跨端） | [`brand.md`](./brand.md) · [`badge.md`](./badge.md) |
 
-| 文件 | 层级 | 覆盖项目 |
-|------|------|----------|
-| [`00-platform-wide.md`](./00-platform-wide.md) | L0 | 全部前端表面 |
-| [`client.md`](./client.md) | L1 | site · customer app · wechat |
-| [`merchant.md`](./merchant.md) | L1 | cms · merchant app |
-| [`site.md`](./site.md) | L2 | `xituan_site` |
-| [`customer-app.md`](./customer-app.md) | L2 | `xituan_app_customer` |
-| [`wechat-app.md`](./wechat-app.md) | L2 | `xituan_wechat_app` |
-| [`cms.md`](./cms.md) | L2 | `xituan_cms` |
-| [`merchant-app.md`](./merchant-app.md) | L2 | `xituan_app_merchant` |
+## 与 Impeccable / 业务 skill
 
-`xituan_platform`：暂未单列；适用 L0，有独立视觉需求时再加 `platform.md`（L2）。
+| 层 | 位置 |
+|----|------|
+| 视觉合同 | 本目录（索引 + 专题） |
+| 应用薄入口 | 各仓 `DESIGN.md` / `PRODUCT.md` → 先读 L2 索引再读专题 |
+| 按路由策略 | 可选 `.impeccable/surfaces/`（与专题对齐） |
+| 功能实现 | `.cursor/skills/*`（勿写入 `skills/impeccable/`） |
 
-## 与其他文档
+`/impeccable document` 长文应回写本目录对应**专题**，不要把整站 thrash 进单文件 `DESIGN.md`。
+
+## 其它文档
 
 | 类型 | 位置 |
 |------|------|
-| 本目录 | **UI / UX / 视觉合同**（跨仓权威） |
-| `devGuide/` | 功能方案、实施、runbook |
-| `devStandard/` | API / JSON / 错误码等工程契约 |
-| `xituan_codebase` | 运行时共享代码（badge util、主题常量等） |
-
-历史 Site token 说明仍见 [`../devGuide/xituan-site-design-system.md`](../devGuide/xituan-site-design-system.md)；逐步收敛到 [`site.md`](./site.md)，以本目录为入口。
-
-## Impeccable / Cursor
-
-- 不在无 git 的 workspace 根放总 `DESIGN.md`。
-- 各应用仓若需要 Impeccable 入口：薄 `DESIGN.md` 只指向本目录对应文件（L0+L1+L2），或靠 Cursor skill 强制阅读本路径。
-- `/impeccable document` 产出应回写本目录对应层级，避免第三套真相。
+| 功能方案 | `devGuide/` |
+| 工程契约 | `devStandard/` |
+| Site 历史 token 说明 | [`../devGuide/xituan-site-design-system.md`](../devGuide/xituan-site-design-system.md) → 入口改 [`site.md`](./site.md) |

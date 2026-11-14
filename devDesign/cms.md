@@ -1,20 +1,22 @@
-# L2 · CMS（`xituan_cms`）差异
+# L2 · CMS 索引（`xituan_cms`）
 
-Last updated: 2026-11-14
+Last updated: 2026-11-15
 
 继承：[`00-platform-wide.md`](./00-platform-wide.md) → [`merchant.md`](./merchant.md)
 
-## 本端差异（相对 L1）
+## 全站硬约束（极短）
 
-| 项 | 约定 |
-|----|------|
-| 栈 | React · Ant Design · MainLayout / PartnerFacingLayout |
-| 主题 | `global.css` CSS 变量 + `body[data-theme]`；组件覆写遵守 ant-design CSS 规则 |
-| 表格 | ResponsiveTable；移动卡片样式见对应 skill |
-| Badge | `--badge-state-*` / `--badge-btn-*`（codebase + CMS CSS） |
-| 表单 | entity FormData / 多语言 / 图片直传等既有框架 |
+Mobile first；三档断点；亮暗均须见主青（[`brand.md`](./brand.md)）；badge [`badge.md`](./badge.md)；表单/表格走业务 skill。
 
-## 待补
+## 按任务只读一篇
 
-- 从 CMS `global.css` 抽语义色摘要进本节（或链到单一 token 源）。
-- 与 Merchant App 订单卡 / 列表的语义对照。
+| 改什么 | 打开 |
+|--------|------|
+| 品牌色 | [`brand.md`](./brand.md) |
+| 主题 / Ant 覆写 / 布局挂载 | [`cms-theme.md`](./cms-theme.md) |
+| Badge | [`badge.md`](./badge.md) |
+| 订单卡外观+数据 | skill `cms-order-card`（视觉服从 badge） |
+
+## 栈（一行）
+
+React · Ant Design · MainLayout · FormData / ResponsiveTable（实现见对应 skill）

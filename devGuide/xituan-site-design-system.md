@@ -1,6 +1,6 @@
 # Site Design System
 
-> **跨端入口**：[`../devDesign/README.md`](../devDesign/README.md) · Site L2：[`../devDesign/site.md`](../devDesign/site.md)。本文仍为 Site token **现状详表**；收敛前以 `devDesign` 为阅读入口。
+> **跨端入口**：[`../devDesign/README.md`](../devDesign/README.md) · Site 索引：[`../devDesign/site.md`](../devDesign/site.md) · 主题专题：[`../devDesign/site-theme.md`](../devDesign/site-theme.md)。本文仍为 Site token **现状详表**。
 
 ## Overview
 
@@ -62,9 +62,10 @@ All site classes use `site-` prefix: `.site-container`, `.site-card`, `.site-sec
 
 ## Compact Scale
 
-- Base font: 13px
-- Section titles: 14px
-- Card title: 12px
+> **已修订**：以 `xituan_site/src/styles/theme.css` 为准，**最小 14px**（`--font-size-base: 14px`）。下文旧「13px / 卡标题 12px」作废。跨端入口见 [`../devDesign/site.md`](../devDesign/site.md)。
+
+- Base font: 14px（theme.css）
+- Section / emphasis: 用 `--font-size-lg` / `xl`（15–16px）
 
 ## Site-Card List Layout
 

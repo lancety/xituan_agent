@@ -1,19 +1,20 @@
-# L2 · WeChat（`xituan_wechat_app`）差异
+# L2 · WeChat 索引（`xituan_wechat_app`）
 
-Last updated: 2026-11-14
+Last updated: 2026-11-15
 
 继承：[`00-platform-wide.md`](./00-platform-wide.md) → [`client.md`](./client.md)
 
-## 本端差异（相对 L1）
+## 硬约束（极短）
 
-| 项 | 约定 |
-|----|------|
-| 栈 | 微信小程序 |
-| 主题 | L0 语义映射到小程序样式变量 / 类；遵守微信组件与审核约束 |
-| 业务 API | 与 Site / Customer 同一套 Public/Auth 语义（含 client platform 头） |
-| 聊天等 | OpenIM 相关 UX 见既有 openim skills / devGuide，不在此重复 |
+双主题；与 Site/Customer 同一业务 API 语义；聊天见 openim skill。
 
-## 待补
+## 按任务只读
 
-- 与 Site 店面模块的视觉/信息架构对照。
-- 小程序特有页面（登录、订阅消息等）的密度与主 CTA 约定。
+| 改什么 | 打开 |
+|--------|------|
+| 主题 | [`wechat-app-theme.md`](./wechat-app-theme.md) |
+| Badge | [`badge.md`](./badge.md) |
+
+## 栈（一行）
+
+微信小程序
