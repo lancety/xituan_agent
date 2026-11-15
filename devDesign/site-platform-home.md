@@ -116,7 +116,7 @@ C 打开未锁首页时，主视觉应服务导流；B 入驻可次要入口（�
 | 元素 | 用色 / 行为 |
 |------|-------------|
 | `--color-primary` / 链 / 顶栏入驻 CTA | 亮色字标青 `#18C0C8`；暗色 ink/fill（勿在亮色用暗色加深青绿） |
-| 顶部品牌带 | 仅首屏 ~280px 青→微黄 wash + 圆形装饰，向下淡出（`.site-home-discovery-band`） |
+| 顶部品牌带 | 仅首屏 ~280px 青→微黄 wash + 圆形装饰，向下淡出（`.site-home-discovery-band`；同款 `.site-theme-content-band` 用于商户布局 / 店招布局 / 购物车） |
 | 发现跳转 chips | 已移除；色相合同见下「轨标题」 |
 | 轨标题 | 左侧 4px 分轨色条：**商户**品牌青 · **团购** `--mode-offer` 青 · **预定** `--mode-preorder` 琥珀 · **商品/零售** `--mode-retail` 紫（见 [`brand.md`](./brand.md)） |
 | 移动 capped 轨 | 横滑 `scroll-snap`；商品无限流仍栅格 |

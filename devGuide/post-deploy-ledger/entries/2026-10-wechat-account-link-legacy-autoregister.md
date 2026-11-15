@@ -6,12 +6,12 @@ Last updated: 2026-11-15
 |------|-----|
 | **ID** | `wechat-account-link-legacy-autoregister` |
 | **状态** | `blocked` |
-| **Phase1 首次进版** | `v4.1.0`（backend/微信/Site/Customer/Merchant `accountLinkFlow`@2026-10-10） |
-| **最早可清理** | `≥4.2.0`（**逾期未做**） |
-| **下一可执行** | `≥4.4.0` |
-| **当前已部署** | Phase 1 自 4.1；legacy 自动注册仍保留 |
-| **待完成** | Phase N 删 legacy 自动注册 |
-| **Gate** | 含 `accountLinkFlow` 的版本全量；无旧端依赖「未命中即建号」 |
+| **Phase1 首次进版** | 主端 `v4.1.0`；Platform 补齐（`accountLinkFlow` + 仅绑定管理员）随本次发版 |
+| **最早可清理** | `≥4.2.0`（开发者确认：**全端已 4.2.0+**） |
+| **下一可执行** | Platform 本次生产发版后即可 Phase N（清 legacy 时不再保留 Platform 旧兼容） |
+| **当前已部署** | 主端 ≥4.2.0 均已 `accountLinkFlow`；Platform 代码已改、待本次生产；legacy 自动注册仍保留至 Phase N |
+| **待完成** | Platform 生产上线 → Phase N 删三通道「未传 flag 则自动注册」 |
+| **Gate** | ✅ 全端 4.2.0+；⏳ Platform 本次发版带上 NEED_LINK 绑定 UI |
 | **创建日** | 2026-10-10 |
 
 **部署尾项:** 本 entry  
@@ -33,7 +33,8 @@ Last updated: 2026-11-15
 | Consumer | Phase 1 |
 |----------|---------|
 | 旧 WeChat / 旧 Site / 旧 App | 不传 `accountLinkFlow` → 仍自动建号 |
-| 新 WeChat / Site / App | 传 `accountLinkFlow: true` + 绑定 UI |
+| 新 WeChat / Site / App / CMS | 传 `accountLinkFlow: true` + 绑定/新建 UI |
+| **Platform** | 传 `accountLinkFlow: true`；NEED_LINK 后 **仅绑定已有管理员**（不提供新建，新建会是 USER 进不了平台） |
 | Merchant App 登录后补绑 | 「更多」账号区 → `account-bind` channel=`merchant`（planned-work `merchant-app-account-bind-wechat`，2026-11-09） |
 
 ## 部署后债务（Post-deploy debt）

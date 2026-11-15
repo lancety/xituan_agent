@@ -26,11 +26,13 @@ Last updated: 2026-11-15
 
 | Token 角色 | Light（Site） | Dark（Site） | 用途 |
 |------------|---------------|--------------|------|
-| 装饰 / 链 / 文字 / primary | `#18C0C8` | `#4AADB3` | 边、环、wash、链接、选中「商户主页」等 |
+| 装饰 / primary | `#18C0C8` | `#4AADB3` | 边、环、wash、选中「商户主页」等 |
+| ink（浅底上的文字 / 链接） | `#0E7C83` | `#4AADB3` | `--xituan-brand-cyan-ink` / `--fgColor-link` / `--info-text`；仅文字 |
 | 实心 fill CTA | `#18C0C8` | `#197A80` | 顶栏「商家入驻」、小程序 tile、`.site-btn-primary` |
 | hover | `#14A8B0` | ink `#5BBCC2` / fill `#1F8A90` | 悬停 |
 
-**硬约束：** 亮色 chrome（商家入驻 / 小程序 / 选中导航等）必须用字标青族，**禁止**套用暗色那套加深青绿（如 `#0A7F86` / `#197A80`）当亮色文本或填充。加深只用于暗色实心钮对比。
+**硬约束：** 亮色 chrome（商家入驻 / 小程序 / 选中导航等）的**填充与装饰**必须用字标青族，**禁止**套用暗色那套加深青绿（如 `#0A7F86` / `#197A80`）当亮色填充。  
+**例外（2026-11 购物车 critique 定稿）：** 亮色**正文文字 / 链接**用 ink `#0E7C83`——`#18C0C8` 作文字在白/浅灰底上仅 ~2:1，不达 WCAG AA；ink 只用于文字，不用于底色、描边、装饰。
 
 实现：`xituan_site` → `theme.css` 的 `--xituan-brand-cyan*` / `--xituan-brand-cyan-ink` / `--xituan-brand-cyan-fill*`（亮暗成对）。  
 `--color-primary*`：**Light → 字标青**；**Dark → ink**（深底上可读；实心钮走 fill）。  
@@ -45,6 +47,20 @@ Last updated: 2026-11-15
 | **零售** | `REGULAR` | 紫 | `#8B5CF6` | `#A78BFA` / hover `#8B5CF6` | `#F5F3FF` 级 | `purple` |
 | **团购** | `OFFER` | 青 | `#06B6D4` | `#2A9FAD` / hover `#238A96` | `#F0F9FF` 级 | `cyan` |
 | **预定** | `PREORDER` | 橙黄 Amber | `#F59E0B` | `#C98512` / hover `#A86E0E` | `#FFFBEB` 级 | `amber` |
+
+**可读性派生 token（Site `theme.css`，亮暗成对）**
+
+锚点色作白字实心底或浅底文字时对比度不足，派生两档：
+
+| 模式 | `--mode-*-fill`（白字实心 CTA） Light / Dark | `--mode-*-ink`（浅底 / tint 上文字） Light / Dark |
+|------|------|------|
+| 零售 | `#7C3AED` / `#7C3AED` | `#6D28D9` / `#B9A4FC` |
+| 团购 | `#0891B2` / `#1E7F8A` | `#0E7490` / `#4FBAC6` |
+| 预定 | `#D97706` / `#A86E0E` | `#B45309` / `#E0A23A` |
+
+- 实心 CTA（购物车结算等）用 fill，白字须 **≥18px 粗体**（团购/预定亮色 fill 白字约 3.2–3.7:1，只满足大字门槛）。  
+- 选中标签 / 链接用 tint 底（`--mode-*-bg`）+ ink 字，不用白字压锚点色。  
+- 锚点色（`--mode-*`）继续用于色点、色条、描边、shadow 等装饰。
 
 **暗色硬约束（与品牌青同理）**
 
