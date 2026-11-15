@@ -18,10 +18,6 @@ Last updated: 2026-11-15
 
 | ID | 状态 | Phase1 首次 | 最早可清理 | 下一可执行 | 证据摘要 | Entry |
 |----|------|-------------|------------|------------|----------|-------|
-| `non-same-day-wechat-compat` | `blocked` | backend `3.9.3`；客户端 AusPost 结账 Gate=`3.11.0` | `≥3.12.0` | `≥4.4.0` | backend `allowNonSameDay`@2026-08-15→`v3.9.3`；微信 `AUSPOST_PP` 结账@2026-09-01→`v3.11.0` | [entry](./entries/2026-08-non-same-day-wechat-compat.md) |
-| `shipping-service-pp-exp-alias` | `blocked` | `3.11.0` | `≥3.12.0` | `≥4.4.0` | backend compat + 微信长名@2026-09-01→`v3.11.0`（原 Gate 亦写 3.11） | [entry](./entries/2026-09-shipping-service-pp-exp-alias.md) |
-| `merchant-panel-mixed-activities-retire` | `blocked` | `4.0.0` | `≥4.1.0` | `≥4.4.0` | 微信 home 改 `getOffersList`@2026-10-07→`v4.0.0` | [entry](./entries/2026-10-merchant-panel-mixed-activities-retire.md) |
-| `wechat-account-link-legacy-autoregister` | `blocked` | 主端`4.1.0`；全端已`≥4.2.0` | `≥4.2.0`（已满足） | Platform 本次发版后即可 Phase N | 开发者确认全端 4.2.0+；Platform 补齐后清 legacy | [entry](./entries/2026-10-wechat-account-link-legacy-autoregister.md) |
 | `orders-reorder-preorder-retire` | `blocked` | `4.3.0` | `≥4.4.0` | `≥4.4.0` | reorder preview@2026-11-07（backend/微信/Site）→`v4.3.0` | [entry](./entries/2026-11-orders-reorder-preorder-retire.md) |
 | `openim-attachment-multipart-retire` | `blocked` | `4.3.0` | `≥4.4.0` | `≥4.4.0` | CMS/backend presign@11-14；微信/App@11-14～15→`v4.3.0` | [entry](./entries/2026-11-openim-attachment-multipart-retire.md) |
 | `openim-cdn-lane-util-cleanup` | `blocked` | `4.3.0` | `≥4.4.0` | `≥4.4.0` | codebase `epOpenimCdnLane`@2026-11-14；4.2 submodule 无、4.3 有 | [entry](./entries/2026-11-openim-cdn-lane-util-cleanup.md) |
@@ -49,6 +45,10 @@ Last updated: 2026-11-15
 
 | ID | 状态 | 完成日 | Entry | 备注 |
 |----|------|--------|-------|------|
+| `non-same-day-wechat-compat` | `done` | 2026-11-15 | [entry](./entries/2026-08-non-same-day-wechat-compat.md) | Phase N：去掉 `allowNonSameDay`；超距离统一非当日路径 |
+| `shipping-service-pp-exp-alias` | `done` | 2026-11-15 | [entry](./entries/2026-09-shipping-service-pp-exp-alias.md) | Phase N：删 compat 夹 + 入站 PP/EXP 别名 / legacy_short 出站 |
+| `merchant-panel-mixed-activities-retire` | `done` | 2026-11-15 | [entry](./entries/2026-10-merchant-panel-mixed-activities-retire.md) | Phase N：删混合 `GET /activities` + `listActivities` + WeChat `getActivities` |
+| `wechat-account-link-legacy-autoregister` | `done` | 2026-11-15 | [entry](./entries/2026-10-wechat-account-link-legacy-autoregister.md) | Phase N：三通道未命中一律 NEED_LINK；Platform 已 `accountLinkFlow` |
 | `cms-merchant-panel-shipping-refund` | `done` | 2026-11-08 | [entry](./entries/2026-07-cms-merchant-panel-shipping-refund.md) | CMS/WeChat 退运费两入口已上线；关台账 |
 | `contact-name-server-gate` | `done` | 2026-11-08 | [entry](./entries/2026-11-contact-name-server-gate.md) | WeChat 全量后开回 `ENFORCE_CONTACT_NAME_ON_SERVER`；随 backend 发版生效 |
 | `refund-amount-exceeds-remaining-dual-write` | `done` | 2026-11-08 | [entry](./entries/2026-10-refund-amount-exceeds-remaining-dual-write.md) | Phase N：删 dual-write util，退款 catch 仅 `toApiResponse()` |

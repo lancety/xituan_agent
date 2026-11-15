@@ -5,13 +5,13 @@ Last updated: 2026-11-15
 | 字段 | 值 |
 |------|-----|
 | **ID** | `wechat-account-link-legacy-autoregister` |
-| **状态** | `blocked` |
-| **Phase1 首次进版** | 主端 `v4.1.0`；Platform 补齐（`accountLinkFlow` + 仅绑定管理员）随本次发版 |
-| **最早可清理** | `≥4.2.0`（开发者确认：**全端已 4.2.0+**） |
-| **下一可执行** | Platform 本次生产发版后即可 Phase N（清 legacy 时不再保留 Platform 旧兼容） |
-| **当前已部署** | 主端 ≥4.2.0 均已 `accountLinkFlow`；Platform 代码已改、待本次生产；legacy 自动注册仍保留至 Phase N |
-| **待完成** | Platform 生产上线 → Phase N 删三通道「未传 flag 则自动注册」 |
-| **Gate** | ✅ 全端 4.2.0+；⏳ Platform 本次发版带上 NEED_LINK 绑定 UI |
+| **状态** | `done` |
+| **Phase1 首次进版** | 主端 `v4.1.0`；Platform 补齐（`accountLinkFlow` + 仅绑定管理员） |
+| **最早可清理** | `≥4.2.0` |
+| **完成日** | `2026-11-15` |
+| **当前已部署** | Phase N：三通道未命中一律 `WECHAT_ACCOUNT_NEED_LINK`；Platform 已 `accountLinkFlow` |
+| **待完成** | — |
+| **Gate** | ✅ 全端 4.2.0+；Phase N 已清 legacy 自动注册 |
 | **创建日** | 2026-10-10 |
 
 **部署尾项:** 本 entry  

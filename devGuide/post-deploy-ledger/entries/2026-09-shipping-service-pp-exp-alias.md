@@ -5,13 +5,13 @@ Last updated: 2026-11-15
 | 字段 | 值 |
 |------|-----|
 | **ID** | `shipping-service-pp-exp-alias` |
-| **状态** | `blocked` |
+| **状态** | `done` |
 | **Phase1 首次进版** | `v3.11.0`（backend compat + 微信长名@2026-09-01；原 Gate 亦写 3.11） |
-| **最早可清理** | `≥3.12.0`（**逾期未做**） |
-| **下一可执行** | `≥4.4.0` |
-| **当前已部署** | Phase 1 自 3.11；compat 夹仍保留 |
-| **待完成** | Phase N 删 PP/EXP fallback |
-| **Gate** | 长名版本全量；订单路径只传 `AUSPOST_*` / `MERCHANT_NEGOTIATE`；旧短码≈0 |
+| **最早可清理** | `≥3.12.0` |
+| **完成日** | `2026-11-15` |
+| **当前已部署** | Phase N：compat 夹已删；codebase 入站 PP/EXP 别名与 legacy_short 出站已删 |
+| **待完成** | — |
+| **Gate** | ✅ 已满足并清理 |
 | **创建日** | 2026-09-01 |
 
 ## 背景
