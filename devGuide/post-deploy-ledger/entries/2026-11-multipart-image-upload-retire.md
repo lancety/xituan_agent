@@ -1,14 +1,16 @@
 # 退役 Backend multipart 收图（直传全量后）
 
-Last updated: 2026-11-13
+Last updated: 2026-11-15
 
 | 字段 | 值 |
 |------|-----|
 | **ID** | `multipart-image-upload-retire` |
 | **状态** | `planned` |
-| **当前已部署** | —（Phase 1：`/direct-upload` 已加；**保留**各业务 multer 收图 + 原更新接口） |
-| **待完成** | 各端直传切完并发布 → Phase N 清理 backend `req.files` / multer 收图分支 |
-| **Gate** | ① Customer / Merchant / WeChat / Site / CMS 相关图传均走直传 + path 业务保存；② 生产可观测期内 multipart 收图调用可忽略或为 0；③ 无第三方仍依赖旧 multipart 图字段 |
+| **Phase1 版本** | `TBD`（全端业务图直传齐的统一版本；`direct-upload` 已有，multer 仍保留） |
+| **可清理版本** | `≥Phase1+1`（Phase1 全量后下一统一发版） |
+| **当前已部署** | `/direct-upload` 已加；各业务 multer 收图仍保留 |
+| **待完成** | 各端直传切完并定 Phase1 版号 → Phase N 清 `req.files` |
+| **Gate** | 五端相关图传均直传+path；multipart 收图≈0；无第三方依赖旧字段 |
 | **创建日** | 2026-11-13 |
 
 **部署尾项:** 本 entry  

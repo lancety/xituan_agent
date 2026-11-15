@@ -1,16 +1,18 @@
 # SIH：format 白名单收紧 + Lambda 环境变量提醒
 
-Last updated: 2026-09-06
+Last updated: 2026-11-15
 
 | 字段 | 值 |
 |------|-----|
 | **ID** | `sih-format-allowlist-webp-png` |
 | **状态** | `planned` |
-| **当前已部署** | —（format 白名单**本期不动**） |
-| **待完成** | ① 部署 SIH 样本时：**手动更新 Lambda 环境变量 `SIZE_OPTS`**；② Gate 后 Phase N：去掉 SIH `jpeg/jpg` **并清理展示层 jpg→SIH 过渡** |
-| **Gate** | C4 全量预生成完成：业务 DB/展示主 path 仅为 `.webp`/`.png`；SIH 可去掉 `jpeg/jpg`；客户端不再拼 `format=jpeg`；**`_w*` thumb 不再需要 jpg→SIH 回退** |
+| **Phase1 版本** | N/A（format 白名单本期不动；部署样本时手动 `SIZE_OPTS`） |
+| **可清理版本** | C4 回填完成后（**非纯版本 Gate**）；再收紧 SIH + 删 jpg 过渡 |
+| **当前已部署** | format 白名单仍含 jpeg/jpg |
+| **待完成** | ① 手动 `SIZE_OPTS`；② Gate 后 Phase N：只留 webp\|png + 清展示过渡 |
+| **Gate** | C4 全量：主 path 仅为 `.webp`/`.png`；`format=jpeg`≈0；无 jpg→SIH 回退依赖 |
 | **创建日** | 2026-09-05 |
-| **定案补记** | 2026-09-06：**终态只保留 webp + png**。过渡期 jpg 走 SIH / `_w` 不可用时 SIH 回退；回填完成后**不应继续支持** jpeg/jpg 作为业务图主格式，**过渡分支必须删掉**。 |
+| **定案补记** | 2026-09-06：**终态只保留 webp + png**。过渡期 jpg 走 SIH；回填后过渡分支必须删掉。 |
 
 ## 背景
 

@@ -8,6 +8,7 @@ Last updated: 2026-11-15
 
 - **Mobile first**；移动 / 平板 / 桌面宽屏均可完成关键任务  
 - 双主题 light/dark，且**两套都须用上主青（及副黄紫点缀）**——见 [`brand.md`](./brand.md)  
+- 零售/团购/预定活动 UI 套用模式色（紫/青/琥珀）——见 [`brand.md`](./brand.md)  
 - 语义变量；`site-`；≥14px；Operate 不换皮；businessError i18n  
 - Badge：[`badge.md`](./badge.md)
 
@@ -15,7 +16,7 @@ Last updated: 2026-11-15
 
 | 改什么 | 打开 |
 |--------|------|
-| 品牌色 / 亮暗用色债 | [`brand.md`](./brand.md) |
+| 品牌色 / 活动模式色 / 亮暗用色债 | [`brand.md`](./brand.md) |
 | 色 / token / 栅格 / 字号 | [`site-theme.md`](./site-theme.md) |
 | 平台首页推荐轨 / 搜索 / 首屏 / 小程序 A·B | [`site-platform-home.md`](./site-platform-home.md) |
 | 商户卡普通店·品牌店 | [`site-merchant-trust.md`](./site-merchant-trust.md) |

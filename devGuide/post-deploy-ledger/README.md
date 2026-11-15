@@ -1,10 +1,21 @@
 # Post-Deploy Ledger（部署尾项登记册）
 
-Last updated: 2026-07-25
+Last updated: 2026-11-15
 
 > **日常巡检口令：「检查 post-deploy」**（或问「还有没有部署后要补的？」）  
 > → 打开 [`registry.md`](./registry.md)，看 **活跃** 表中 `active` / `blocked` 行数是否为 **0**。  
 > → 非 0：点进对应 [`entries/`](./entries/) 查看 Gate 与 post-deploy debt 勾选项；Gate 已满足则排期 Phase N 清理部署。
+
+### 统一版本 Gate（agent 全端同发）
+
+全端（backend / CMS / Site / Platform / WeChat / Customer / Merchant）同一版本号同时发布时：
+
+| 字段 | 含义 |
+|------|------|
+| **Phase1 版本** `Phase1@V` | 含 Phase 1（新路径 + 兼容层）的统一版本 |
+| **可清理版本** `cleanup@≥V+1` | **V 生产全量后**，最早在下一统一版本做 Phase N |
+
+登记时在 `registry.md` 与 entry 表头同时写这两列；未定版号写 `TBD`，数据门写「非纯版本」。
 
 ---
 

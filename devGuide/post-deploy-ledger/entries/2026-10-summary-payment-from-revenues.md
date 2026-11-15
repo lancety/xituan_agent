@@ -1,14 +1,16 @@
 # 结算单付款状态改由收入派生
 
-Last updated: 2026-10-30
+Last updated: 2026-11-15
 
 | Field | Value |
 |-------|-------|
 | **ID** | `summary-payment-from-revenues` |
 | **Status** | `planned` |
+| **Phase1 版本** | `TBD`（收入派生读侧尚未落地） |
+| **可清理版本** | `≥Phase1+1`（DROP `total_paid` / `is_paid` / `paid_date`） |
 | **Deployed** | — |
-| **Pending** | Phase 1：读侧/邮件/dashboard/确认收款以收入为准；停用仅翻 isPaid 的 status API；列 dual-write 可选。Phase N：DROP `total_paid` / `is_paid` / `paid_date` |
-| **Gate** | CMS + Merchant App 已依赖 API 返回的派生字段（同名）；无人再写三列；生产抽查流水建账与确认收款状态一致 |
+| **Pending** | Phase 1 收入派生 → Phase N DROP 三列 |
+| **Gate** | CMS + Merchant 用派生同名字段；无人再写三列；生产抽查一致 |
 | **Created** | 2026-10-30 |
 
 ## Background

@@ -20,10 +20,11 @@ Last updated: 2026-11-15
 
 | | Light（目标） | Dark（目标） |
 |--|-------|------|
-| 画布 | 浅灰/白分层，主青出现在 CTA/链接/选中 | 蓝灰分层（非纯黑糊底），**主青仍用于 CTA/链接** |
+| 画布 | 浅灰/白分层，主青出现在 CTA/链接/选中 | 蓝灰分层（非纯黑糊底），主青用 **暗色微调** 后仍用于 CTA/链接 |
 | 正文 | 高对比中性字 | 高对比浅字 |
 
-**现状（`theme.css`）**：`--color-primary` 仍为 `#0969da` / `#316dca` 系，与商标青不一致；暗色界面品牌色应用不足。主题演进应向 `brand.md` 收敛，勿再扩 GitHub 蓝皮。
+**品牌青 token（已加）**：`--xituan-brand-cyan` / `-fill` / `-hover`（亮暗成对，见 `brand.md` 暗色微调）。  
+**现状债**：`--color-primary` 仍为 `#0969da` / `#316dca` 系；演进应把 primary 收敛到品牌青，勿再扩 GitHub 蓝皮。
 
 完整变量以 `theme.css` 为准；改色前先读 `brand.md`。
 
@@ -55,7 +56,18 @@ Last updated: 2026-11-15
 
 ## 业务强调色（已有变量）
 
-`--card-offer|preorder|product|news|merchant`；`--order-header-*` / `--order-accent-*`；`--site-product-card-*`（暗色低库存用 secondary）。
+订单/活动模式（与微信 `theme-mode.util` / [`brand.md`](./brand.md) 一致）：
+
+| Token | 模式 | 色 |
+|-------|------|-----|
+| `--mode-retail` / `--card-product` / `--order-accent-regular` | 零售 | 亮紫 `#8B5CF6`；暗见 brand |
+| `--mode-offer` / `--card-offer` / `--order-accent-offer` | 团购 | 亮青 `#06B6D4`；暗降饱和 |
+| `--mode-preorder` / `--card-preorder` / `--order-accent-preorder` | 预定 | 亮琥珀 `#F59E0B`；暗 `#C98512` 级 |
+
+列表卡文本区：`--card-*-info-bg`（亮色淡 wash；暗色低饱和混入 block），勿用顶边色条。  
+活动详情：结算 CTA / 面板强调字走 `--site-activity-cta-accent`（= mode）；暗色勿用霓虹黄/青实心。
+
+另有 `--order-header-*`、`--site-product-card-*`（暗色低库存用 secondary）、`--card-news|merchant`。
 
 ## 检查清单
 

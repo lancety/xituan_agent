@@ -1,14 +1,17 @@
 # 退役 `POST /orders/reorder-preorder`
 
-Last updated: 2026-11-07
+Last updated: 2026-11-15
 
 | 字段 | 值 |
 |------|-----|
 | **ID** | `orders-reorder-preorder-retire` |
-| **状态** | `planned` |
-| **当前已部署** | —（Phase 1：新增 `preview`/`confirm`；**保留**旧路由薄封装） |
-| **待完成** | Phase 1 发版 → 微信/Site/Customer 新路径全量 → Phase N 删旧路由 |
-| **Gate** | ① 微信含统一再次购买版本全量且不再调 `reorder-preorder`；② Site 已改用 `preview`/`confirm`（代码已切；待生产发版验证）；③ Customer App 已用 `preview`/`confirm`；④ 可观测期内 `POST /orders/reorder-preorder` 调用可忽略或为 0 |
+| **状态** | `blocked` |
+| **Phase1 首次进版** | `v4.3.0`（reorder preview@2026-11-07 → backend/微信/Site） |
+| **最早可清理** | `≥4.4.0` |
+| **下一可执行** | `≥4.4.0`（等 4.3.0 全量） |
+| **当前已部署** | Phase 1 在 4.3.0；`reorder-preorder` 仍保留 |
+| **待完成** | 4.3.0 全量 → Phase N 删旧路由 |
+| **Gate** | 4.3.0 微信/Site/Customer 新路径全量；旧调用≈0 |
 | **创建日** | 2026-11-07 |
 
 **部署尾项:** 本 entry  

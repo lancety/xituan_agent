@@ -1,14 +1,16 @@
 # Order terminal status inventory handling
 
-Last updated: 2026-06-18
+Last updated: 2026-11-15
 
 | Field | Value |
 |-------|-------|
 | **ID** | `order-terminal-status-inventory` |
 | **Status** | `planned` |
+| **Phase1 版本** | 盘点（非兼容层 / 非版本 Gate） |
+| **可清理版本** | N/A（Phase 2 是实现统一库存处理，不是删兼容层） |
 | **Deployed** | — |
 | **Pending** | Phase 1 analysis → Phase 2 implementation |
-| **Gate (Phase 2)** | 付款状态、库存锁状态、订单终态转换矩阵已确认；生产数据中 orphaned/offline pending stock locks 已盘点；退款与取消路径 smoke OK |
+| **Gate (Phase 2)** | 终态转换库存矩阵确认；orphaned locks 已盘点；退款/取消 smoke OK |
 | **Created** | 2026-06-18 |
 
 ## Background

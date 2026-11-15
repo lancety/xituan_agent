@@ -1,14 +1,16 @@
 # User address: last-used delivery (replace default address)
 
-Last updated: 2026-06-02
+Last updated: 2026-11-15
 
 | 字段 | 值 |
 |------|-----|
 | **ID** | `user-address-last-used-delivery` |
 | **状态** | `planned` |
+| **Phase1 版本** | `TBD`（尚未落地；各端仍 `isDefault` / `set-default`） |
+| **可清理版本** | `≥Phase1+1`（DROP `is_default` / 删 set-default） |
 | **当前已部署** | — |
-| **待完成** | Phase 1（增量）→ Phase 3（清理） |
-| **Gate（Phase 3 放行条件）** | WeChat 小程序新版本（读 `lastUsedDeliveryAt`、去掉「设为默认」）审核通过并 **全量**；可选：监控 7 天无 `PUT auth/user/address/set-default` |
+| **待完成** | Phase 1（ADD last-used + 双写）→ Phase 3 清理 |
+| **Gate（Phase 3 放行条件）** | 含 Phase 1 的统一版本全量（读 `lastUsedDeliveryAt`、去掉「设为默认」）；可选：7 天无 `PUT .../set-default` |
 | **创建日** | 2026-06-02 |
 
 ## 背景

@@ -1,14 +1,17 @@
 # 微信登录：legacy 未命中自动注册兼容层
 
-Last updated: 2026-10-10
+Last updated: 2026-11-15
 
 | 字段 | 值 |
 |------|-----|
 | **ID** | `wechat-account-link-legacy-autoregister` |
-| **状态** | `planned` |
-| **当前已部署** | — |
-| **待完成** | Phase 1 发版（opt-in `accountLinkFlow`）→ Gate → Phase N 删除 legacy 自动注册 |
-| **Gate** | WeChat 小程序含 NEED_LINK 的版本全量；Site / Customer App / Merchant App 已发布带 `accountLinkFlow: true` 的版本；可观测期内无旧端依赖「未命中即建号」 |
+| **状态** | `blocked` |
+| **Phase1 首次进版** | `v4.1.0`（backend/微信/Site/Customer/Merchant `accountLinkFlow`@2026-10-10） |
+| **最早可清理** | `≥4.2.0`（**逾期未做**） |
+| **下一可执行** | `≥4.4.0` |
+| **当前已部署** | Phase 1 自 4.1；legacy 自动注册仍保留 |
+| **待完成** | Phase N 删 legacy 自动注册 |
+| **Gate** | 含 `accountLinkFlow` 的版本全量；无旧端依赖「未命中即建号」 |
 | **创建日** | 2026-10-10 |
 
 **部署尾项:** 本 entry  

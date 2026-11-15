@@ -1,14 +1,17 @@
 # Order activity scopes (migrate seq from orders header)
 
-Last updated: 2026-06-07
+Last updated: 2026-11-15
 
 | Field | Value |
 |-------|-------|
 | **ID** | `order-activity-scopes` |
-| **Status** | `planned` |
-| **Deployed** | — |
-| **Pending** | Phase 1 → Phase 3 |
-| **Gate (Phase 3)** | Phase 1 prod confirmed; backend reads/writes scopes only (no dual-write/fallback to `orders.mode_activity_*`); CMS + merchant panel + user order detail smoke OK |
+| **Status** | `blocked` |
+| **Phase1 首次进版** | `v3.8.0`（scopes@2026-06-07） |
+| **最早可清理** | `TBD`（确认无 dual-write/fallback 后的下一统一发版） |
+| **下一可执行** | `TBD` |
+| **Deployed** | Phase 1 自 3.8；旧列仍 dual-write |
+| **Pending** | 停 dual-write → Phase 3 DROP |
+| **Gate (Phase 3)** | backend 只读写 scopes（无 fallback `orders.mode_activity_*`）；CMS + merchant panel + user order detail smoke OK |
 | **Created** | 2026-06-07 |
 
 ## Background

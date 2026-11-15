@@ -1,14 +1,17 @@
 # shipping_service：订单枚举长名化与旧 PP/EXP 入站别名
 
-Last updated: 2026-09-01
+Last updated: 2026-11-15
 
 | 字段 | 值 |
 |------|-----|
 | **ID** | `shipping-service-pp-exp-alias` |
-| **状态** | `planned` |
-| **当前已部署** | — |
-| **待完成** | Phase 1（长名落库 + 入站双读）→ Phase N（删 backend 入站 PP/EXP fallback） |
-| **Gate** | WeChat 含本切片结算/商户面板全量 + Site 已发版且订单路径只传 `AUSPOST_*` / `MERCHANT_NEGOTIATE` |
+| **状态** | `blocked` |
+| **Phase1 首次进版** | `v3.11.0`（backend compat + 微信长名@2026-09-01；原 Gate 亦写 3.11） |
+| **最早可清理** | `≥3.12.0`（**逾期未做**） |
+| **下一可执行** | `≥4.4.0` |
+| **当前已部署** | Phase 1 自 3.11；compat 夹仍保留 |
+| **待完成** | Phase N 删 PP/EXP fallback |
+| **Gate** | 长名版本全量；订单路径只传 `AUSPOST_*` / `MERCHANT_NEGOTIATE`；旧短码≈0 |
 | **创建日** | 2026-09-01 |
 
 ## 背景

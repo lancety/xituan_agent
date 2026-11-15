@@ -1,14 +1,17 @@
 # 退役 OpenIM 附件 multipart（直传全量后）
 
-Last updated: 2026-11-13
+Last updated: 2026-11-15
 
 | 字段 | 值 |
 |------|-----|
 | **ID** | `openim-attachment-multipart-retire` |
-| **状态** | `planned` |
-| **当前已部署** | —（Phase 1：CMS/Site 将加 `attachments/presign` + `complete`；**保留** `POST .../attachments` multipart） |
-| **待完成** | WeChat / Customer App / Merchant App 附件也改直传并发布 → Phase N 删除 OpenIM multipart 收文件路由与 multer |
-| **Gate** | ① CMS / Site / WeChat / Customer / Merchant 聊天附件均走直传；② 生产可观测期内 `POST .../attachments` multipart 调用≈0；③ 无第三方依赖旧 multipart |
+| **状态** | `blocked` |
+| **Phase1 首次进版** | `v4.3.0`（CMS/backend presign@11-14；微信/Customer/Merchant App@11-14～15） |
+| **最早可清理** | `≥4.4.0` |
+| **下一可执行** | `≥4.4.0`（等 4.3.0 全量） |
+| **当前已部署** | Phase 1 在 4.3.0；multipart 路由仍保留 |
+| **待完成** | Phase N 删 OpenIM multipart |
+| **Gate** | 五端直传全量；multipart≈0 |
 | **创建日** | 2026-11-13 |
 
 **部署尾项:** 本 entry  

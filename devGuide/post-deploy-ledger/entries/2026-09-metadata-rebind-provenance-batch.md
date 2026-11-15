@@ -1,14 +1,17 @@
 # metadata 解绑 provenance 与迁移批次
 
-Last updated: 2026-09-29
+Last updated: 2026-11-15
 
 | 字段 | 值 |
 |------|-----|
 | **ID** | `metadata-rebind-provenance-batch` |
-| **状态** | `planned` |
-| **当前已部署** | — |
-| **待完成** | Phase 1（加表、解绑不再改写 MANUAL、再绑不再删除历史 UNBIND_COPY）→ Phase N（清洗 UNBIND_COPY、override_mask） |
-| **Gate** | CMS 批次看板已发版，且生产解绑后抽查 MANUAL 行 origin_tag 仍为 MANUAL |
+| **状态** | `blocked` |
+| **Phase1 首次进版** | `v4.0.0`（migration `0363`） |
+| **最早可清理** | 数据清洗（非纯版本 Gate）；看板+MANUAL 抽查通过后排期 |
+| **下一可执行** | 抽查后排期 |
+| **当前已部署** | Phase 1 自 4.0 |
+| **待完成** | Phase N 清洗历史 UNBIND_COPY、override_mask |
+| **Gate** | CMS 批次看板已发版；生产解绑后 MANUAL `origin_tag` 仍为 MANUAL |
 | **创建日** | 2026-09-29 |
 
 ## 背景

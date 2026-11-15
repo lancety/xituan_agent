@@ -1,14 +1,16 @@
 # PROFILE_ERROR_COPY i18n cleanup
 
-Last updated: 2026-06-18
+Last updated: 2026-11-15
 
 | Field | Value |
 |-------|-------|
 | **ID** | `profile-error-copy-i18n` |
 | **Status** | `planned` |
+| **Phase1 版本** | `TBD`（codebase 仍有中文 `PROFILE_ERROR_COPY`） |
+| **可清理版本** | `≥Phase1+1`（删内嵌中文 copy） |
 | **Deployed** | — |
 | **Pending** | Phase 1 → Phase 2 |
-| **Gate (Phase 2)** | 所有 frontend consumer 已改用 enum/code + i18n；`xituan_codebase` 不再内嵌 `PROFILE_ERROR_COPY` 中文文案；旧调用路径 smoke OK |
+| **Gate (Phase 2)** | 所有 frontend 已用 enum/code + i18n；codebase 无内嵌中文 copy |
 | **Created** | 2026-06-18 |
 
 ## Background

@@ -1,14 +1,17 @@
 # OpenIM CDN 泳道收敛（clientApp 默认 / CDN 混用清理）
 
-Last updated: 2026-11-13
+Last updated: 2026-11-15
 
 | 字段 | 值 |
 |------|-----|
 | **ID** | `openim-cdn-lane-util-cleanup` |
-| **状态** | `planned` |
-| **当前已部署** | —（Phase 1：增量 `cdnLane` + 上传显式传端；**保留** `buildAttachmentUrl` 可选 `clientApp` 默认 WECHAT） |
-| **待完成** | 全端展示/上传调用均显式传 lane 或 clientApp → Phase N 去掉 CDN util 静默默认，对外以 lane 为主 |
-| **Gate** | ① codebase 已有 `epOpenimCdnLane`（或等价）+ `cdnLaneFromClientApp`；② 微信 / Site / CMS / App 上传与展示调用均无「依赖默认 WECHAT」；③ grep 无省略 `clientApp`/`lane` 的 CDN 拼 URL 关键路径（测试除外） |
+| **状态** | `blocked` |
+| **Phase1 首次进版** | `v4.3.0`（codebase `epOpenimCdnLane`@2026-11-14；4.2 submodule 无、4.3 有） |
+| **最早可清理** | `≥4.4.0` |
+| **下一可执行** | `≥4.4.0`（与 OpenIM 附件同批确认） |
+| **当前已部署** | Phase 1 在 4.3.0；静默默认仍保留 |
+| **待完成** | Phase N 去掉默认 WECHAT |
+| **Gate** | 全端无「依赖默认 WECHAT」；grep 无省略 lane 的关键路径 |
 | **创建日** | 2026-11-13 |
 
 **部署尾项:** 本 entry  

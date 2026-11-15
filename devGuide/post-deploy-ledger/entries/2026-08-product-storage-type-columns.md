@@ -4,9 +4,13 @@
 |-------|--------|
 | **id** | `product-storage-type-columns` |
 | **title** | Promote storageType / storageDays to product columns; AusPost ambient-only filter |
-| **status** | `planned` |
+| **status** | `blocked` |
+| **Phase1 首次进版** | `v3.9.2`（migrations `0348/0349`） |
+| **最早可清理** | `TBD`（退役 schema / 清 jsonb / 改 printTemps 同批） |
+| **下一可执行** | `TBD` |
 | **created** | 2026-08-13 |
 | **owner** | TBD |
+| **Last updated** | 2026-11-15 |
 | **related plans / PRs** | Phase 1 shipping + product dual-write; printTemps path cleanup split (code vs DB) |
 
 ## Why phased

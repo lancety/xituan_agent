@@ -1,14 +1,16 @@
 # 流水手工创建写入 ledger_block_id
 
-Last updated: 2026-10-30
+Last updated: 2026-11-15
 
 | Field | Value |
 |-------|-------|
 | **ID** | `ledger-intake-manual-ledger-block-id` |
 | **Status** | `planned` |
+| **Phase1 版本** | `TBD`（backend+CMS 同批统一版本） |
+| **可清理版本** | 无 Phase N（生产确认后关台账即可） |
 | **Deployed** | — |
-| **Pending** | Phase 1：流水单行/批量新建写 `ledger_block_id`；删块预览列表；无 Phase N DROP |
-| **Gate** | CMS 流水入账页含本行为已发版；生产确认删块只带走带该列的账 |
+| **Pending** | Phase 1：流水新建写 `ledger_block_id` + 删块预览 |
+| **Gate** | CMS 流水页含本行为已发版；删块只带走带该列的账 |
 | **Created** | 2026-10-30 |
 
 ## Background

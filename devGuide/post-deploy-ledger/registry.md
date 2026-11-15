@@ -1,34 +1,47 @@
 # Post-Deploy Registry（巡检入口）
 
-Last updated: 2026-11-13
+Last updated: 2026-11-15
 
 **日常巡检：「检查 post-deploy」** — 打开本文件，活跃表行数应为 **0** 表示无待收尾部署债务。非 0 则点击 **Entry** 查看 Gate 与勾选清单。
+
+**版本约定（agent 全端同版本同时发；以 git tag / release commit 为准）：**  
+- **Phase1** = 该兼容层/新路径 **首次进入统一发版** 的版本（查 commit → `merge-base --is-ancestor` → 最早 tag）  
+- **最早可清理** = Phase1 全量后的 **下一统一版本**（历史最早可开清的点；逾期未做则债务仍挂）  
+- **下一可执行** = 现在若要动手，通常仍排在 **当前全量确认后的下一版**（现全端 **4.3.0** → 多为 **≥4.4.0**）  
+- 证据口径：backend / wechat / site / cms / app_* 的 `chore: release vX.Y.Z` tag
 
 ---
 
 ## 活跃（Active）
 
-| ID | 状态 | 已部署 | 待完成 | Gate 摘要 | 下一动作 | Entry | Last updated |
-|----|------|--------|--------|-----------|----------|-------|--------------|
-| `multipart-image-upload-retire` | `planned` | —（Phase 1：`direct-upload` 已加；**保留** multer 收图） | 各端目录/业务图直传全量后 Phase N 清 backend `req.files` | Customer/Merchant/WeChat/Site/CMS 图传均直传+path；multipart 调用≈0 | 继续各端直传；Gate 后单独 PR 清收图 | [entry](./entries/2026-11-multipart-image-upload-retire.md) | 2026-11-13 |
-| `openim-attachment-multipart-retire` | `planned` | —（Phase 1：CMS/Site OpenIM presign+complete；**保留** multipart attachments） | WeChat/App 附件直传全量后 Phase N 删 OpenIM multer | 五端聊天附件均直传；multipart≈0 | 实施 CMS/Site 直传；Gate 后单独 PR 清 OpenIM multipart | [entry](./entries/2026-11-openim-attachment-multipart-retire.md) | 2026-11-13 |
-| `openim-cdn-lane-util-cleanup` | `planned` | —（Phase 1：增量 cdnLane + 上传显式传端；**保留**默认 WECHAT） | Phase N 去掉 CDN util 静默默认 / 对外以 lane 为主 | 全端拼 URL 均显式 lane 或 clientApp | 与 OpenIM 直传同批 Phase 1；Gate 后单独 PR 收紧 util | [entry](./entries/2026-11-openim-cdn-lane-util-cleanup.md) | 2026-11-13 |
-| `platform-metadata-drop-cms-site-print-vis` | `planned` | —（Phase 1：平台三轴 UI/写类型清理；列恒 true 保留） | Phase N DROP `visible_in_cms/site/print` | Platform+Backend Phase 1 生产发版；无客户端依赖三轴响应 | 部署 Phase 1；Gate 后单独 PR DROP | [entry](./entries/2026-11-platform-metadata-drop-cms-site-print-vis.md) | 2026-11-07 |
-| `orders-reorder-preorder-retire` | `planned` | —（Phase 1：preview/confirm + 保留旧路由） | 微信/Site/Customer 新路径全量后 Phase N 删 `reorder-preorder` | 三端新再次购买全量；生产无旧调用 | 部署 Phase 1；Gate 后单独 PR 删旧路由 | [entry](./entries/2026-11-orders-reorder-preorder-retire.md) | 2026-11-07 |
-| `summary-payment-from-revenues` | `planned` | — | Phase 1 收入派生付款状态；Phase N DROP 三列 | CMS+Merchant 无感用同名字段；无人写三列 | 部署 backend Phase 1 | [entry](./entries/2026-10-summary-payment-from-revenues.md) | 2026-10-30 |
-| `ledger-intake-manual-ledger-block-id` | `planned` | — | Phase 1：流水新建写 ledger_block_id + 删块预览；无 Phase N | CMS 流水页发版；生产确认删块范围 | 部署 backend+CMS | [entry](./entries/2026-10-ledger-intake-manual-ledger-block-id.md) | 2026-10-30 |
-| `wechat-account-link-legacy-autoregister` | `planned` | — | Phase 1 opt-in NEED_LINK + legacy 自动注册；Phase N 删 legacy | WeChat/Site/App 新流程全量 | 部署 Phase 1；Gate 后单独 PR 删自动注册 | [entry](./entries/2026-10-wechat-account-link-legacy-autoregister.md) | 2026-10-10 |
-| `merchant-panel-mixed-activities-retire` | `planned` | —（Phase 1：分接口客户端 + **保留** 混合 API） | Phase N 删 `GET /activities` + `listActivities` | WeChat 商家面板分接口版本全量后再删混合路由 | 部署 Phase 1；旧 WeChat 仍打混合 path；Gate 后单独 PR 清理 | [entry](./entries/2026-10-merchant-panel-mixed-activities-retire.md) | 2026-10-07 |
-| `metadata-rebind-provenance-batch` | `planned` | — | Phase 1 加表与解绑保留 MANUAL；Phase N 清洗 UNBIND_COPY | CMS 批次看板发版且抽查 MANUAL 不被改写 | 部署 migration 0363 与 backend 解绑行为 | [entry](./entries/2026-09-metadata-rebind-provenance-batch.md) | 2026-09-29 |
-| `sih-format-allowlist-webp-png` | `planned` | —（format 本期不动） | ① 手动 `SIZE_OPTS` ② **Gate 后 SIH 只留 webp\|png（终态不支持 jpeg/jpg）** | C4 回填完、DB 主 path 均为 webp/png | 部署 SIH 时改 `SIZE_OPTS`；format 收紧等 Gate | [entry](./entries/2026-09-sih-format-allowlist-webp-png.md) | 2026-09-06 |
-| `shipping-service-pp-exp-alias` | `planned` | — | Phase 1 + Phase N | WeChat/Site 订单路径只传长名后再删入站 PP/EXP fallback | 实施 Phase 1：长名落库 + normalize 双读；Gate 后单独 PR 删别名 | [entry](./entries/2026-09-shipping-service-pp-exp-alias.md) | 2026-09-01 |
-| `non-same-day-wechat-compat` | `planned` | — | Phase 1 + Phase N | WeChat AusPost 结账版本全量后再删 `allowNonSameDay` | 部署 Phase 1 backend 双路径；旧端超距离回 `DELIVERY_DISTANCE_EXCEEDED` | [entry](./entries/2026-08-non-same-day-wechat-compat.md) | 2026-08-15 |
-| `product-storage-type-columns` | `planned` | — | Phase 1 + Phase N | 全端 Phase 1 全量后再清 jsonb / 退役 schema；CMS 编辑器暂保留这三项 metadata | Phase N 退役 schema 时一并隐藏 CMS metadata 字段 | [entry](./entries/2026-08-product-storage-type-columns.md) | 2026-08-14 |
-| `user-address-last-used-delivery` | `planned` | — | Phase 1 + Phase 3 | WeChat 新版本全量后再 DROP `is_default` | 实施 Phase 1 后改 `blocked` | [entry](./entries/2026-06-user-address-last-used-delivery.md) | 2026-06-02 |
-| `order-activity-scopes` | `planned` | — | Phase 1 + Phase 3 | Phase 1 prod OK; no dual-write/fallback before DROP | 实施 Phase 1 后改 `active` | [entry](./entries/2026-06-order-activity-scopes.md) | 2026-06-07 |
-| `wechat-c-order-item-list-section` | `planned` | — | Phase 1 + Phase 2 | WeChat 含 Phase 1 版本全量后再删 trade 内联列表与冗余组件 | 实施 Phase 1：6 页改用主包 `order-item-list-section` | [entry](./entries/2026-06-wechat-c-order-item-list-section.md) | 2026-06-16 |
-| `profile-error-copy-i18n` | `planned` | — | Phase 1 + Phase 2 | 所有 frontend consumer 已改用 enum/code + i18n；`xituan_codebase` 无内嵌中文 copy | 实施 Phase 1：新增 enum/code 并补齐前端 i18n | [entry](./entries/2026-06-profile-error-copy-i18n.md) | 2026-06-18 |
-| `order-terminal-status-inventory` | `planned` | — | Phase 1 + Phase 2 | 订单终态转换库存动作矩阵确认后再统一通用状态服务库存处理 | 完成 Phase 1 盘点：状态入口、付款状态、库存锁状态、退款路径 | [entry](./entries/2026-06-order-terminal-status-inventory.md) | 2026-06-18 |
+### A. Phase 1 已进版 — 清理债务（版本已查）
+
+| ID | 状态 | Phase1 首次 | 最早可清理 | 下一可执行 | 证据摘要 | Entry |
+|----|------|-------------|------------|------------|----------|-------|
+| `non-same-day-wechat-compat` | `blocked` | backend `3.9.3`；客户端 AusPost 结账 Gate=`3.11.0` | `≥3.12.0` | `≥4.4.0` | backend `allowNonSameDay`@2026-08-15→`v3.9.3`；微信 `AUSPOST_PP` 结账@2026-09-01→`v3.11.0` | [entry](./entries/2026-08-non-same-day-wechat-compat.md) |
+| `shipping-service-pp-exp-alias` | `blocked` | `3.11.0` | `≥3.12.0` | `≥4.4.0` | backend compat + 微信长名@2026-09-01→`v3.11.0`（原 Gate 亦写 3.11） | [entry](./entries/2026-09-shipping-service-pp-exp-alias.md) |
+| `merchant-panel-mixed-activities-retire` | `blocked` | `4.0.0` | `≥4.1.0` | `≥4.4.0` | 微信 home 改 `getOffersList`@2026-10-07→`v4.0.0` | [entry](./entries/2026-10-merchant-panel-mixed-activities-retire.md) |
+| `wechat-account-link-legacy-autoregister` | `blocked` | `4.1.0` | `≥4.2.0` | `≥4.4.0` | backend/微信/Site/Customer/Merchant `accountLinkFlow`@2026-10-10→`v4.1.0` | [entry](./entries/2026-10-wechat-account-link-legacy-autoregister.md) |
+| `orders-reorder-preorder-retire` | `blocked` | `4.3.0` | `≥4.4.0` | `≥4.4.0` | reorder preview@2026-11-07（backend/微信/Site）→`v4.3.0` | [entry](./entries/2026-11-orders-reorder-preorder-retire.md) |
+| `openim-attachment-multipart-retire` | `blocked` | `4.3.0` | `≥4.4.0` | `≥4.4.0` | CMS/backend presign@11-14；微信/App@11-14～15→`v4.3.0` | [entry](./entries/2026-11-openim-attachment-multipart-retire.md) |
+| `openim-cdn-lane-util-cleanup` | `blocked` | `4.3.0` | `≥4.4.0` | `≥4.4.0` | codebase `epOpenimCdnLane`@2026-11-14；4.2 submodule 无、4.3 有 | [entry](./entries/2026-11-openim-cdn-lane-util-cleanup.md) |
+| `product-storage-type-columns` | `blocked` | `3.9.2` | `TBD`（退役 schema 同批） | `TBD` | migrations `0348/0349`@→`v3.9.2`；CMS metadata 三项仍保留 | [entry](./entries/2026-08-product-storage-type-columns.md) |
+| `order-activity-scopes` | `blocked` | `3.8.0` | `TBD`（停 dual-write 后下一版） | `TBD` | scopes@2026-06-07→`v3.8.0`；旧列 dual-write 仍在 | [entry](./entries/2026-06-order-activity-scopes.md) |
+| `metadata-rebind-provenance-batch` | `blocked` | `4.0.0` | 数据清洗（非纯版本） | 抽查后排期 | migration `0363`→`v4.0.0` | [entry](./entries/2026-09-metadata-rebind-provenance-batch.md) |
+
+### B. Phase 1 未齐 / 未定版 — 先落地再标清理版
+
+| ID | 状态 | Phase1 | 可清理 | 备注 | Entry |
+|----|------|--------|--------|------|-------|
+| `multipart-image-upload-retire` | `planned` | 直传域自 `4.3.0` 起；**业务图未全切** | `≥Phase1齐+1` | `direct-upload`@2026-11-13→`v4.3.0`；multer 仍大量保留 | [entry](./entries/2026-11-multipart-image-upload-retire.md) |
+| `platform-metadata-drop-cms-site-print-vis` | `planned` | migration `0404`∈`4.3.0`；**UI Phase1 未收完** | `≥UI-Phase1+1` | 刷列恒 true 已进 4.3；表单三轴仍在 | [entry](./entries/2026-11-platform-metadata-drop-cms-site-print-vis.md) |
+| `summary-payment-from-revenues` | `planned` | `TBD`（未落地） | `≥Phase1+1` | 未见收入派生 Phase 1 commit | [entry](./entries/2026-10-summary-payment-from-revenues.md) |
+| `ledger-intake-manual-ledger-block-id` | `planned` | `TBD` | 无 Phase N | 生产确认后关台账 | [entry](./entries/2026-10-ledger-intake-manual-ledger-block-id.md) |
+| `user-address-last-used-delivery` | `planned` | 未落地 | `≥Phase1+1` | 全仓无 `last_used_delivery` 实现 | [entry](./entries/2026-06-user-address-last-used-delivery.md) |
+| `wechat-c-order-item-list-section` | `planned` | 未落地 | `≥Phase1+1` | C 端仍内联 `order-line-display` | [entry](./entries/2026-06-wechat-c-order-item-list-section.md) |
+| `profile-error-copy-i18n` | `planned` | 未落地 | `≥Phase1+1` | codebase 仍有中文 `PROFILE_ERROR_COPY` | [entry](./entries/2026-06-profile-error-copy-i18n.md) |
+| `sih-format-allowlist-webp-png` | `planned` | N/A | C4 回填后 | 非纯版本 Gate | [entry](./entries/2026-09-sih-format-allowlist-webp-png.md) |
+| `order-terminal-status-inventory` | `planned` | 盘点 | N/A | 非兼容层清理 | [entry](./entries/2026-06-order-terminal-status-inventory.md) |
 
 ---
 

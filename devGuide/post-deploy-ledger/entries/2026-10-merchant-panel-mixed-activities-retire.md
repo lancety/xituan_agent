@@ -1,14 +1,17 @@
 # Merchant panel：退役混合 activities 列表 API
 
-Last updated: 2026-10-07
+Last updated: 2026-11-15
 
 | 字段 | 值 |
 |------|-----|
 | **ID** | `merchant-panel-mixed-activities-retire` |
-| **状态** | `planned` |
-| **当前已部署** | —（Phase 1 代码中：新客户端分接口；backend **保留** 混合路由） |
-| **待完成** | Phase 1 发版确认 → Phase N 删除 `GET /activities` + `listActivities` |
-| **Gate** | 生产 WeChat 商家面板版本已切分接口（首页团购/预定分 section），且 **全量**；可观测期内混合 `/activities` 调用可忽略或为 0 |
+| **状态** | `blocked` |
+| **Phase1 首次进版** | `v4.0.0`（微信 home→`getOffersList`@2026-10-07；backend 保留混合路由） |
+| **最早可清理** | `≥4.1.0`（**逾期未做**） |
+| **下一可执行** | `≥4.4.0` |
+| **当前已部署** | Phase 1 自 4.0；混合 API 仍保留 |
+| **待完成** | Phase N 删 `GET /activities` + `listActivities` |
+| **Gate** | WeChat 商家面板分接口全量；混合 `/activities`≈0 |
 | **创建日** | 2026-10-07 |
 
 **部署尾项:** 本 entry

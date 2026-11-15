@@ -1,14 +1,17 @@
 # Non-same-day shipping: WeChat 旧版超距离兼容
 
-Last updated: 2026-08-15
+Last updated: 2026-11-15
 
 | 字段 | 值 |
 |------|-----|
 | **ID** | `non-same-day-wechat-compat` |
-| **状态** | `planned` |
-| **当前已部署** | — |
-| **待完成** | Phase 1（backend 双路径）→ Phase N（去掉 `allowNonSameDay` 兼容层） |
-| **Gate** | WeChat 含 AusPost 结账的版本审核通过并 **全量** 后，再删除 legacy `DELIVERY_DISTANCE_EXCEEDED` 分流 |
+| **状态** | `blocked` |
+| **Phase1 首次进版** | backend `allowNonSameDay`→`v3.9.3`（2026-08-15）；客户端 AusPost 结账 Gate→`v3.11.0`（微信 `AUSPOST_PP`@2026-09-01） |
+| **最早可清理** | `≥3.12.0`（3.11 全量后；**逾期未做**） |
+| **下一可执行** | `≥4.4.0`（现全端 4.3.0，确认旧包无流量后再清） |
+| **当前已部署** | Phase 1 早已进版；`allowNonSameDay` 仍保留 |
+| **待完成** | Phase N 去掉兼容层 |
+| **Gate** | WeChat AusPost 结账版本（自 3.11）全量；legacy 分流可删 |
 | **创建日** | 2026-08-15 |
 
 ## 背景

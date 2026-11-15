@@ -1,14 +1,16 @@
 # WeChat C-end: unify order product list with main-package order-item-list-section
 
-Last updated: 2026-06-16
+Last updated: 2026-11-15
 
 | Field | Value |
 |-------|-------|
 | **ID** | `wechat-c-order-item-list-section` |
 | **Status** | `planned` |
+| **Phase1 版本** | `TBD`（C 端 6 页仍内联 `order-line-display`） |
+| **可清理版本** | `≥Phase1+1`（删 trade 内联列表 / 冗余组件） |
 | **Deployed** | — |
 | **Pending** | Phase 1 → Phase 2 |
-| **Gate (Phase 2)** | WeChat 小程序新版本（含本改动）全量发布后，再删除 trade 分包内联商品列表与冗余 `order-line-display` 引用 |
+| **Gate (Phase 2)** | 含 Phase 1 的统一 WeChat 版本全量后再删 trade 内联与冗余引用 |
 | **Created** | 2026-06-16 |
 
 ## Background

@@ -5,7 +5,7 @@ Last updated: 2026-11-15
 > **权威目录**：`xituan_agent/devDesign/`（扁平）。  
 > **读法**：L0 → L1 → **L2 索引（短）** → **只开 1 个专题 md**。禁止默认灌入某端全部专题。  
 > **全端硬规矩**（详见 [`00-platform-wide.md`](./00-platform-wide.md)）：  
-> **Mobile first** · 移动 / 平板 / 桌面宽屏 · **亮+暗** · 商标基调 **主青 + 副黄紫 + 棕黑白** · Badge 功能色谱（见 [`brand.md`](./brand.md) / [`badge.md`](./badge.md)）。
+> **Mobile first** · 移动 / 平板 / 桌面宽屏 · **亮+暗** · 商标基调 **主青 + 副黄紫 + 棕黑白** · **零售紫 / 团购青 / 预定橙黄** · Badge 功能色谱（见 [`brand.md`](./brand.md) / [`badge.md`](./badge.md)）。
 
 ## 继承
 
