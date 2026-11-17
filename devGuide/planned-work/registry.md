@@ -14,7 +14,7 @@ Cursor plan 三桶：草稿 `C:/Users/lance/.cursor/plans/`；待做 / 已完成
 |----|------|------|---------------|----------|-------|--------------|
 | `system-message-inbox` | `in_progress` | 系统消息 PG inbox + 双端混排会话；Platform Support 行宽/i18n | **high** 本轮实现 | Migration+双写+App UI | [entry](./entries/2026-11-system-message-inbox.md) | 2026-11-14 |
 | `account-deletion-self-serve` | `planned` | 自助删号 7 天可取消；ADMIN 关店 inactive；用户 status=deleted | **high** App Store 5.1.1(v) | 重提前落地 API+双端+CMS/Site；iOS 去 PassKit | [entry](./entries/2026-11-account-deletion-self-serve.md) | 2026-11-11 |
-| `merchant-ios-iap-pay-restore` | `planned` | Merchant iOS 上 IAP 时恢复订阅购买；勿再开 Stripe 订阅结账 | **mid** | 产品拍板 IAP 商品与后端校验后再开 | [entry](./entries/2026-11-merchant-ios-iap-pay-restore.md) | 2026-11-11 |
+| `merchant-ios-iap-pay-restore` | `planned` | Merchant iOS IAP：Connect+验票+expo-iap 已接线；待沙盒实测/提审 | **mid** | 本地 `build:local:ios` + 沙盒购；Paid Apps 后正式售 | [entry](./entries/2026-11-merchant-ios-iap-pay-restore.md) | 2026-11-17 |
 | `delivery-phone-merchant-mask` | `planned` | 履约手机对商户脱敏/中间号；自配送与 AusPost 各路径 | **mid** | 拍场景矩阵；先脱敏+AusPost 直传；中间号后置（勿用 AWS） | [entry](./entries/2026-11-delivery-phone-merchant-mask.md) | 2026-11-08 |
 | `multilingual-ai-empty-locale-fill` | `planned` | 长文本空槽 AI 填充 + 数据块挖洞；保存前/语言切换批处理 | **high** | `fillEmptyLocales` + `MULTILINGUAL_TEXT_TRANSLATE` + shouldRunFill | [entry](./entries/2026-11-multilingual-ai-empty-locale-fill.md) | 2026-11-08 |
 | `auspost-mypost-dual-track` | `in_progress` | MyPost **CMS MVP**（加固已齐；Sign Off 交 Production Request） | **high** 当前窗口 | 补真实 JSON/标签 PDF + 签 Tech Sign Off → 回传 Abdul | [entry](./entries/2026-11-auspost-mypost-dual-track.md) | 2026-11-11 |

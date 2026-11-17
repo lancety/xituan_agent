@@ -66,7 +66,16 @@
 
 ---
 
-## 7. 修订记录
+## 7. 订阅改价（现行操作，与旧 Airwallex 结论无关）
+
+与商户协议第七节同一套说法。平台改「月费 AUD」并同步 Stripe 时：新建 Price、停用旧 Price；已在订商户仍挂旧 Price，需在 platform「商户订阅」点「迁移 Price」（本周期不补差价）。**保存月费不自动发通知**；用「通知改价」填写生效时间后，只发给匹配套餐且未取消的订阅主账号（App 系统消息 + 邮件），并把 `price_change_notice_*` 写入套餐表。再改月费会清空已通知状态。
+
+Apple：实付价只在 App Store Connect；平台列表上的 ×1.15 建议价仅供抄档，不推送、不入库。预付无自动续订，通知日后新购按新月费。
+
+月订暂不使用优惠券（CMS 保留空状态；后端忽略 `promotionCode`）。预付券仍用于 CMS / Android。iOS 商户 App 不显示券 UI。
+
+## 8. 修订记录
 
 - 初稿：订阅方向备忘（系统内客户为主 + PSP 原生订阅作扣款载体 + 平台会员费倾向 Airwallex 单商户；避免三 PSP 全量原生订阅并行）。
 - 修订：与 **Connect 抽成 / xituan_platform** 解耦；明确 **订阅 → 产品模型 + CMS**；补充 **Airwallex vs Stripe Webhook 入口差异、归一化后半段可对齐**；交叉引用 Stripe Connect 实施计划。
+- 增补：§7 订阅改价（Stripe 迁移 / Apple Connect / 预付 / 手动通知 / 月订无券）。
