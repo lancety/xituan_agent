@@ -5,12 +5,13 @@ Last updated: 2026-11-15
 | 字段 | 值 |
 |------|-----|
 | **ID** | `platform-metadata-drop-cms-site-print-vis` |
-| **状态** | `planned` |
-| **Phase1 版本** | `TBD`（建议目标 `4.4.0`：去三轴 UI/读响应；列恒 true 保留） |
-| **可清理版本** | `≥Phase1+1`（例 Phase1@4.4 → cleanup@≥4.5 DROP 三列） |
-| **当前已部署** | migration `0404` 刷存量；Platform UI/写类型 Phase 1 尚未收完 |
-| **待完成** | 实施 Phase 1 定版号 → Phase N DROP 三列 |
-| **Gate** | 含 Phase 1 的统一版本生产全量；无客户端依赖三轴响应 |
+| **状态** | `blocked` |
+| **Phase1 版本** | migration `0404` 刷列恒 true，已在 `4.3.0` |
+| **可清理版本** | `4.4.0` |
+| **下一可执行** | `4.4.0` |
+| **当前已部署** | 存量三列已刷 true；Platform 表单和读响应仍有 `visibleInCms` / `visibleInSite` / `visibleInPrint` |
+| **待完成** | **4.4.0 清除并可删**：去掉三轴 UI 与响应字段，DROP 这三列 |
+| **Gate** | 开发者已定 4.4.0 可删。商户分类 overlay 仍负责 CMS/站点/打印是否展示 |
 | **创建日** | 2026-11-07 |
 
 ## 背景

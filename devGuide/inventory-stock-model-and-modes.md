@@ -1,6 +1,8 @@
-## Inventory stock model & order modes
+# 库存数量模型与订单模式
 
-本说明文档整理 `regular / offer / preorder` 三种模式下的库存模型与数据流转约定，统一 `products / offer_products / products_preorderable` 三张表及相关 Service 的语义，后续做库存相关改动时，应优先参考此文档。
+Last updated: 2026-11-16
+
+本说明只约定 `stock` / `reserved_stock` / `total_stock` 和零售、团购、预定分仓。谁在什么状态下放锁、退款、回填，见 [inventory-lock-refund-restock.md](./inventory-lock-refund-restock.md)。
 
 ### 1. 三个主表与字段含义
 
@@ -86,7 +88,9 @@
 
 #### 3.3 取消/过期释放（`releaseOrderStock`）
 
-- 目标：订单取消或过期后，把预留的数量重新释放为可售库存。  
+未付取消或过期才放锁。已付取消、删除走退货回填，不调用本函数。组合表见 [inventory-lock-refund-restock.md](./inventory-lock-refund-restock.md)。
+
+- 目标：未付订单取消或过期后，把预留的数量重新释放为可售库存。  
 - 操作（有限制库存时）：
   - `stock += quantity`
   - `reserved_stock -= quantity`

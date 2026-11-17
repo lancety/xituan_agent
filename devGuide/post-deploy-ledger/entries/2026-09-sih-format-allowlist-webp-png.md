@@ -6,11 +6,11 @@ Last updated: 2026-11-15
 |------|-----|
 | **ID** | `sih-format-allowlist-webp-png` |
 | **状态** | `planned` |
-| **Phase1 版本** | N/A（format 白名单本期不动；部署样本时手动 `SIZE_OPTS`） |
-| **可清理版本** | C4 回填完成后（**非纯版本 Gate**）；再收紧 SIH + 删 jpg 过渡 |
-| **当前已部署** | format 白名单仍含 jpeg/jpg |
-| **待完成** | ① 手动 `SIZE_OPTS`；② Gate 后 Phase N：只留 webp\|png + 清展示过渡 |
-| **Gate** | C4 全量：主 path 仅为 `.webp`/`.png`；`format=jpeg`≈0；无 jpg→SIH 回退依赖 |
+| **Phase1 版本** | N/A |
+| **可清理版本** | **以后再决定**（不排版本） |
+| **当前已部署** | format 白名单仍含 jpeg/jpg。目录图已走 webp/png + `_w*`；仍可能打到 SIH 的是未转 webp 的旧 jpg（主要是老聊天图） |
+| **待完成** | 以后再决定是否收紧白名单、是否删 jpg→SIH 过渡 |
+| **Gate** | 未定。不要按 4.4.0 清理 |
 | **创建日** | 2026-09-05 |
 | **定案补记** | 2026-09-06：**终态只保留 webp + png**。过渡期 jpg 走 SIH；回填后过渡分支必须删掉。 |
 

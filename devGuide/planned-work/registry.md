@@ -24,7 +24,8 @@ Cursor plan 三桶：草稿 `C:/Users/lance/.cursor/plans/`；待做 / 已完成
 | `app-update-check-ux` | `in_progress` | 硬/soft 按 OS 拆；底部条按钮；OTA reload；4h | high | 真机/发版验收；Platform 填 recommended/apk | [entry](./entries/2026-11-app-update-check-ux.md) | 2026-11-07 |
 | `android-apk-sidecar-trust` | `planned` | 官网 APK 同签名/HTTPS/哈希公示（旁路可信实践） | mid | 有无 Play 或要挂包时；下载页+发布清单 | [entry](./entries/2026-11-android-apk-sidecar-trust.md) | 2026-11-07 |
 | `category-cache-cross-clients` | `planned` | 分类 sync 契约复用到 CMS/Site/微信/Customer | mid | Merchant App 已完成；其余端待启动 | [entry](./entries/2026-11-category-cache-cross-clients.md) | 2026-11-07 |
-| `last-used-delivery-address` | `planned` | 默认地址→最近配送地址 | low | 空窗启动；Gate 后 DROP 见 post-deploy | [entry](./entries/2026-11-last-used-delivery-address.md) | 2026-11-07 |
+| `profile-error-copy-i18n` | `planned` | 登录/资料错误文案从 codebase `PROFILE_ERROR_COPY` 挪到各端 i18n | **mid** | 空窗做；API 已是 BusinessError code | [entry](./entries/2026-06-profile-error-copy-i18n.md) | 2026-11-16 |
+| `last-used-delivery-address` | `planned` | 默认地址→最近配送地址 | **low** | 空窗再做 | [entry](./entries/2026-11-last-used-delivery-address.md) | 2026-11-16 |
 | `gst-effective-date-cutover` | `blocked` | GST 生效日 D 切齐（**仅 todo，不实施**） | **未决：ATO 的 D** | 等 D；未决项见 entry；SQL 草稿已备勿跑 | [entry](./entries/2026-10-gst-effective-date-cutover.md) | 2026-10-30 |
 | `fb-product-reports-enforcement` | `planned` | 商品合规举报 App+S3 备份+Platform 商品 Tab；下架/`pt::`/商户邮件/协议 | Platform 聊天反馈管理页上线后主动启动 | SQL 已在 0373；先实现聊天管理页，再开本 entry | [entry](./entries/2026-10-fb-product-reports-enforcement.md) | 2026-10-20 |
 | `platform-feedback-ai-triage` | `planned` | 多类型反馈 AI 预处理 + 自动/人工裁定 | IM 举报/屏蔽上架后主动启动设计 | 先写反馈类型/报告 schema；Phase 1 IM 勿接真模型 | [entry](./entries/2026-10-platform-feedback-ai-triage.md) | 2026-10-20 |

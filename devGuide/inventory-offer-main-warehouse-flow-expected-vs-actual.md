@@ -7,6 +7,8 @@
 | 路径 | 说明 |
 |------|------|
 | `xituan_agent/devGuide/inventory-stock-model-and-modes.md` | 三模式字段含义、预留/确认/释放、分仓原则（**§4 支付路径已与代码核对，见文内更正**） |
+| `xituan_agent/devGuide/inventory-lock-refund-restock.md` | 订单状态 × 支付状态 × 顾客/商户操作：锁、退款、回填最终表 |
+| `.cursor/skills/inventory-lock-refund-restock/SKILL.md` | 同上，给改取消/删除/退款的 agent |
 | `xituan_agent/devGuide/order-system.md` | 订单与分层库存、团购「借用」文字描述（部分为**目标设计**，需与本文件「当前实现」对照） |
 | `xituan_agent/docs/offer-stock-system-design.md` | 团购借用/截单返还的**设计说明**（伪代码级，**未保证与实现一致**） |
 | `xituan_agent/docs/stock-system-update.md` | 库存相关变更记录 |

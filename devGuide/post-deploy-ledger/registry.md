@@ -1,6 +1,6 @@
 # Post-Deploy Registry（巡检入口）
 
-Last updated: 2026-11-15
+Last updated: 2026-11-17
 
 **日常巡检：「检查 post-deploy」** — 打开本文件，活跃表行数应为 **0** 表示无待收尾部署债务。非 0 则点击 **Entry** 查看 Gate 与勾选清单。
 
@@ -24,20 +24,16 @@ Last updated: 2026-11-15
 | `product-storage-type-columns` | `blocked` | `3.9.2` | `TBD`（退役 schema 同批） | `TBD` | migrations `0348/0349`@→`v3.9.2`；CMS metadata 三项仍保留 | [entry](./entries/2026-08-product-storage-type-columns.md) |
 | `order-activity-scopes` | `blocked` | `3.8.0` | `TBD`（停 dual-write 后下一版） | `TBD` | scopes@2026-06-07→`v3.8.0`；旧列 dual-write 仍在 | [entry](./entries/2026-06-order-activity-scopes.md) |
 | `metadata-rebind-provenance-batch` | `blocked` | `4.0.0` | 数据清洗（非纯版本） | 抽查后排期 | migration `0363`→`v4.0.0` | [entry](./entries/2026-09-metadata-rebind-provenance-batch.md) |
+| `multipart-image-upload-retire` | `blocked` | 直传域 `4.3.0` | `4.4.0` | `4.4.0` | 4.4 剩余业务图改 path 并删 multer | [entry](./entries/2026-11-multipart-image-upload-retire.md) |
+| `platform-metadata-drop-cms-site-print-vis` | `blocked` | 刷列 `4.3.0` | `4.4.0` | `4.4.0` | 4.4 去三轴 UI 并 DROP 三列 | [entry](./entries/2026-11-platform-metadata-drop-cms-site-print-vis.md) |
+| `summary-payment-from-revenues` | `blocked` | 派生已落地 | `4.4.0` | `4.4.0` | 4.4 停双写并 DROP 三列；`countPaidSummaries` 仍读 `isPaid` | [entry](./entries/2026-10-summary-payment-from-revenues.md) |
 
 ### B. Phase 1 未齐 / 未定版 — 先落地再标清理版
 
 | ID | 状态 | Phase1 | 可清理 | 备注 | Entry |
 |----|------|--------|--------|------|-------|
-| `multipart-image-upload-retire` | `planned` | 直传域自 `4.3.0` 起；**业务图未全切** | `≥Phase1齐+1` | `direct-upload`@2026-11-13→`v4.3.0`；multer 仍大量保留 | [entry](./entries/2026-11-multipart-image-upload-retire.md) |
-| `platform-metadata-drop-cms-site-print-vis` | `planned` | migration `0404`∈`4.3.0`；**UI Phase1 未收完** | `≥UI-Phase1+1` | 刷列恒 true 已进 4.3；表单三轴仍在 | [entry](./entries/2026-11-platform-metadata-drop-cms-site-print-vis.md) |
-| `summary-payment-from-revenues` | `planned` | `TBD`（未落地） | `≥Phase1+1` | 未见收入派生 Phase 1 commit | [entry](./entries/2026-10-summary-payment-from-revenues.md) |
-| `ledger-intake-manual-ledger-block-id` | `planned` | `TBD` | 无 Phase N | 生产确认后关台账 | [entry](./entries/2026-10-ledger-intake-manual-ledger-block-id.md) |
-| `user-address-last-used-delivery` | `planned` | 未落地 | `≥Phase1+1` | 全仓无 `last_used_delivery` 实现 | [entry](./entries/2026-06-user-address-last-used-delivery.md) |
-| `wechat-c-order-item-list-section` | `planned` | 未落地 | `≥Phase1+1` | C 端仍内联 `order-line-display` | [entry](./entries/2026-06-wechat-c-order-item-list-section.md) |
-| `profile-error-copy-i18n` | `planned` | 未落地 | `≥Phase1+1` | codebase 仍有中文 `PROFILE_ERROR_COPY` | [entry](./entries/2026-06-profile-error-copy-i18n.md) |
-| `sih-format-allowlist-webp-png` | `planned` | N/A | C4 回填后 | 非纯版本 Gate | [entry](./entries/2026-09-sih-format-allowlist-webp-png.md) |
-| `order-terminal-status-inventory` | `planned` | 盘点 | N/A | 非兼容层清理 | [entry](./entries/2026-06-order-terminal-status-inventory.md) |
+| `wechat-c-order-item-list-section` | `planned` | 未落地 | 未定 | 2026-11-16 仍在用，不能 4.4 删 | [entry](./entries/2026-06-wechat-c-order-item-list-section.md) |
+| `sih-format-allowlist-webp-png` | `planned` | N/A | 以后再决定 | 老 jpg（主要是聊天图）是否还留 SIH jpeg | [entry](./entries/2026-09-sih-format-allowlist-webp-png.md) |
 
 ---
 
@@ -45,6 +41,8 @@ Last updated: 2026-11-15
 
 | ID | 状态 | 完成日 | Entry | 备注 |
 |----|------|--------|-------|------|
+| `order-terminal-status-inventory` | `done` | 2026-11-17 | [entry](./entries/2026-06-order-terminal-status-inventory.md) | 随 4.4.0 上线；无 Phase N（非兼容层清理） |
+| `ledger-intake-manual-ledger-block-id` | `done` | 2026-11-16 | [entry](./entries/2026-10-ledger-intake-manual-ledger-block-id.md) | 新建已写 `ledger_block_id`；绑定不写；删块预览与税锁已在 |
 | `non-same-day-wechat-compat` | `done` | 2026-11-15 | [entry](./entries/2026-08-non-same-day-wechat-compat.md) | Phase N：去掉 `allowNonSameDay`；超距离统一非当日路径 |
 | `shipping-service-pp-exp-alias` | `done` | 2026-11-15 | [entry](./entries/2026-09-shipping-service-pp-exp-alias.md) | Phase N：删 compat 夹 + 入站 PP/EXP 别名 / legacy_short 出站 |
 | `merchant-panel-mixed-activities-retire` | `done` | 2026-11-15 | [entry](./entries/2026-10-merchant-panel-mixed-activities-retire.md) | Phase N：删混合 `GET /activities` + `listActivities` + WeChat `getActivities` |

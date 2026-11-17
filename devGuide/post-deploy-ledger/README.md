@@ -111,7 +111,7 @@ flowchart TD
 
 ## Entry 模板
 
-见 [`entries/2026-06-user-address-last-used-delivery.md`](./entries/2026-06-user-address-last-used-delivery.md)（示例）。
+见 [`entries/2026-11-orders-reorder-preorder-retire.md`](./entries/2026-11-orders-reorder-preorder-retire.md)（示例）。
 
 **状态**：`planned` | `active` | `blocked` | `done` | `cancelled`
 

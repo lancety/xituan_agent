@@ -5,12 +5,13 @@ Last updated: 2026-11-15
 | Field | Value |
 |-------|-------|
 | **ID** | `summary-payment-from-revenues` |
-| **Status** | `planned` |
-| **Phase1 版本** | `TBD`（收入派生读侧尚未落地） |
-| **可清理版本** | `≥Phase1+1`（DROP `total_paid` / `is_paid` / `paid_date`） |
-| **Deployed** | — |
-| **Pending** | Phase 1 收入派生 → Phase N DROP 三列 |
-| **Gate** | CMS + Merchant 用派生同名字段；无人再写三列；生产抽查一致 |
+| **Status** | `blocked` |
+| **Phase1 版本** | 收入派生已在代码中（列表/详情/邮件/dashboard/`confirmSummaryPayment`） |
+| **可清理版本** | `4.4.0` |
+| **下一可执行** | `4.4.0` |
+| **Deployed** | 读路径 `applyDerivedPaymentToSummaries`；确认收款只建收入再双写三列。`PUT .../status` 已拒绝 |
+| **Pending** | **4.4.0 清除并可删**：停双写，DROP `total_paid` / `is_paid` / `paid_date`。`countPaidSummariesByMerchantId` 仍按列 `isPaid` 计数，删列时改成收入聚合 |
+| **Gate** | 开发者确认派生已做，4.4.0 可删三列 |
 | **Created** | 2026-10-30 |
 
 ## Background

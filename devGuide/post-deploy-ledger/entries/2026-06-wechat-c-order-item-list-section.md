@@ -6,7 +6,7 @@ Last updated: 2026-11-15
 |-------|-------|
 | **ID** | `wechat-c-order-item-list-section` |
 | **Status** | `planned` |
-| **Phase1 版本** | `TBD`（C 端 6 页仍内联 `order-line-display`） |
+| **Phase1 版本** | `TBD`（2026-11-16 仍在用：C 端 6 页内联 `order-line-display`，不能当 4.4 删除） |
 | **可清理版本** | `≥Phase1+1`（删 trade 内联列表 / 冗余组件） |
 | **Deployed** | — |
 | **Pending** | Phase 1 → Phase 2 |

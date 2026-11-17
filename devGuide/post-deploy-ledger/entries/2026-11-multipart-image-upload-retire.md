@@ -5,12 +5,13 @@ Last updated: 2026-11-15
 | 字段 | 值 |
 |------|-----|
 | **ID** | `multipart-image-upload-retire` |
-| **状态** | `planned` |
-| **Phase1 版本** | `TBD`（全端业务图直传齐的统一版本；`direct-upload` 已有，multer 仍保留） |
-| **可清理版本** | `≥Phase1+1`（Phase1 全量后下一统一发版） |
-| **当前已部署** | `/direct-upload` 已加；各业务 multer 收图仍保留 |
-| **待完成** | 各端直传切完并定 Phase1 版号 → Phase N 清 `req.files` |
-| **Gate** | 五端相关图传均直传+path；multipart 收图≈0；无第三方依赖旧字段 |
+| **状态** | `blocked` |
+| **Phase1 版本** | 直传域 `4.3.0`；业务图未齐 |
+| **可清理版本** | `4.4.0` |
+| **下一可执行** | `4.4.0` |
+| **当前已部署** | `/direct-upload` 已加；商品/新闻/团购/预定/头像/购物车备注/打印模板/商户设置/微信商家面板仍走 multer |
+| **待完成** | **4.4.0 同一批**：剩余业务图改只传 path，并删除这些域的 `req.files` / multer 收图 |
+| **Gate** | 4.4.0 发版窗口。OpenIM 附件另见 `openim-attachment-multipart-retire`，不塞进本条 |
 | **创建日** | 2026-11-13 |
 
 **部署尾项:** 本 entry  

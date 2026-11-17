@@ -1,59 +1,51 @@
 # Order terminal status inventory handling
 
-Last updated: 2026-11-15
+Last updated: 2026-11-17
 
 | Field | Value |
 |-------|-------|
 | **ID** | `order-terminal-status-inventory` |
-| **Status** | `planned` |
-| **Phase1 版本** | 盘点（非兼容层 / 非版本 Gate） |
-| **可清理版本** | N/A（Phase 2 是实现统一库存处理，不是删兼容层） |
-| **Deployed** | — |
-| **Pending** | Phase 1 analysis → Phase 2 implementation |
-| **Gate (Phase 2)** | 终态转换库存矩阵确认；orphaned locks 已盘点；退款/取消 smoke OK |
+| **Status** | `done` |
+| **Phase1 版本** | `4.4.0`（随统一发版上线） |
+| **可清理版本** | N/A — **无 Phase N**：行为改动一次上线，无 dual-write / 删兼容层 / DROP |
+| **Deployed** | 排入 `4.4.0`；本条按「无需后续清理」于 2026-11-17 归档 |
+| **Pending** | — |
+| **Gate (Phase 2)** | 已实现：未付取消/过期放锁；已付不能改成取消/删除；退款按行退货再标退款状态 |
 | **Created** | 2026-06-18 |
 
-## Background
+## 为何无 Phase N
 
-当前本次修复只处理 `EXPIRED -> PROCESSING`：恢复处理中前重新 reserve stock，库存不足时返回 `PRODUCT_STOCK_INSUFFICIENT`。
+本项是库存锁 / 退款回填的**行为对齐**（`ORDER_NEEDS_REFUND`、`REFUND_ONLY_WHILE_RESERVED`、退款退货行），不是先加兼容层再删字段或旧路由。全端随 `4.4.0` 同发即可，**没有**待 Gate 后的清理债务。
 
-另一个独立风险是：通用状态转换服务 `OrderStatusService.transitionOrderStatus()` 目前转入 `CANCELLED` / `EXPIRED` / `REFUNDED` 时没有统一处理库存锁释放或确认。部分专用入口已经有库存处理，例如 `cancelByMerchant()` 会按付款状态选择 `confirmStockOnPayment()` 或 `releaseOrderStock()`，但通用状态服务只更新状态与状态历史。
+组合表仍见：[inventory-lock-refund-restock.md](../../inventory-lock-refund-restock.md)。
 
-## Phase map
+## Phase map（回顾）
 
-| Phase | Scope | Deploy | Verify |
-|-------|-------|--------|--------|
-| **1** | 盘点所有订单终态转换入口、付款状态组合、库存锁状态；定义转入取消/过期/退款时应 release / confirm / no-op 的决策矩阵 | pending | 矩阵覆盖 CMS、WeChat merchant panel、cron、payment/refund handler、manual cancel |
-| **2** | 按矩阵统一库存处理逻辑，避免通用状态服务绕过库存；必要时抽出单一库存状态转换 helper | pending | 未支付订单取消/过期释放锁；已支付订单不误还库存；退款路径不重复扣减或释放 |
+| Phase | Scope | 结果 |
+|-------|-------|------|
+| **1** | 盘点入口与付款/锁组合；定矩阵 | 已定稿 |
+| **2** | 未付放锁；已付拒裸改终态；顾客已付 pending 取消走退款；按行退货回填 | 代码 + 客户端提示已落地；集成测试 47 项通过 |
 
 ## Post-deploy debt
 
 ### Phase 1 analysis
 
-- [ ] 列出所有状态转换入口：`OrderStatusService.transitionOrderStatus()`、`OrderService.updateOrderStatusForAdmin()`、`cancelByMerchant()`、`InventoryCronService`、payment/refund handlers、WeChat merchant panel。
-- [ ] 区分 `paymentStatus`: `pending` / `pending_capture` / `success` / `committed` / `refunded` / `partially_refunded`。
-- [ ] 区分库存锁状态：存在 `ORDER_RESERVED`、已 `confirmStockOnPayment()` 清锁、已 `releaseOrderStock()` 清锁、历史 orphaned lock。
-- [ ] 定义目标状态为 `CANCELLED`、`EXPIRED`、`REFUNDED`、`DELETED` 时的库存动作矩阵。
-- [ ] 明确 `REFUNDED` 是否只应由 refund handler 驱动库存恢复，避免 admin status update 直接误释放。
-- [ ] 盘点 `getStockOccupancyForAdmin()` 返回的 orphaned/offline pending 数据是否需要配套清理工具或人工 SOP。
+- [x] 状态转换入口与付款/锁组合盘点（见上表与实现）
+- [x] 已定：未付 → `CANCELLED`/`EXPIRED` 放锁；已付禁止 `CANCELLED`/`EXPIRED`/`DELETED`，走退款按行退货
+- [x] 还库存只发生在退款的退货行；手动改 `REFUNDED` 不入库
 
 ### Phase 2 implementation
 
-- [ ] 给通用状态服务接入矩阵决策后的库存处理，或改造所有调用方走单一库存安全入口。
-- [ ] 确保已付款订单转取消/过期不会把已确认销售库存错误释放回可售库存。
-- [ ] 确保未付款/待授权订单转取消/过期释放 `ORDER_RESERVED` lock。
-- [ ] 确保退款路径只在真实退款结算后恢复库存，避免状态手动切换导致重复恢复。
-- [ ] 补充单测/集成测试覆盖 paid-like、unpaid、pending_capture、orphaned lock 场景。
-- [ ] Entry → `done`；registry archived。
-
-## Technical notes
-
-- 不要把 Phase 2 和当前 `EXPIRED -> PROCESSING` 恢复库存修复混在同一改动中。
-- 库存动作应继续保持模式隔离：`REGULAR` 只动 `products`，`OFFER` 只动 `offer_products`，`PREORDER` 只动 `products_preorderable`。
-- 错误响应应使用 `BusinessError` code，不要把中文 `Error.message` 作为 API contract。
+- [x] 通用状态服务 / 调用方库存处理
+- [x] 未付放锁；已付拒绝并提示退款
+- [x] 支付成功后顾客取消：退款 + 回填路径
+- [x] 退款按行；全额才标订单 `REFUNDED`
+- [x] 单测 / 集成：`order-item-return` + `inventory-outcome.api`（2026-11-17 再跑 47 通过）
+- [x] Entry → `done`；registry 归档
 
 ## Links
 
-- Current status service: `xituan_backend/src/domains/order/services/order-status.service.ts`
-- Current inventory service: `xituan_backend/src/domains/inventory/services/inventory-management.service.ts`
-- Admin occupancy check: `xituan_backend/src/domains/order/services/order.service.ts`
+- Status: `xituan_backend/src/domains/order/services/order-status.service.ts`
+- Inventory: `xituan_backend/src/domains/inventory/services/inventory-management.service.ts`
+- Returns: `xituan_backend/src/domains/order/services/order-item-return.service.ts`
+- Cursor plan → `.cursor/plans_completed/库存退款回填_72183848.plan.md`
