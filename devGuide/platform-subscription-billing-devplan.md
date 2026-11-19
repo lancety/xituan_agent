@@ -4,6 +4,8 @@
 
 **关联**：Stripe Connect 卖场、抽成、`account.updated` 等与本文 **订阅业务解耦**；边界见 Cursor 计划 `stripe_connect_站内嵌入_onboarding_*.plan.md` 中「双方确认结论摘要」与「CMS vs Platform 职责」。
 
+**商店渠道（Apple IAP / Google Play）月订、ASN/RTDN、占用与统一权益**：见权威文档 [`platform-store-iap-subscription.md`](./platform-store-iap-subscription.md) 与 skill `platform-store-iap-subscription`（与本文钱包/PSP 方向解耦）。
+
 ---
 
 ## 1. 业务背景
