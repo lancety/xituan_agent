@@ -110,11 +110,13 @@ Google：应对齐同一「新鲜交易 + 验票后再 acknowledge」模式（�
 
 | 商店事件（概念） | Core 操作 |
 |------------------|-----------|
-| 新订 / 续费 / 重新订阅 | `activateMonthly`（`changeKind` renew/initial/upgrade…） |
+| 购买付款成功（状态 `ACTIVE` 且交易号、商品对上） | `activateMonthly` |
+| 新订 / 续费扣款成功（`DID_RENEW`，含 `BILLING_RECOVERY`）/ 重新订阅 | `activateMonthly`（`changeKind` renew/initial/upgrade…） |
 | 降级偏好 | 挂起 pending downgrade；到期再 `applyPendingDowngradeIfDue` |
 | 关闭/打开自动续订 | `setAutoRenewDisabled` / `Enabled` |
-| 扣款失败 | `markBillingRetry`（是否 grace 看 subtype） |
-| 过期 / 退款 / 撤销 / grace 过期 | `cutAccessNow` |
+| 续费没扣到（`DID_FAIL_TO_RENEW`） | 只记录。不改 `current_period_end`，不改系统 7 天 `grace_period_end`，不停功能 |
+| 续费链结束（`EXPIRED` / `GRACE_PERIOD_EXPIRED`）且系统 7 天已过 | `cutAccessNow`。7 天未过则不停，交给到期任务进只读 |
+| 退款 / 撤销 | 立刻 `cutAccessNow` |
 | TEST | 记日志，不改权益 |
 
 入口：
