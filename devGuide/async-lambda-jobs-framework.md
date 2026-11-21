@@ -129,7 +129,8 @@ Backend 统一旁路任务：写 `platform.async_jobs` → 按环境投递 → �
 |------|------|
 | `dispatch` + inline | Backend 已跑、queue 空 → 与 demo 相同 |
 | Fixture | `node local-invoke.js --fixture` |
-| 手工 HMAC | `jobs:create-normalize` + `local-invoke.js --envelope`（验生产 handler.js） |
+| 手工 HMAC | 自备 `async_jobs` envelope + `local-invoke.js --envelope`（验生产 handler.js） |
+| 批量回填 | `npm run backfill:script:media`（选 job → dry-run → 确认） |
 
 ## HMAC（生产 Lambda）
 

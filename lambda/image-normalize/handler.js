@@ -13,6 +13,11 @@ const sharp = require('sharp');
 const DEFAULT_VARIANTS = [64, 128, 256, 512];
 const DEFAULT_MAX_EDGE = 2048;
 const DEFAULT_QUALITY = 80;
+const SHARE_ASPECT_JPEG_QUALITY = 80;
+const SHARE_ASPECT_SPECS = {
+  '1-1': { width: 400, height: 400, suffix: 'w400_1-1' },
+  '5-4': { width: 500, height: 400, suffix: 'w500_5-4' },
+};
 
 /**
  * Keep in sync with xituan_codebase IMAGE_NORMALIZE_VARIANT_POLICY.
@@ -94,6 +99,7 @@ function normalizePayload(raw) {
     quality: Number(raw.quality) > 0 ? Number(raw.quality) : DEFAULT_QUALITY,
     force: Boolean(raw.force),
     variantsOnly: Boolean(raw.variantsOnly),
+    shareAspectCrops: Boolean(raw.shareAspectCrops),
   };
   assertPayloadMatchesPolicy(raw, payload);
   return payload;
@@ -111,6 +117,20 @@ function deriveOutputKeys(sourceKey, format, variants) {
     variantKeys[String(edge)] = `${dir}${base}_w${edge}.${ext}`;
   }
   return { canonicalKey, variantKeys };
+}
+
+function deriveShareAspectKeys(sourceKey) {
+  const slash = sourceKey.lastIndexOf('/');
+  const dir = slash >= 0 ? sourceKey.slice(0, slash + 1) : '';
+  const file = slash >= 0 ? sourceKey.slice(slash + 1) : sourceKey;
+  const base = file.replace(/\.[^.]+$/, '') || file;
+  const baseNoVariant = base
+    .replace(/_w(400_1-1|500_5-4)$/i, '')
+    .replace(/_w(64|128|256|512)$/i, '');
+  return {
+    '1-1': `${dir}${baseNoVariant}_${SHARE_ASPECT_SPECS['1-1'].suffix}.jpg`,
+    '5-4': `${dir}${baseNoVariant}_${SHARE_ASPECT_SPECS['5-4'].suffix}.jpg`,
+  };
 }
 
 async function streamToBuffer(body) {
@@ -183,6 +203,17 @@ async function buildVariant(input, edge, format, quality) {
   return pipeline.webp({ quality }).toBuffer();
 }
 
+async function buildShareAspectJpg(input, width, height, quality) {
+  return sharp(input, { failOn: 'none' })
+    .rotate()
+    .resize(width, height, {
+      fit: 'cover',
+      position: 'centre',
+    })
+    .jpeg({ quality, mozjpeg: true })
+    .toBuffer();
+}
+
 function signCallback(jobId, timestamp, rawBody, secret) {
   const payload = `${jobId}.${timestamp}.${rawBody}`;
   return crypto.createHmac('sha256', secret).update(payload, 'utf8').digest('hex');
@@ -232,27 +263,46 @@ async function processOne(envelope, s3, bucketDefault, secret) {
     payload.format,
     payload.variants
   );
+  const shareAspectCrops = Boolean(payload.shareAspectCrops);
+  const shareKeys = shareAspectCrops ? deriveShareAspectKeys(payload.sourceKey) : null;
   const contentType = payload.format === 'png' ? 'image/png' : 'image/webp';
 
-  let skipped = false;
   const variantsOnly = Boolean(payload.variantsOnly);
+  /** shareAspectCrops + variantsOnly: only ensure share JPGs; do not rebuild display `_w*`. */
+  const shareAspectOnly = shareAspectCrops && variantsOnly;
+  const displayNeed = variantsOnly
+    ? Object.values(variantKeys)
+    : [canonicalKey, ...Object.values(variantKeys)];
+  const shareNeed = shareKeys ? [shareKeys['1-1'], shareKeys['5-4']] : [];
+
+  let displayReady = false;
+  let shareReady = !shareAspectCrops;
   if (!payload.force) {
-    const need = variantsOnly
-      ? Object.values(variantKeys)
-      : [canonicalKey, ...Object.values(variantKeys)];
-    const exists = await Promise.all(need.map((k) => objectExists(s3, bucket, k)));
-    if (exists.every(Boolean)) {
-      skipped = true;
+    if (!shareAspectOnly) {
+      const displayExists = await Promise.all(displayNeed.map((k) => objectExists(s3, bucket, k)));
+      displayReady = displayExists.every(Boolean);
+    } else {
+      displayReady = true;
+    }
+    if (shareNeed.length > 0) {
+      const shareExists = await Promise.all(shareNeed.map((k) => objectExists(s3, bucket, k)));
+      shareReady = shareExists.every(Boolean);
     }
   }
 
-  if (!skipped) {
+  let skipped = !payload.force && (shareAspectOnly ? shareReady : displayReady && shareReady);
+
+  if (!skipped && !shareAspectOnly && (!displayReady || payload.force)) {
     let inputKey = payload.sourceKey;
     if (variantsOnly) {
       const canonicalExists = await objectExists(s3, bucket, canonicalKey);
       if (canonicalExists) {
         inputKey = canonicalKey;
       }
+    }
+
+    if (!(await objectExists(s3, bucket, inputKey))) {
+      throw new Error(`Source object missing in S3: ${inputKey}`);
     }
 
     const getRes = await s3.send(
@@ -277,6 +327,43 @@ async function processOne(envelope, s3, bucketDefault, secret) {
       const key = variantKeys[String(edge)];
       const buf = await buildVariant(input, edge, payload.format, payload.quality);
       await putBuffer(s3, bucket, key, buf, contentType);
+    }
+    displayReady = true;
+  }
+
+  if (shareAspectCrops && shareKeys && (!shareReady || payload.force)) {
+    const key512 = variantKeys['512'];
+    let cropInput = null;
+    if (key512 && (await objectExists(s3, bucket, key512))) {
+      const get512 = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: key512 }));
+      cropInput = await streamToBuffer(get512.Body);
+    }
+    if ((!cropInput || !cropInput.length) && (await objectExists(s3, bucket, canonicalKey))) {
+      const getCanon = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: canonicalKey }));
+      cropInput = await streamToBuffer(getCanon.Body);
+    }
+    if ((!cropInput || !cropInput.length) && (await objectExists(s3, bucket, payload.sourceKey))) {
+      const getSrc = await s3.send(
+        new GetObjectCommand({ Bucket: bucket, Key: payload.sourceKey })
+      );
+      cropInput = await streamToBuffer(getSrc.Body);
+    }
+    if (!cropInput || !cropInput.length) {
+      console.warn(
+        `[image-normalize] skip share aspect; no _w512/canonical/source in S3: ${payload.sourceKey}`
+      );
+      skipped = true;
+    } else {
+      for (const aspect of ['1-1', '5-4']) {
+        const spec = SHARE_ASPECT_SPECS[aspect];
+        const buf = await buildShareAspectJpg(
+          cropInput,
+          spec.width,
+          spec.height,
+          SHARE_ASPECT_JPEG_QUALITY
+        );
+        await putBuffer(s3, bucket, shareKeys[aspect], buf, 'image/jpeg');
+      }
     }
   }
 
@@ -329,8 +416,10 @@ function parseRecordBody(record) {
 // Exported for local-invoke fixture smoke (no S3).
 exports.normalizePayload = normalizePayload;
 exports.deriveOutputKeys = deriveOutputKeys;
+exports.deriveShareAspectKeys = deriveShareAspectKeys;
 exports.buildCanonical = buildCanonical;
 exports.buildVariant = buildVariant;
+exports.buildShareAspectJpg = buildShareAspectJpg;
 exports.patchJob = patchJob;
 
 exports.handler = async (event) => {

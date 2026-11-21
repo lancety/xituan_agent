@@ -12,13 +12,13 @@ Phase C4：对业务 S3 桶内**全部存量图**跑 IMAGE_NORMALIZE（canonical
 ## 当前掌握的信息
 
 - C3 已对新上传 product/news/logo/offer/preorder/preset **以及** cart/order noteImages、user avatar、expense 收据、printTemp 图 enqueue；存量靠 C4 本机回填。**定案不做** onError→SIH。
-- 回填复用 normalize 契约；脚本：`xituan_backend/scripts/backfill-image-normalize.ts`（`npm run jobs:backfill-normalize`）。
+- 回填复用 normalize 契约；交互入口：`npm run backfill:script:media`（引擎：`scripts/backfill-image-normalize.ts`）。
 - **跑法定案：** 大批量用本机批处理，**不**走 production Lambda/SQS；Lambda 仅服务线上增量。
 - 框架文档：[async-lambda-jobs-framework.md](../../async-lambda-jobs-framework.md)
 
 ## 期望目标结果
 
-- [x] 本机扫库脚本：`scripts/backfill-image-normalize.ts`（`npm run jobs:backfill-normalize`）
+- [x] 本机扫库脚本：`scripts/backfill-image-normalize.ts`（入口 `npm run backfill:script:media`）
 - [x] 批处理：按 `IMAGE_NORMALIZE_VARIANT_POLICY` 生成 canonical + 该 kind 允许的 `_w*`（expense 仅 `_w256`）
 - [x] **DB path 回写为 canonical**（`.webp` / `.png`），不再以 `.jpg`/`.jpeg` 作为列表/详情主 path
 - [x] 临时/源 jpg 可在回写后按策略删除（脚本 `--delete-source`）
@@ -35,8 +35,8 @@ Phase C4：对业务 S3 桶内**全部存量图**跑 IMAGE_NORMALIZE（canonical
 
 ## 本机脚本（已落地）
 
-路径：`xituan_backend/scripts/backfill-image-normalize.ts`  
-命令：`npm run jobs:backfill-normalize -- --env development --dry-run`
+路径：`xituan_backend/scripts/backfill/run-backfill.js`（引擎 `backfill-image-normalize.ts`）  
+命令：`npm run backfill:script:media`
 
 - 扫库：product/news/offer/preorder/preset/logo/logoRect/cart note/order note/avatar/expense/openim image（**不含** printTemp 嵌在模板 JSON 的 path）
 - **variants / format**：一律读 codebase `IMAGE_NORMALIZE_VARIANT_POLICY`
