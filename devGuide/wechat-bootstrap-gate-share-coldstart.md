@@ -50,7 +50,7 @@ Gate 文件：`lib/codebase-bootstrap-gate.util.ts`（仅 `startBootstrap()`，�
 
 已用 wechat-main-constants 的组件：`nav-icon`、`direct-entry-home-btn`、`custom-page-nav`。
 
-守门：`npm run lint`（verify + ESLint local rules）。
+守门：`npm run complete-check`（verify + ESLint local rules）。
 
 - `local/no-bootstrap-module-init`：禁止模块求值 / `properties.value` / `data` 默认值读 bootstrap。
 - `local/no-ungated-bootstrap-in-early-lifecycle`：禁止 `Component` 的 `attached`/`created`/`ready`、`pageLifetimes.show`、`observers` 在未 gate 时读 **runtime** bootstrap（`Commerce`、`contentUtil`、`svgBrand*`、`enSiteImageSize`、`generateAcceptLanguageHeader` 等）。不跟跨文件 util，也不把 `ep*` / `en*` enum 包（除 `enSiteImageSize`）当违规，避免误报。合法写法：同函数内先 `await whenBootstrapReady()` / `ensureReady()`，或 `startBootstrap().then(...)`，或 `if (codebaseRuntimeCacheUtil.isReady()) { ... }`。

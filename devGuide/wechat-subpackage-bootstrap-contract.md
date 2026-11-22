@@ -34,16 +34,14 @@ Last updated: 2026-06-15
 | `typing_entity/wechat-subscribe-template.enum.ts` | 订阅消息 template key |
 | `constants/message-notification-sound.enum.ts` | IM 消息提示音常量 |
 
-新增 runtime enum 时：**先**在 manifest 加一行 → `npm run sync:wechat-main-constants` → 改业务 import → `npm run lint`。
+新增 runtime enum 时：**先**在 manifest 加一行 → `npm run sync:wechat-main-constants` → 改业务 import → `npm run complete-check`。
 
 ## Sync / Verify
 
 ```bash
 cd xituan_wechat_app
 npm run sync:wechat-main-constants   # 从 codebase 子模块复制到 lib/wechat-main-constants/
-npm run verify:wechat-main-constants # 校验 drift（lint 前置步骤）
-npm run lint                         # verify + ESLint 五条 local 规则
-npm run check:subpackage-imports     # verify + 分包/codebase 四条（不含 no-bootstrap-module-init）
+npm run complete-check                        # verify drift + 全量 ESLint（含分包/bootstrap 边界）
 ```
 
 生成文件带 `AUTO-GENERATED` 头；路径与 codebase **相对路径一致**（如 `lib/wechat-main-constants/typing_entity/order.enum.ts`）。
@@ -73,13 +71,13 @@ GitHub 仅做版本管理；**编译 / 预览 / 上传**前由 `project.config.j
 
 | 钩子 | 开发者工具「本地设置」填写的命令（Windows） | 检查内容 |
 |------|---------------------------------------------|----------|
-| 编译前预处理 | `call scripts\before-compile.cmd` | `check:subpackage-imports`（verify + 分包 import ESLint） |
-| 预览前预处理 | `call scripts\before-upload.cmd` | lint 全量 |
-| 上传前预处理 | `call scripts\before-upload.cmd` | lint 全量 |
+| 编译前预处理 | `call scripts\before-compile.cmd` | 分包 import ESLint + constants verify（较快） |
+| 预览前预处理 | `call scripts\before-upload.cmd` | 同 `npm run complete-check` 全量 |
+| 上传前预处理 | `call scripts\before-upload.cmd` | 同 `npm run complete-check` 全量 |
 
 **勿用** `scripts/before-compile.cmd`（正斜杠）——会被误解析为命令 `scripts`。
 
-手动等价：`npm run precompile:check` / `npm run preupload:check`
+手动全量检查：`npm run complete-check`
 
 macOS 本地设置可填 `node scripts/before-compile.mjs` / `node scripts/before-upload.mjs`。
 
@@ -95,16 +93,16 @@ macOS 本地设置可填 `node scripts/before-compile.mjs` / `node scripts/befor
 
 Console 勾选 **Preserve log**。保存文件触发的 `$: Compiling` **不会**跑 `beforeCompile`，须手动点「编译」。
 
-手动：`npm run precompile:check` / `npm run preupload:check`
+手动全量：`npm run complete-check`
 
-GitHub Actions / CI **非必需**；multirepo sync 阶段 3 仍建议在 commit 前 verify/sync constants。
+GitHub Actions / CI **非必需**；multirepo sync 阶段 3 仍建议在 commit 前 sync + `complete-check`。
 
 ## Multirepo sync 挂钩
 
 在 [xituan-multirepo-codebase-sync](../../.cursor/skills/xituan-multirepo-codebase-sync/SKILL.md) **阶段 3** 处理 `xituan_wechat_app` 时，在 `git commit` 之前：
 
 1. `npm run sync:wechat-main-constants`
-2. `npm run verify:wechat-main-constants`（或 `npm run lint`）
+2. `npm run complete-check`
 3. 将 `lib/wechat-main-constants/**` 与 manifest/sync 脚本变更一并提交
 
 Commit 示例：`chore(wechat): sync wechat-main-constants after codebase bump`
@@ -121,9 +119,8 @@ Commit 示例：`chore(wechat): sync wechat-main-constants after codebase bump`
 
 ## 验收清单
 
-1. `npm run verify:wechat-main-constants` — 6 文件无 drift
-2. `npm run lint` / `npm run preupload:check` — 0 error
-3. 微信开发者工具已勾选「启用自定义处理命令」；预览/上传被 lint 正确拦截或放行
+1. `npm run complete-check` — constants 无 drift + ESLint 0 error
+2. 微信开发者工具已勾选「启用自定义处理命令」；预览/上传被 check 正确拦截或放行
 3. 分享冷启动活动/商品页 — 无 `Bootstrap not ready`
 4. 购物车 Tab、`nav-icon` 渲染正常
 5. 分包抽测：merchant 订单弹窗、trade 下单页、IM 订阅/提示音

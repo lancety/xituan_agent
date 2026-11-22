@@ -52,6 +52,21 @@ Last updated: 2026-09-30
 
 子行上的领域 id 不参与合并，也不表示绑定。平台领域 / 平台分类删除前的商户引用计数只统计 `parent_id IS NULL` 的行。
 
+## 退场 / 替换按绑定世代
+
+绑定根另有两个时刻，只写在这一行上，子孙沿 `parent_id` 共用：
+
+- `platform_domain_bound_at`：领域 id 从空变为有值，或换成另一个领域时刷新。行业、领域层的退场 / 替换用这个时刻。
+- `platform_category_bound_at`：平台分类 id 从空变为有值，或换成另一个平台分类时刷新。平台分类链各层共用这一个时刻。同一条平台父链里改分类，不刷新领域时刻。
+
+平台属性第一次从 `ACTIVE` 变成 `RETIRED` 或 `REPLACED` 时写入 `template_status_at`。之后在退场和替换之间改状态、或只改 `replacement_key`，不移动这个时刻。改回 `ACTIVE` 时清空它和 `replacement_key`。
+
+合并时，平台层的退场 / 替换 key 只有在对应绑定时刻早于 `template_status_at` 才进入 schema。新 key（替换后的现行字段）和 `ACTIVE` 字段照常合并。被拿掉的旧 key 可以留在商品 jsonb 里，保存时不再当成非法 key，也不删除。其它未知 key 仍按原来的绑定差异和校验处理。
+
+仍绑着、且绑定早于退场时，旧 key 来自平台层，不自动插商户属性行。商户用现有的显示开关。解绑时，若还没有 `MANUAL` / `OVERLAY` 行，退场或替换的旧 key 写成 `UNBIND_COPY`，并带上 `platform_attribute_id`。重绑清理只删 `FORK_FROM_PLATFORM`，所以这份副本还在。再绑之后平台层不再合并这个旧 key，商户行和它的子孙树仍然显示。这是快照：之后平台改文案、枚举或替换目标，不回写这份副本。
+
+平台改回 `ACTIVE` 不设时间窗。只要还有任意商户行是 `UNBIND_COPY` 且 `platform_attribute_id` 指向该属性，就拒绝。商户删掉这些行之后可以再改回。这次不给 `merchant.metadata_attribute` 做分区。
+
 ## 解绑抄写
 
 只有这一行自己是绑定根，并且这次保存离开平台绑定时，才考虑把当时的合并 schema 写入商户作用域（`COPY_SCHEMA_TO_MERCHANT`）。
@@ -60,8 +75,8 @@ Last updated: 2026-09-30
 
 抄写规则：
 
-- 新行来源为 `FORK_FROM_PLATFORM`，作用域是该分类作为根时的 `MERCHANT_PARENT_CATEGORY`。
-- 已有 `MANUAL`、`OVERLAY` 行不改定义、不改 `origin_tag`。
+- 新行来源为 `FORK_FROM_PLATFORM`。当时 schema 里仍是平台 `RETIRED` / `REPLACED` 的旧 key，来源为 `UNBIND_COPY`，并写入 `platform_attribute_id`。作用域是该分类作为根时的 `MERCHANT_PARENT_CATEGORY`。
+- 已有 `MANUAL`、`OVERLAY`、`UNBIND_COPY` 行不改定义、不改 `origin_tag`。
 - 不改商品 jsonb 里的值。弃用字段或改商品值走迁移任务，不靠这次抄写。
 
 有 `parent_id` 的分类编辑列表只显示 `MERCHANT_SUB_CATEGORY`。若把抄写行写成 `MERCHANT_PARENT_CATEGORY` 留在子分类上，界面看不见，之后再改成平台绑定会撞唯一约束 `(merchant_id, scope_type, scope_id, storage_key)`。

@@ -1,6 +1,6 @@
 # Post-Deploy Registry（巡检入口）
 
-Last updated: 2026-11-17
+Last updated: 2026-11-22
 
 **日常巡检：「检查 post-deploy」** — 打开本文件，活跃表行数应为 **0** 表示无待收尾部署债务。非 0 则点击 **Entry** 查看 Gate 与勾选清单。
 
@@ -22,7 +22,7 @@ Last updated: 2026-11-17
 | `openim-attachment-multipart-retire` | `blocked` | `4.3.0` | `≥4.4.0` | `≥4.4.0` | CMS/backend presign@11-14；微信/App@11-14～15→`v4.3.0` | [entry](./entries/2026-11-openim-attachment-multipart-retire.md) |
 | `openim-cdn-lane-util-cleanup` | `blocked` | `4.3.0` | `≥4.4.0` | `≥4.4.0` | codebase `epOpenimCdnLane`@2026-11-14；4.2 submodule 无、4.3 有 | [entry](./entries/2026-11-openim-cdn-lane-util-cleanup.md) |
 | `product-storage-type-columns` | `blocked` | `3.9.2` | `TBD`（退役 schema 同批） | `TBD` | migrations `0348/0349`@→`v3.9.2`；CMS metadata 三项仍保留 | [entry](./entries/2026-08-product-storage-type-columns.md) |
-| `order-activity-scopes` | `blocked` | `3.8.0` | `TBD`（停 dual-write 后下一版） | `TBD` | scopes@2026-06-07→`v3.8.0`；旧列 dual-write 仍在 | [entry](./entries/2026-06-order-activity-scopes.md) |
+| `order-activity-scopes` | `blocked` | `3.8.0` | `≥4.4.0` | `≥4.4.0` | scopes@2026-06-07→`v3.8.0`；前端早已只靠 scopes；4.4 停 dual-write 并 DROP 旧列 | [entry](./entries/2026-06-order-activity-scopes.md) |
 | `metadata-rebind-provenance-batch` | `blocked` | `4.0.0` | 数据清洗（非纯版本） | 抽查后排期 | migration `0363`→`v4.0.0` | [entry](./entries/2026-09-metadata-rebind-provenance-batch.md) |
 | `multipart-image-upload-retire` | `blocked` | 直传域 `4.3.0` | `4.4.0` | `4.4.0` | 4.4 剩余业务图改 path 并删 multer | [entry](./entries/2026-11-multipart-image-upload-retire.md) |
 | `platform-metadata-drop-cms-site-print-vis` | `blocked` | 刷列 `4.3.0` | `4.4.0` | `4.4.0` | 4.4 去三轴 UI 并 DROP 三列 | [entry](./entries/2026-11-platform-metadata-drop-cms-site-print-vis.md) |
