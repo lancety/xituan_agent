@@ -1,6 +1,6 @@
 # 客户 App：网址 QR 扫码进 App
 
-Last updated: 2026-09-28
+Last updated: 2026-11-23
 
 Web 店码继续编现有 Site 地址，不另造一套链接。系统相机在关联域校验通过后打开客户 App，并按 path 进对应页。微信扫一扫打开的是内置浏览器，不会自动进 App。
 
@@ -13,7 +13,7 @@ Web 店码继续编现有 Site 地址，不另造一套链接。系统相机在�
 | 锁店 | 只在内存。杀掉进程后点图标 = 平台首页 |
 | 环境 | host 解析出的环境必须等于 App 的 `EXPO_PUBLIC_APP_ENV`（正式包默认 prod）。环境不一致时系统仍可能打开 App，但不上锁 |
 | 进具体页 | 解析 Site 公开 path，映射到已有路由。认不出的 path 停在已锁店首页 |
-| 调试（不依赖校验文件） | `xituancustomer://storefront?code=` 或 `merchantId=`。自定义 scheme 只锁店，不带 path |
+| 调试 / 商户 App 活动预览（不依赖校验文件） | 先 `xituancustomer://storefront?merchantId=`，再带 `offerId=` 或 `promoteId=`：锁店后打开该活动详情。顾客端打不开时改开网页 `/{locale}/merchant/{merchantId}/offers/{id}` 或 `.../preorder-promote/{id}` |
 | iOS | `apple-app-site-association` 使用 Team ID `FHUTTYDPQ8`（`FHUTTYDPQ8.au.com.xituan.customer`）。Site 未部署到 `m.xituan.com.au` 前，系统相机扫码可能仍不进 App |
 
 Play internal testing **现包**（`135df28` 及之后、且已含 `intentFilters` 的 AAB）只能做到：校验通过后进已锁店首页。按 path 进详情、顶栏分享是客户 App 工作区里的后续改动，要进测试包必须重新上传 AAB。只验证「扫码进商户首页」不用新 AAB。
@@ -93,7 +93,8 @@ flowchart TD
 ## 相关代码
 
 - `xituan_app_customer/app.json` — `intentFilters` / `associatedDomains`
-- `xituan_app_customer/src/utils/storefront-entry-url.util.ts`
+- `xituan_app_customer/src/utils/storefront-entry-url.util.ts` — scheme 的 `offerId` / `promoteId`
+- `xituan_app_merchant/src/utils/customer-app-activity-preview.util.ts` — 活动详情「预览」：有顾客 App 则锁店打开活动，否则打开同一页网页
 - `xituan_app_customer/src/utils/storefront-link-nav.util.ts`
 - `xituan_app_customer/src/utils/storefront-share.util.ts`
 - `xituan_app_customer/src/utils/storefront-lock.util.ts`
