@@ -41,7 +41,7 @@ Phase 1 版本 `3.9.2` 已在各端部署后即可做下面剩下的两项。不
 
 ## Phase N debt
 
-- [ ] 停双写。保存商品时不再把 `storageDays` 写进 jsonb `storageDay`。
+- [x] 停双写。保存商品时不再把 `storageDays` 写进 jsonb `storageDay`。CMS `ProductEditModal` 与 backend `product.service` 都已去掉。已有 jsonb 不清理。
 - [ ] `storeType`、`storageDay`、误写的 `storageType` 走属性弃用。商品 jsonb 里的值留下，不清理。
 - [x] 打印模板路径已改完。
 - [x] 取消：一次性清 jsonb、从编辑页剥掉这些键、为了清值而改 `iProductMetadata`。schema 仍要求这些键时不要先藏字段。

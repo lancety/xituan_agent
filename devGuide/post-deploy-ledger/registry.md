@@ -17,20 +17,13 @@ Last updated: 2026-11-25
 ### A. Phase 1 已进版 — 清理债务（版本已查）
 
 <table style="width:100%;table-layout:fixed">
-  <colgroup>
-    <col style="width:28%" />
-    <col style="width:8%" />
-    <col style="width:10%" />
-    <col style="width:46%" />
-    <col style="width:8%" />
-  </colgroup>
   <thead>
     <tr>
-      <th>ID</th>
-      <th style="white-space:nowrap">状态</th>
-      <th style="white-space:nowrap">Phase1 首次</th>
-      <th>证据摘要</th>
-      <th style="white-space:nowrap">Entry</th>
+      <th style="width:34%">ID</th>
+      <th style="width:8%;white-space:nowrap">状态</th>
+      <th style="width:12%;white-space:nowrap">Phase1 首次</th>
+      <th style="width:40%">证据摘要</th>
+      <th style="width:6%;white-space:nowrap">Entry</th>
     </tr>
   </thead>
   <tbody>
@@ -59,7 +52,7 @@ Last updated: 2026-11-25
       <td><code>product-storage-type-columns</code></td>
       <td style="white-space:nowrap"><code>blocked</code></td>
       <td><code>3.9.2</code></td>
-      <td>migrations <code>0348/0349</code>@→<code>v3.9.2</code>。剩下停双写，并用属性弃用处理 <code>storeType</code> / <code>storageDay</code>；不清理 jsonb；打印模板已改</td>
+      <td>migrations <code>0348/0349</code>@→<code>v3.9.2</code>。双写已停。剩下用属性弃用处理 <code>storeType</code> / <code>storageDay</code>；不清理 jsonb；打印模板已改</td>
       <td><a href="./entries/2026-08-product-storage-type-columns.md">entry</a></td>
     </tr>
     <tr>
