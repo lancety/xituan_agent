@@ -49,13 +49,6 @@ Last updated: 2026-11-25
       <td><a href="./entries/2026-11-openim-cdn-lane-util-cleanup.md">entry</a></td>
     </tr>
     <tr>
-      <td><code>product-storage-type-columns</code></td>
-      <td style="white-space:nowrap"><code>blocked</code></td>
-      <td><code>3.9.2</code></td>
-      <td>migrations <code>0348/0349</code>@→<code>v3.9.2</code>。双写已停。剩下用属性弃用处理 <code>storeType</code> / <code>storageDay</code>；不清理 jsonb；打印模板已改</td>
-      <td><a href="./entries/2026-08-product-storage-type-columns.md">entry</a></td>
-    </tr>
-    <tr>
       <td><code>order-activity-scopes</code></td>
       <td style="white-space:nowrap"><code>blocked</code></td>
       <td><code>3.8.0</code></td>
@@ -99,6 +92,7 @@ Last updated: 2026-11-25
 
 | ID | 状态 | 完成日 | Entry | 备注 |
 |----|------|--------|-------|------|
+| `product-storage-type-columns` | `done` | 2026-11-25 | [entry](./entries/2026-08-product-storage-type-columns.md) | 双写已停；jsonb 不清理；`storeType` / `storageDay` 走属性弃用，不挡本条；打印模板已改 |
 | `metadata-rebind-provenance-batch` | `done` | 2026-11-25 | [entry](./entries/2026-09-metadata-rebind-provenance-batch.md) | Phase N 清洗取消：无 id 的历史 `UNBIND_COPY` 保留；带 id 的同一来源副本由再绑删除 |
 | `order-terminal-status-inventory` | `done` | 2026-11-17 | [entry](./entries/2026-06-order-terminal-status-inventory.md) | 随 4.4.0 上线；无 Phase N（非兼容层清理） |
 | `ledger-intake-manual-ledger-block-id` | `done` | 2026-11-16 | [entry](./entries/2026-10-ledger-intake-manual-ledger-block-id.md) | 新建已写 `ledger_block_id`；绑定不写；删块预览与税锁已在 |
