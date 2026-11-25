@@ -1,3 +1,24 @@
+## [4.3.2] - 2026-11-25
+
+### ✨ 新功能
+
+- docs: Android Play optional hardware uses-feature strategy
+
+### 📚 文档
+
+- docs(devGuide): mark storageDays dual-write as stopped
+- docs(devGuide): record category deprecate rules and simplify the post-deploy registry
+- docs(devGuide): merchant preview opens the customer app or the site page
+- docs(devGuide): metadata binding clocks, order-activity cleanup, wechat bootstrap
+- docs(devGuide): share-aspect normalize backfill and lambda soft-skip
+- docs(devGuide): update platform store IAP subscription guide
+- docs(devGuide): add platform store IAP subscription guide
+- docs: Apple IAP Connect checklist and planned-work progress
+- docs(devGuide): inventory lock/refund/restock and archive post-deploy entry
+- docs(devGuide): archive four post-deploy phase N cleanups
+- docs: sync cart/home design tokens and account-link post-deploy notes
+- docs(devDesign): lock order-mode themes and brand cyan light/dark rules
+
 ## [4.3.1] - 2026-11-20
 
 ### 📚 文档
