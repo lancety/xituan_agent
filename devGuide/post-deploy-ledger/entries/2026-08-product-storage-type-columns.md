@@ -6,11 +6,9 @@
 | **title** | Promote storageType / storageDays to product columns; AusPost ambient-only filter |
 | **status** | `blocked` |
 | **Phase1 首次进版** | `v3.9.2`（migrations `0348/0349`） |
-| **最早可清理** | `TBD`（退役 schema / 清 jsonb / 改 printTemps 同批） |
-| **下一可执行** | `TBD` |
 | **created** | 2026-08-13 |
 | **owner** | TBD |
-| **Last updated** | 2026-11-15 |
+| **Last updated** | 2026-11-25 |
 | **related plans / PRs** | Phase 1 shipping + product dual-write; printTemps path cleanup split (code vs DB) |
 
 ## Why phased
@@ -36,19 +34,17 @@ Checkout / shipping must read **product columns only** (no metadata fallback). E
 
 ## Gate before Phase N
 
-- [ ] Migration applied in prod; dual-write live long enough that CMS edits land on columns.
-- [ ] WeChat / Site builds that read product columns (not metadata) for storage display / shipping are fully rolled out where needed.
-- [ ] Inventory of printTemps still using `metadata.storeType` / `metadata.storageDay` / misnamed `metadata.storageType` in optional_fields or element bindings.
+Phase 1 版本 `3.9.2` 已在各端部署后即可做下面剩下的两项。不另排版本窗口。
 
-## Phase N debt (cleanup — separate change after Gate)
+- [x] Migration `0348` / `0349` 随 `v3.9.2` 进版。
+- [x] 打印模板已改：不再绑 `metadata.storeType` / `metadata.storageDay` / 误写的 `metadata.storageType`。
 
-- [ ] Stop dual-write; stop writing storage keys into `products.metadata`.
-- [ ] One-shot clear jsonb keys `storeType` / `storageDay` / misnamed `storageType`.
-- [ ] Retire platform metadata attributes / schema bindings for those keys.
-- [ ] **Same change as schema retirement:** hide / strip `storeType` / `storageDay` / `storageType` from CMS `ProductEditModal` metadata card (and stop submitting those keys). Do **not** hide them while schema still requires the keys — that is what caused `PRODUCT_METADATA_INVALID`.
-- [ ] **DB printTemps:** rewrite bindings from `metadata.storeType` → `storageType`, `metadata.storageDay` → `storageDays`.
-- [ ] Open bag: drop typed storage keys from `iProductMetadata` if still present; keep only open `[key: string]`.
-- [ ] Remove any remaining dual-write helpers / comments marked Phase N.
+## Phase N debt
+
+- [ ] 停双写。保存商品时不再把 `storageDays` 写进 jsonb `storageDay`。
+- [ ] `storeType`、`storageDay`、误写的 `storageType` 走属性弃用。商品 jsonb 里的值留下，不清理。
+- [x] 打印模板路径已改完。
+- [x] 取消：一次性清 jsonb、从编辑页剥掉这些键、为了清值而改 `iProductMetadata`。schema 仍要求这些键时不要先藏字段。
 
 ## Notes / rollback
 
@@ -57,3 +53,4 @@ Checkout / shipping must read **product columns only** (no metadata fallback). E
 - Mixed cart: whole cart blocks AusPost until cold-chain carriers exist; no auto-split in Phase 1.
 - **2026-08-14:** CMS 曾把 `storeType` / `storageDay` / `storageType` 从产品编辑 metadata 卡隐藏，并在保存时从 payload 删除。schema 尚未退役，更新保存触发 `PRODUCT_METADATA_INVALID`。已把这三项放回编辑组件；**等 Phase N 退役 schema 时再一并隐藏/剥离**，不要单独先藏字段。
 - **2026-08-14 (dual-write):** 0348/0349 **只读** metadata 回填列，不改 jsonb。保存失败是因为 create/update 把 `storeType` 覆盖成 `{intl, zh_cn, …}`，而 schema 仍是 ENUM。已停止覆盖 `storeType`，保留客户端/库里的枚举码（如 `room_temp`）。
+- **2026-11-25:** Phase N 改为只停双写，并用属性弃用处理这三个键。不清理 jsonb。打印模板已由开发者改完。

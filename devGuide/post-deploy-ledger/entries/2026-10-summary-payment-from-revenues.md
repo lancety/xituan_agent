@@ -7,8 +7,6 @@ Last updated: 2026-11-15
 | **ID** | `summary-payment-from-revenues` |
 | **Status** | `blocked` |
 | **Phase1 版本** | 收入派生已在代码中（列表/详情/邮件/dashboard/`confirmSummaryPayment`） |
-| **可清理版本** | `4.4.0` |
-| **下一可执行** | `4.4.0` |
 | **Deployed** | 读路径 `applyDerivedPaymentToSummaries`；确认收款只建收入再双写三列。`PUT .../status` 已拒绝 |
 | **Pending** | **4.4.0 清除并可删**：停双写，DROP `total_paid` / `is_paid` / `paid_date`。`countPaidSummariesByMerchantId` 仍按列 `isPaid` 计数，删列时改成收入聚合 |
 | **Gate** | 开发者确认派生已做，4.4.0 可删三列 |

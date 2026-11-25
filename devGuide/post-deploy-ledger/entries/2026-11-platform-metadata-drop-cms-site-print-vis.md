@@ -7,8 +7,6 @@ Last updated: 2026-11-15
 | **ID** | `platform-metadata-drop-cms-site-print-vis` |
 | **状态** | `blocked` |
 | **Phase1 版本** | migration `0404` 刷列恒 true，已在 `4.3.0` |
-| **可清理版本** | `4.4.0` |
-| **下一可执行** | `4.4.0` |
 | **当前已部署** | 存量三列已刷 true；Platform 表单和读响应仍有 `visibleInCms` / `visibleInSite` / `visibleInPrint` |
 | **待完成** | **4.4.0 清除并可删**：去掉三轴 UI 与响应字段，DROP 这三列 |
 | **Gate** | 开发者已定 4.4.0 可删。商户分类 overlay 仍负责 CMS/站点/打印是否展示 |

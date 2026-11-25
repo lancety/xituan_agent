@@ -1,14 +1,14 @@
 # Post-Deploy Registry（巡检入口）
 
-Last updated: 2026-11-22
+Last updated: 2026-11-25
 
 **日常巡检：「检查 post-deploy」** — 打开本文件，活跃表行数应为 **0** 表示无待收尾部署债务。非 0 则点击 **Entry** 查看 Gate 与勾选清单。
 
-**版本约定（agent 全端同版本同时发；以 git tag / release commit 为准）：**  
-- **Phase1** = 该兼容层/新路径 **首次进入统一发版** 的版本（查 commit → `merge-base --is-ancestor` → 最早 tag）  
-- **最早可清理** = Phase1 全量后的 **下一统一版本**（历史最早可开清的点；逾期未做则债务仍挂）  
-- **下一可执行** = 现在若要动手，通常仍排在 **当前全量确认后的下一版**（现全端 **4.3.0** → 多为 **≥4.4.0**）  
-- 证据口径：backend / wechat / site / cms / app_* 的 `chore: release vX.Y.Z` tag
+**版本约定（以 git tag / release commit 为准）：**
+
+- **Phase1 首次** = 该兼容层/新路径第一次进入统一发版的版本。
+- Phase 1 的这个版本在各端都部署之后，就可以做 Phase N，不再另排「最早可清理」或「下一可执行」。
+- 证据口径：backend / wechat / site / cms / app_* 的 `chore: release vX.Y.Z` tag。
 
 ---
 
@@ -16,24 +16,89 @@ Last updated: 2026-11-22
 
 ### A. Phase 1 已进版 — 清理债务（版本已查）
 
-| ID | 状态 | Phase1 首次 | 最早可清理 | 下一可执行 | 证据摘要 | Entry |
-|----|------|-------------|------------|------------|----------|-------|
-| `orders-reorder-preorder-retire` | `blocked` | `4.3.0` | `≥4.4.0` | `≥4.4.0` | reorder preview@2026-11-07（backend/微信/Site）→`v4.3.0` | [entry](./entries/2026-11-orders-reorder-preorder-retire.md) |
-| `openim-attachment-multipart-retire` | `blocked` | `4.3.0` | `≥4.4.0` | `≥4.4.0` | CMS/backend presign@11-14；微信/App@11-14～15→`v4.3.0` | [entry](./entries/2026-11-openim-attachment-multipart-retire.md) |
-| `openim-cdn-lane-util-cleanup` | `blocked` | `4.3.0` | `≥4.4.0` | `≥4.4.0` | codebase `epOpenimCdnLane`@2026-11-14；4.2 submodule 无、4.3 有 | [entry](./entries/2026-11-openim-cdn-lane-util-cleanup.md) |
-| `product-storage-type-columns` | `blocked` | `3.9.2` | `TBD`（退役 schema 同批） | `TBD` | migrations `0348/0349`@→`v3.9.2`；CMS metadata 三项仍保留 | [entry](./entries/2026-08-product-storage-type-columns.md) |
-| `order-activity-scopes` | `blocked` | `3.8.0` | `≥4.4.0` | `≥4.4.0` | scopes@2026-06-07→`v3.8.0`；前端早已只靠 scopes；4.4 停 dual-write 并 DROP 旧列 | [entry](./entries/2026-06-order-activity-scopes.md) |
-| `metadata-rebind-provenance-batch` | `blocked` | `4.0.0` | 数据清洗（非纯版本） | 抽查后排期 | migration `0363`→`v4.0.0` | [entry](./entries/2026-09-metadata-rebind-provenance-batch.md) |
-| `multipart-image-upload-retire` | `blocked` | 直传域 `4.3.0` | `4.4.0` | `4.4.0` | 4.4 剩余业务图改 path 并删 multer | [entry](./entries/2026-11-multipart-image-upload-retire.md) |
-| `platform-metadata-drop-cms-site-print-vis` | `blocked` | 刷列 `4.3.0` | `4.4.0` | `4.4.0` | 4.4 去三轴 UI 并 DROP 三列 | [entry](./entries/2026-11-platform-metadata-drop-cms-site-print-vis.md) |
-| `summary-payment-from-revenues` | `blocked` | 派生已落地 | `4.4.0` | `4.4.0` | 4.4 停双写并 DROP 三列；`countPaidSummaries` 仍读 `isPaid` | [entry](./entries/2026-10-summary-payment-from-revenues.md) |
+<table style="width:100%;table-layout:fixed">
+  <colgroup>
+    <col style="width:28%" />
+    <col style="width:8%" />
+    <col style="width:10%" />
+    <col style="width:46%" />
+    <col style="width:8%" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th style="white-space:nowrap">状态</th>
+      <th style="white-space:nowrap">Phase1 首次</th>
+      <th>证据摘要</th>
+      <th style="white-space:nowrap">Entry</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>orders-reorder-preorder-retire</code></td>
+      <td style="white-space:nowrap"><code>blocked</code></td>
+      <td><code>4.3.0</code></td>
+      <td>reorder preview@2026-11-07（backend/微信/Site）→<code>v4.3.0</code></td>
+      <td><a href="./entries/2026-11-orders-reorder-preorder-retire.md">entry</a></td>
+    </tr>
+    <tr>
+      <td><code>openim-attachment-multipart-retire</code></td>
+      <td style="white-space:nowrap"><code>blocked</code></td>
+      <td><code>4.3.0</code></td>
+      <td>CMS/backend presign@11-14；微信/App@11-14～15→<code>v4.3.0</code></td>
+      <td><a href="./entries/2026-11-openim-attachment-multipart-retire.md">entry</a></td>
+    </tr>
+    <tr>
+      <td><code>openim-cdn-lane-util-cleanup</code></td>
+      <td style="white-space:nowrap"><code>blocked</code></td>
+      <td><code>4.3.0</code></td>
+      <td>codebase <code>epOpenimCdnLane</code>@2026-11-14；4.2 submodule 无、4.3 有</td>
+      <td><a href="./entries/2026-11-openim-cdn-lane-util-cleanup.md">entry</a></td>
+    </tr>
+    <tr>
+      <td><code>product-storage-type-columns</code></td>
+      <td style="white-space:nowrap"><code>blocked</code></td>
+      <td><code>3.9.2</code></td>
+      <td>migrations <code>0348/0349</code>@→<code>v3.9.2</code>。剩下停双写，并用属性弃用处理 <code>storeType</code> / <code>storageDay</code>；不清理 jsonb；打印模板已改</td>
+      <td><a href="./entries/2026-08-product-storage-type-columns.md">entry</a></td>
+    </tr>
+    <tr>
+      <td><code>order-activity-scopes</code></td>
+      <td style="white-space:nowrap"><code>blocked</code></td>
+      <td><code>3.8.0</code></td>
+      <td>scopes@2026-06-07→<code>v3.8.0</code>；前端早已只靠 scopes；仍 dual-write 旧列</td>
+      <td><a href="./entries/2026-06-order-activity-scopes.md">entry</a></td>
+    </tr>
+    <tr>
+      <td><code>multipart-image-upload-retire</code></td>
+      <td style="white-space:nowrap"><code>blocked</code></td>
+      <td>直传域 <code>4.3.0</code></td>
+      <td>剩余业务图改 path 并删 multer</td>
+      <td><a href="./entries/2026-11-multipart-image-upload-retire.md">entry</a></td>
+    </tr>
+    <tr>
+      <td><code>platform-metadata-drop-cms-site-print-vis</code></td>
+      <td style="white-space:nowrap"><code>blocked</code></td>
+      <td>刷列 <code>4.3.0</code></td>
+      <td>去三轴 UI 并 DROP 三列</td>
+      <td><a href="./entries/2026-11-platform-metadata-drop-cms-site-print-vis.md">entry</a></td>
+    </tr>
+    <tr>
+      <td><code>summary-payment-from-revenues</code></td>
+      <td style="white-space:nowrap"><code>blocked</code></td>
+      <td>派生已落地</td>
+      <td>停双写并 DROP 三列；<code>countPaidSummaries</code> 仍读 <code>isPaid</code></td>
+      <td><a href="./entries/2026-10-summary-payment-from-revenues.md">entry</a></td>
+    </tr>
+  </tbody>
+</table>
 
 ### B. Phase 1 未齐 / 未定版 — 先落地再标清理版
 
-| ID | 状态 | Phase1 | 可清理 | 备注 | Entry |
-|----|------|--------|--------|------|-------|
-| `wechat-c-order-item-list-section` | `planned` | 未落地 | 未定 | 2026-11-16 仍在用，不能 4.4 删 | [entry](./entries/2026-06-wechat-c-order-item-list-section.md) |
-| `sih-format-allowlist-webp-png` | `planned` | N/A | 以后再决定 | 老 jpg（主要是聊天图）是否还留 SIH jpeg | [entry](./entries/2026-09-sih-format-allowlist-webp-png.md) |
+| ID | 状态 | Phase1 | 备注 | Entry |
+|----|------|--------|------|-------|
+| `wechat-c-order-item-list-section` | `planned` | 未落地 | 2026-11-16 仍在用。Phase 1 未在各端部署前不做 Phase N | [entry](./entries/2026-06-wechat-c-order-item-list-section.md) |
+| `sih-format-allowlist-webp-png` | `planned` | N/A | 老 jpg（主要是聊天图）是否还留 SIH jpeg | [entry](./entries/2026-09-sih-format-allowlist-webp-png.md) |
 
 ---
 
@@ -41,6 +106,7 @@ Last updated: 2026-11-22
 
 | ID | 状态 | 完成日 | Entry | 备注 |
 |----|------|--------|-------|------|
+| `metadata-rebind-provenance-batch` | `done` | 2026-11-25 | [entry](./entries/2026-09-metadata-rebind-provenance-batch.md) | Phase N 清洗取消：无 id 的历史 `UNBIND_COPY` 保留；带 id 的同一来源副本由再绑删除 |
 | `order-terminal-status-inventory` | `done` | 2026-11-17 | [entry](./entries/2026-06-order-terminal-status-inventory.md) | 随 4.4.0 上线；无 Phase N（非兼容层清理） |
 | `ledger-intake-manual-ledger-block-id` | `done` | 2026-11-16 | [entry](./entries/2026-10-ledger-intake-manual-ledger-block-id.md) | 新建已写 `ledger_block_id`；绑定不写；删块预览与税锁已在 |
 | `non-same-day-wechat-compat` | `done` | 2026-11-15 | [entry](./entries/2026-08-non-same-day-wechat-compat.md) | Phase N：去掉 `allowNonSameDay`；超距离统一非当日路径 |

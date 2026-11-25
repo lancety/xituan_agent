@@ -7,8 +7,6 @@ Last updated: 2026-11-15
 | **ID** | `openim-cdn-lane-util-cleanup` |
 | **状态** | `blocked` |
 | **Phase1 首次进版** | `v4.3.0`（codebase `epOpenimCdnLane`@2026-11-14；4.2 submodule 无、4.3 有） |
-| **最早可清理** | `≥4.4.0` |
-| **下一可执行** | `≥4.4.0`（与 OpenIM 附件同批确认） |
 | **当前已部署** | Phase 1 在 4.3.0；静默默认仍保留 |
 | **待完成** | Phase N 去掉默认 WECHAT |
 | **Gate** | 全端无「依赖默认 WECHAT」；grep 无省略 lane 的关键路径 |

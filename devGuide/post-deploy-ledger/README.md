@@ -1,6 +1,6 @@
 # Post-Deploy Ledger（部署尾项登记册）
 
-Last updated: 2026-11-15
+Last updated: 2026-11-25
 
 > **日常巡检口令：「检查 post-deploy」**（或问「还有没有部署后要补的？」）  
 > → 打开 [`registry.md`](./registry.md)，看 **活跃** 表中 `active` / `blocked` 行数是否为 **0**。  
@@ -12,10 +12,9 @@ Last updated: 2026-11-15
 
 | 字段 | 含义 |
 |------|------|
-| **Phase1 版本** `Phase1@V` | 含 Phase 1（新路径 + 兼容层）的统一版本 |
-| **可清理版本** `cleanup@≥V+1` | **V 生产全量后**，最早在下一统一版本做 Phase N |
+| **Phase1 首次** | 含 Phase 1（新路径 + 兼容层）的统一版本 |
 
-登记时在 `registry.md` 与 entry 表头同时写这两列；未定版号写 `TBD`，数据门写「非纯版本」。
+Phase 1 这个版本在各端都部署之后，就可以做 Phase N。登记表只写 Phase1 首次，不再写最早可清理或下一可执行。
 
 ---
 

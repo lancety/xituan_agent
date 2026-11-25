@@ -7,8 +7,6 @@ Last updated: 2026-11-15
 | **ID** | `orders-reorder-preorder-retire` |
 | **状态** | `blocked` |
 | **Phase1 首次进版** | `v4.3.0`（reorder preview@2026-11-07 → backend/微信/Site） |
-| **最早可清理** | `≥4.4.0` |
-| **下一可执行** | `≥4.4.0`（等 4.3.0 全量） |
 | **当前已部署** | Phase 1 在 4.3.0；`reorder-preorder` 仍保留 |
 | **待完成** | 4.3.0 全量 → Phase N 删旧路由 |
 | **Gate** | 4.3.0 微信/Site/Customer 新路径全量；旧调用≈0 |

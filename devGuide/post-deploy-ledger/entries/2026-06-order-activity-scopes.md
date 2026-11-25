@@ -7,8 +7,6 @@ Last updated: 2026-11-22
 | **ID** | `order-activity-scopes` |
 | **Status** | `blocked` |
 | **Phase1 首次进版** | `v3.8.0`（scopes@2026-06-07） |
-| **最早可清理** | `≥4.4.0` |
-| **下一可执行** | `≥4.4.0` |
 | **Deployed** | Phase 1 自 3.8；生产早已走 scopes；旧列仍 dual-write（兼容债） |
 | **Pending** | 4.4：停 dual-write → DROP `orders.mode_activity_*` → 去 `iOrder` 旧字段 |
 | **Gate (Phase 3)** | 开发确认：前端已无仅依赖 `orders.mode_activity_*` 的旧路径；4.4 统一发版时清理 |
