@@ -1,6 +1,6 @@
 # AI 多语言助手（数据块 + 空槽翻译）
 
-Last updated: 2026-11-08
+Last updated: 2026-11-26
 
 通用框架：多语言长文本（Markdown / 纯文本）在 **空语言槽** 上做 AI 填充，并用可注册 **数据块** 保护不应被翻译的结构化片段（首块：`product-desc`）。
 
@@ -32,7 +32,7 @@ Last updated: 2026-11-08
 | `product-desc` 必填 | `id` |
 | `title="1"` | 显示同语言产品名 |
 | `bold="1"` | 产品名 Markdown 加粗（需 title） |
-| `nl="1"` | 名称与描述换行（需 title；此时不用 sep） |
+| `nl="1"` | 名称与描述之间单个换行，不加空行（需 title；此时不用 sep） |
 | `sep` | 同行连接符，默认 `: `（需 title 且非 nl） |
 
 **展示：** 编辑源码保留标记；预览 / Site 用 `stripMarkersForDisplay` 去掉注释只留正文（react-markdown 无 rehype-raw 时注释会当纯文本漏出）。
