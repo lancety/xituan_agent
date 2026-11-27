@@ -1,6 +1,6 @@
 # 图片上传面清单与直传迁移差异
 
-Last updated: 2026-11-13
+Last updated: 2026-11-27
 
 > **状态**：通用直传**框架已落地**；目录面/备注头像/打印/OpenIM 业务直传已落地；旧 multipart 待 post-deploy。  
 > 本文 = **上传面清单** + **怎么迁** + **各 case 不可避免的差异** + **典型流程复述**。  
@@ -50,7 +50,8 @@ C3 接线说明：[async-lambda-jobs-framework.md](./async-lambda-jobs-framework
 | bind.kind | 业务 | 典型入口 | as-is 上传 | 迁移桶 | 备注 |
 |-----------|------|----------|------------|--------|------|
 | `product_images` | 商品图 | CMS FormData；商家 App 产品编辑 | multipart | **A 目录图** | 多图；CMS 与 App 都要改 |
-| `news_images` | 新闻图 | CMS | FormData | **A** | 可后于 Offer/Preorder |
+| `news_images` | 新闻图 | CMS 图库；CMS 正文 Markdown 也复用，并带 `retainPending` | FormData / 正文直传 | **A** | 正文图见 [markdown-body-image.md](./markdown-body-image.md) |
+| `offer_description_images` / `preorder_description_images` / `body_image_pending` | 团购、预定、未保存正文图 | CMS Markdown 编辑器 | **direct no-wait** | **CMS done** | 同上 |
 | `offer_header_image` | 团购头图 | CMS；微信/Expo `.../offers/:id/images/:kind` | FormData / 两步 multipart | **A 优先** | |
 | `offer_featured_images` | 团购特色/轮播 | 同上 | 同上 | **A 优先** | |
 | `preorder_header_image` | 预定头图 | CMS；微信 `.../preorder-promotes/.../images/:kind` | FormData / 两步 | **A 优先** | |

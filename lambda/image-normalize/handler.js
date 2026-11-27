@@ -159,13 +159,14 @@ async function objectExists(s3, bucket, key) {
   }
 }
 
-async function putBuffer(s3, bucket, key, buffer, contentType) {
+async function putBuffer(s3, bucket, key, buffer, contentType, retainPending) {
   await s3.send(
     new PutObjectCommand({
       Bucket: bucket,
       Key: key,
       Body: buffer,
       ContentType: contentType,
+      ...(retainPending ? { Tagging: 'xt-retain=pending' } : {}),
     })
   );
 }
@@ -320,13 +321,13 @@ async function processOne(envelope, s3, bucketDefault, secret) {
         payload.format,
         payload.quality
       );
-      await putBuffer(s3, bucket, canonicalKey, canonicalBuf, contentType);
+      await putBuffer(s3, bucket, canonicalKey, canonicalBuf, contentType, payload.retainPending);
     }
 
     for (const edge of payload.variants) {
       const key = variantKeys[String(edge)];
       const buf = await buildVariant(input, edge, payload.format, payload.quality);
-      await putBuffer(s3, bucket, key, buf, contentType);
+      await putBuffer(s3, bucket, key, buf, contentType, payload.retainPending);
     }
     displayReady = true;
   }

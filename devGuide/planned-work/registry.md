@@ -1,6 +1,6 @@
 # Planned Work Registry（巡检入口）
 
-Last updated: 2026-11-14（系统消息 inbox 开始实现）
+Last updated: 2026-11-27（移动端正文 Markdown 插图登记）
 
 **日常巡检：「检查规划」** — 打开本文件；需要细节再进 Entry。
 
@@ -12,6 +12,7 @@ Cursor plan 三桶：草稿 `C:/Users/lance/.cursor/plans/`；待做 / 已完成
 
 | ID | 状态 | 简述 | 目标阶段/触发 | 下一动作 | Entry | Last updated |
 |----|------|------|---------------|----------|-------|--------------|
+| `mobile-markdown-body-image-insert` | `planned` | 商家 App 与微信商户正文 Markdown 插图；CMS 与阅读端已落地 | **mid** 主动启动 | 单独做，不接 CMS 裁剪弹窗 | [entry](./entries/2026-11-mobile-markdown-body-image-insert.md) | 2026-11-27 |
 | `system-message-inbox` | `in_progress` | 系统消息 PG inbox + 双端混排会话；Platform Support 行宽/i18n | **high** 本轮实现 | Migration+双写+App UI | [entry](./entries/2026-11-system-message-inbox.md) | 2026-11-14 |
 | `account-deletion-self-serve` | `planned` | 自助删号 7 天可取消；ADMIN 关店 inactive；用户 status=deleted | **high** App Store 5.1.1(v) | 重提前落地 API+双端+CMS/Site；iOS 去 PassKit | [entry](./entries/2026-11-account-deletion-self-serve.md) | 2026-11-11 |
 | `merchant-ios-iap-pay-restore` | `planned` | Merchant iOS IAP：Connect+验票+expo-iap 已接线；待沙盒实测/提审 | **mid** | 本地 `build:local:ios` + 沙盒购；Paid Apps 后正式售 | [entry](./entries/2026-11-merchant-ios-iap-pay-restore.md) | 2026-11-17 |
